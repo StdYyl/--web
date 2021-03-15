@@ -1,0 +1,47 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+import login from '../views/member/login'
+import forgot from '../views/member/forgot'
+import perfectInfo from '../views/member/perfectInfo'
+import userLayout from '../components/layout/UserLayout'
+import home from '../views/home/home'
+
+
+Vue.use(Router)
+
+export default new Router({
+  routes: [
+    {
+      path: '/user',
+      name: 'userLayout',
+      component: userLayout,
+      meta: {model: 'Login'},
+      children:[
+        {
+          path: 'login',
+          name: 'login',
+          component: login,
+          meta: {model: '登陆'},
+        },
+        {
+          path: 'forgot',
+          name: 'forgot',
+          component: forgot,
+          meta: {model: '忘记密码'},
+        },
+        {
+          path: 'perfectInfo',
+          name: 'perfectInfo',
+          component: perfectInfo,
+          meta: {model: '完善信息'},
+        },
+      ]
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: home,
+      meta: {model: '主页'}
+    }
+  ]
+})
