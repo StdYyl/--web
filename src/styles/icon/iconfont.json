@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "448520",
+      "name": "回收站",
+      "font_class": "huishouzhan",
+      "unicode": "e636",
+      "unicode_decimal": 58934
+    },
+    {
       "icon_id": "2019073",
       "name": "邮箱",
       "font_class": "youxiang",
@@ -13,11 +20,60 @@
       "unicode_decimal": 59313
     },
     {
+      "icon_id": "9826653",
+      "name": "成员管理",
+      "font_class": "chengyuanguanli",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "10465939",
+      "name": "系统设置",
+      "font_class": "xitongshezhi",
+      "unicode": "e7ba",
+      "unicode_decimal": 59322
+    },
+    {
+      "icon_id": "10907201",
+      "name": "文件",
+      "font_class": "wenjian",
+      "unicode": "e8cd",
+      "unicode_decimal": 59597
+    },
+    {
       "icon_id": "12704884",
       "name": "验证码",
       "font_class": "yanzhengma",
       "unicode": "e609",
       "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "14313195",
+      "name": "添加文件",
+      "font_class": "tianjiawenjian",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "15714223",
+      "name": "通知",
+      "font_class": "tongzhi",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "17781815",
+      "name": "添加用户",
+      "font_class": "tianjiayonghu",
+      "unicode": "e885",
+      "unicode_decimal": 59525
+    },
+    {
+      "icon_id": "20052232",
+      "name": "项目管理",
+      "font_class": "xiangmuguanli",
+      "unicode": "e608",
+      "unicode_decimal": 58888
     }
   ]
 }

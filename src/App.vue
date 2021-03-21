@@ -23,6 +23,7 @@ export default {
 }
 html,body{
   height:100%;
+  background-color: rgb(245, 245, 245);
 }
 div{
   box-sizing: border-box;
