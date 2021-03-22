@@ -3,7 +3,6 @@ import Router from 'vue-router'
 import login from '../views/member/login'
 import forgot from '../views/member/forgot'
 import perfectInfo from '../views/member/perfectInfo'
-import Register from '../views/member/register'
 import userLayout from '../components/layout/UserLayout'
 import home from '../views/home/home'
 
@@ -43,12 +42,6 @@ export default new Router({
           name: 'perfectInfo',
           component: perfectInfo,
           meta: {model: '完善信息'},
-        },
-        {
-          path: 'register',
-          name: 'register',
-          component: Register,
-          meta: {model: '注册'}
         }
       ]
     },

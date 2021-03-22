@@ -7,13 +7,11 @@
           <el-table
             :data="allProject"
             :show-header="false"
-            :row-style="row_heigh"
-            @row-click="activeOne"
             style="width: 100%;font-size: 13px">
             <el-table-column
               prop="name"
               :show-overflow-tooltip="true"
-              width="395">
+              width="445">
               <template slot-scope="props">
                 <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
                 <div class="props_value">{{ props.row.introduction}}</div>
@@ -88,18 +86,93 @@
         <el-tab-pane label="已创建" name="create">已创建</el-tab-pane>
         <!--回收站-->
         <el-tab-pane label="回收站" name="recycle">回收站</el-tab-pane>
-        <el-button class="new_project" size="small" type="primary" icon="el-icon-plus">创建新项目</el-button>
+        <!--添加新项目-->
+        <el-button class="new_project" size="small" type="primary" icon="el-icon-plus"
+                   @click="dialogFormVisible = true">创建新项目
+        </el-button>
+        <el-dialog title="项目创建" :visible.sync="dialogFormVisible" width="500px">
+          <div slot="title" class="header-title">
+            <span><i class="el-icon-warning-outline"></i></span>
+            <span class="title-age">项目创建</span>
+          </div>
+          <el-form :model="projectForm" :rules="rules" ref="projectForm">
+            <el-form-item prop="name">
+              <el-input v-model="projectForm.name" placeholder="项目名称"></el-input>
+            </el-form-item>
+            <el-form-item prop="introduction">
+              <el-input type="textarea" :row="2" v-model="projectForm.introduction" placeholder="项目简介"></el-input>
+            </el-form-item>
+            <el-form-item prop="basePath">
+              <el-input v-model="projectForm.basePath" placeholder="项目基本路径"></el-input>
+            </el-form-item>
+            <div style="text-align: left;font-weight: bold;margin-bottom: 5px">预计完成时间</div>
+            <el-form-item>
+              <div style="padding-right: 25px">
+                <span style="padding-right: 5px">月</span>
+                <el-input-number size="mini" controls-position="right" :min="1" :max="24"
+                                 v-model="projectForm.endMonth"></el-input-number>
+              </div>
+              <div>
+                <span style="padding-right: 5px">日</span>
+                <el-input-number size="mini" controls-position="right" :min="1" :max="31"
+                                 v-model="projectForm.endDay"></el-input-number>
+              </div>
+            </el-form-item>
+            <div style="text-align: left;font-weight: bold;margin-bottom: 10px">项目分类</div>
+            <div style="display: flex;flex-flow: wrap">
+              <el-tag
+                :key="tag"
+                v-for="tag in projectForm.addDirs"
+                closable
+                :disable-transitions="false"
+                @close="handleClose(tag)">
+                {{tag}}
+              </el-tag>
+              <el-input
+                class="input-new-tag"
+                v-if="inputVisible"
+                v-model="inputValue"
+                ref="saveTagInput"
+                size="small"
+                @keyup.enter.native="handleInputConfirm"
+                @blur="handleInputConfirm"
+              >
+              </el-input>
+              <el-button v-else class="button-new-tag" size="small" @click="showInput">新增分类</el-button>
+            </div>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="addProject">确 定</el-button>
+          </div>
+        </el-dialog>
       </el-tabs>
     </div>
   </div>
 </template>
 
 <script>
+    import {notice} from '@/utils/elementUtils'
+
     export default {
         name: "aside",
         data() {
             return {
                 activeName: "all",
+                dialogFormVisible: false,
+                inputVisible:false,
+                //是否有重复数据
+                isRepeatedData:false,
+                inputValue:'',
+                projectForm: {
+                    name: '',
+                    introduction: '',
+                    basePath: '',
+                    endMonth: '',
+                    endDay: '',
+                    addDirs: []
+
+                },
                 allProject: [
                     {
                         id: 1,
@@ -158,23 +231,292 @@
                         progress: 20
                     },
                 ],
+                allProject: [
+                    {
+                        id: 1,
+                        name: "软件测试项目1",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目2",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目3",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目4",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目5",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目6",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目7",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                ],
+                allProject: [
+                    {
+                        id: 1,
+                        name: "软件测试项目1",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目2",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目3",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目4",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目5",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目6",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目7",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                ],
+                allProject: [
+                    {
+                        id: 1,
+                        name: "软件测试项目1",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目2",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目3",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目4",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目5",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目6",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                    {
+                        id: 1,
+                        name: "软件测试项目7",
+                        introduction: "那时候我只会想自己想要什么",
+                        createTime: "2020-11-12",
+                        createUser: "张三张三张三张三",
+                        progress: 20
+                    },
+                ],
+
                 //当前页码
-                currentPage:1,
+                currentPage: 1,
                 //总条数
-                totalCount:20,
+                totalCount: 20,
                 //每页展示条数
-                pageSize:7,
+                pageSize: 7,
+                rules: {
+                    name: {required: true, message : "请输入项目名称", trigger:'blur'},
+                    introduction: {required: true, message : "请输入项目简介", trigger:'blur'},
+                    basePath: {required: true, message : "请输入项目基本路径", trigger:'blur'},
+                }
             }
         },
         methods: {
             handleClick(tab) {
                 console.log(tab)
+            },
+            //处理
+            handleClose(tag) {
+                this.projectForm.addDirs.splice(this.projectForm.addDirs.indexOf(tag), 1);
+            },
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+            //添加分类处理
+            handleInputConfirm() {
+                this.isRepeatedData = false;
+                let inputValue = this.inputValue;
+                //去除空格
+                inputValue = inputValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                if(inputValue == ''){
+                    this.inputVisible = false;
+                    return;
+                }
+                //判断新增的值是否重复
+                if(this.projectForm.addDirs.indexOf(inputValue) != -1){
+                    this.isRepeatedData = true;
+                    notice(this, `模块'${inputValue}'已存在`,'warning')
+                    return;
+                }
+                else{
+                    this.isRepeatedData = false;
+                }
+                if (inputValue) {
+                    this.projectForm.addDirs.push(inputValue);
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+            },
+            //新增项目
+            addProject(){
+                this.$refs['projectForm'].validate(err=>{
+                    if(!err) return
+                    console.log(222)
+                    //提交表单projectForm
+                    this.dialogFormVisible = false
+
+                })
+                //
             }
         }
     }
 </script>
 
 <style lang="less" scoped>
+  /deep/.el-form-item{
+    height: auto;
+  }
+  .button-new-tag {
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
+  }
+  .el-tag {
+    margin:0 10px 5px 0;
+  }
+  /deep/ .el-form-item__content {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+  }
+
+  /deep/ .el-input-number--mini {
+    width: 90px;
+  }
+
+  /deep/ .el-dialog__body {
+    padding: 30px 100px;
+  }
+
+  /deep/ .el-dialog__header {
+    border-bottom: 1px solid #BBBBBB;
+  }
+
+  .header-title {
+    text-align: left;
+  }
+
+  .el-icon-warning-outline:before {
+    color: #FAC200;
+  }
+
   /deep/ .el-pagination {
     padding: 20px 5px;
     text-align: right;

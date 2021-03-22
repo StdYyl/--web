@@ -55,6 +55,13 @@
       "unicode_decimal": 58896
     },
     {
+      "icon_id": "14673533",
+      "name": "系统",
+      "font_class": "xitong",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
       "icon_id": "15714223",
       "name": "通知",
       "font_class": "tongzhi",

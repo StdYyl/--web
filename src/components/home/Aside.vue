@@ -44,7 +44,6 @@
 
 <script>
     export default {
-        name: "aside",
         watch: {
             searchMes(val) {
                 this.$refs.tree.filter(val);
