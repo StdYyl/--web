@@ -3,16 +3,7 @@
     <el-header>
       <Header></Header>
     </el-header>
-    <el-container>
-      <el-aside width="256px">
-        <ASide></ASide>
-      </el-aside>
-      <el-container>
-        <el-main>
-          <Main></Main>
-        </el-main>
-      </el-container>
-    </el-container>
+    <router-view />
   </el-container>
 </template>
 
@@ -36,17 +27,5 @@
   /*修改element*/
   .el-header {
     padding: 0 !important;
-  }
-
-  .el-container {
-    height: 100%;
-  }
-
-  .el-aside div {
-    height: 100%;
-  }
-
-  /deep/.el-main {
-    padding: 10px 20px 0;
   }
 </style>

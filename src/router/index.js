@@ -3,14 +3,23 @@ import Router from 'vue-router'
 import login from '../views/member/login'
 import forgot from '../views/member/forgot'
 import perfectInfo from '../views/member/perfectInfo'
+import Register from '../views/member/register'
 import userLayout from '../components/layout/UserLayout'
 import home from '../views/home/home'
+
+import Project from '../views/project/project'
+import ProList from '../views/project/list'
 
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
+    {
+      path: '/',
+      name: 'default',
+      redirect: '/user/login'
+    },
     {
       path: '/user',
       name: 'userLayout',
@@ -35,13 +44,43 @@ export default new Router({
           component: perfectInfo,
           meta: {model: '完善信息'},
         },
+        {
+          path: 'register',
+          name: 'register',
+          component: Register,
+          meta: {model: '注册'}
+        }
       ]
     },
     {
       path: '/home',
       name: 'home',
       component: home,
-      meta: {model: '主页'}
+      meta: {model: '主页'},
+      children: [
+        {
+          path: '',
+          redirect: 'project'
+        },
+        {
+          path: 'project',
+          name: 'project',
+          component: Project,
+          meta: {model: '项目管理'},
+          children: [
+            {
+              path: '',
+              redirect: 'list'
+            },
+            {
+              path: 'list',
+              name: 'list',
+              component: ProList,
+              meta: {model: '项目列表'}
+            }
+          ]
+        }
+      ]
     }
   ]
 })

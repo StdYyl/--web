@@ -106,50 +106,51 @@
             },
             //登陆、注册
             handleSubmit() {
-                const app = this;
-
-                let loginParams = {
-                    remember_me: app.formLogin.rememberMe
-                };
-
-                // 使用账户密码登录
-                if (app.loginType === 1) {
-                    //校验入参
-                    app.$refs['formLogin'].validateField(('account'), (err) => {
-                        if (err) return;
-                        app.$refs['formLogin'].validateField(('password'), (err) => {
-                            if (err) return;
-                            loginParams.account = this.formLogin.account
-                            loginParams.password = md5(this.formLogin.password)
-                            //登录
-                            console.log(loginParams);
-                            // land(loginParams).then(res=>{
-                            //   if (!checkResponse(this, res, true)) {
-                            //     return false;
-                            //   }
-                            // })
-                        })
-                    })
-                }
-                //手机号+验证码登录
-                else {
-                    //校验入参
-                    app.$refs['formLogin'].validateField(('phone'), (err) => {
-                        if (err) return;
-                        app.$refs['formLogin'].validateField(('captcha'), (err) => {
-                            if (err) return;
-                            loginParams.phone = this.formLogin.phone
-                            loginParams.captcha = this.formLogin.captcha
-                            //登录
-                            console.log(loginParams);
-                            registerOrLand(loginParams).then(res => {
-                                if (!checkResponse(this, res, true)) {
-                                    return false;
-                                }
-                            })
-                        })
-                    })
-                }
+                this.$router.push('/home');
+                // const app = this;
+                //
+                // let loginParams = {
+                //     remember_me: app.formLogin.rememberMe
+                // };
+                //
+                // // 使用账户密码登录
+                // if (app.loginType === 1) {
+                //     //校验入参
+                //     app.$refs['formLogin'].validateField(('account'), (err) => {
+                //         if (err) return;
+                //         app.$refs['formLogin'].validateField(('password'), (err) => {
+                //             if (err) return;
+                //             loginParams.account = this.formLogin.account
+                //             loginParams.password = md5(this.formLogin.password)
+                //             //登录
+                //             console.log(loginParams);
+                //             // land(loginParams).then(res=>{
+                //             //   if (!checkResponse(this, res, true)) {
+                //             //     return false;
+                //             //   }
+                //             // })
+                //         })
+                //     })
+                // }
+                // //手机号+验证码登录
+                // else {
+                //     //校验入参
+                //     app.$refs['formLogin'].validateField(('phone'), (err) => {
+                //         if (err) return;
+                //         app.$refs['formLogin'].validateField(('captcha'), (err) => {
+                //             if (err) return;
+                //             loginParams.phone = this.formLogin.phone
+                //             loginParams.captcha = this.formLogin.captcha
+                //             //登录
+                //             console.log(loginParams);
+                //             registerOrLand(loginParams).then(res => {
+                //                 if (!checkResponse(this, res, true)) {
+                //                     return false;
+                //                 }
+                //             })
+                //         })
+                //     })
+                // }
             },
             //获取验证码
             getCaptcha(e) {

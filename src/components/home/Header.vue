@@ -120,6 +120,7 @@
   .head {
     display: flex;
     background: white;
+    min-width: 900px;
 
     .logo {
       box-sizing: content-box;
