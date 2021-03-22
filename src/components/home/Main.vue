@@ -81,7 +81,83 @@
           </el-pagination>
         </el-tab-pane>
         <!--已加入-->
-        <el-tab-pane label="已加入" name="in">已加入</el-tab-pane>
+        <el-tab-pane label="已加入" name="in">
+          <el-table
+            :data="inProject"
+            :show-header="false"
+            style="width: 100%;font-size: 13px">
+            <el-table-column
+              prop="name"
+              :show-overflow-tooltip="true"
+              width="445">
+              <template slot-scope="props">
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div class="props_value">{{ props.row.introduction}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createTime"
+              :show-overflow-tooltip="true"
+              align="center"
+              width="130">
+              <template slot-scope="props">
+                <div>创建日期</div>
+                <div class="props_value">{{ props.row.createTime}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createUser"
+              align="center"
+              show-overflow-tooltip
+              width="130">
+              <template slot-scope="props">
+                <div>创建人</div>
+                <div class="props_value">{{ props.row.createUser}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="progress"
+              align="center"
+              :show-overflow-tooltip="true"
+              width="250">
+              <template slot-scope="props">
+                <div>进度</div>
+                <div class="props_value">
+                  <el-progress :percentage="props.row.progress"></el-progress>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="id"
+              :show-overflow-tooltip="true"
+              width="150">
+              <div style="height: 70px;display: flex;align-items: center">
+                <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
+                  <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
+                  <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
+                  <el-icon class="iconfont icon-wenjian"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
+                  <el-icon class="iconfont icon-huishouzhan"></el-icon>
+                </el-tooltip>
+              </div>
+            </el-table-column>
+          </el-table>
+          <!--分页，每页最多8条数据-->
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="totalCountIn">
+          </el-pagination>
+        </el-tab-pane>
         <!--已创建-->
         <el-tab-pane label="已创建" name="create">已创建</el-tab-pane>
         <!--回收站-->
@@ -160,10 +236,10 @@
             return {
                 activeName: "all",
                 dialogFormVisible: false,
-                inputVisible:false,
+                inputVisible: false,
                 //是否有重复数据
-                isRepeatedData:false,
-                inputValue:'',
+                isRepeatedData: false,
+                inputValue: '',
                 projectForm: {
                     name: '',
                     introduction: '',
@@ -231,7 +307,7 @@
                         progress: 20
                     },
                 ],
-                allProject: [
+                inProject: [
                     {
                         id: 1,
                         name: "软件测试项目1",
@@ -248,157 +324,22 @@
                         createUser: "张三张三张三张三",
                         progress: 20
                     },
+
+                ],
+                createProject: [
                     {
                         id: 1,
-                        name: "软件测试项目3",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目4",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目5",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目6",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目7",
+                        name: "软件测试项目1",
                         introduction: "那时候我只会想自己想要什么",
                         createTime: "2020-11-12",
                         createUser: "张三张三张三张三",
                         progress: 20
                     },
                 ],
-                allProject: [
+                recycleProject: [
                     {
                         id: 1,
                         name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目2",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目3",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目4",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目5",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目6",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目7",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                ],
-                allProject: [
-                    {
-                        id: 1,
-                        name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目2",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目3",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目4",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目5",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目6",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目7",
                         introduction: "那时候我只会想自己想要什么",
                         createTime: "2020-11-12",
                         createUser: "张三张三张三张三",
@@ -408,20 +349,38 @@
 
                 //当前页码
                 currentPage: 1,
-                //总条数
+                //总条数（全部项目）
                 totalCount: 20,
+                //已加入
+                totalCountIn:10,
+                //已创建
+                totalCountCreate:10,
                 //每页展示条数
                 pageSize: 7,
                 rules: {
-                    name: {required: true, message : "请输入项目名称", trigger:'blur'},
-                    introduction: {required: true, message : "请输入项目简介", trigger:'blur'},
-                    basePath: {required: true, message : "请输入项目基本路径", trigger:'blur'},
+                    name: {required: true, message: "请输入项目名称", trigger: 'blur'},
+                    introduction: {required: true, message: "请输入项目简介", trigger: 'blur'},
+                    basePath: {required: true, message: "请输入项目基本路径", trigger: 'blur'},
                 }
             }
         },
         methods: {
             handleClick(tab) {
-                console.log(tab)
+                //获取项目列表
+
+                if(tab.index == 0){
+                //全部 allProject
+
+                }else if(tab.index == 1){
+                //已加入 inProject
+
+                }else if(tab.index == 2){
+                //已创建  createProject
+
+                }else if(tab.index == 3){
+                //已删除  recycleProject
+
+                }
             },
             //处理
             handleClose(tag) {
@@ -439,17 +398,16 @@
                 let inputValue = this.inputValue;
                 //去除空格
                 inputValue = inputValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-                if(inputValue == ''){
+                if (inputValue == '') {
                     this.inputVisible = false;
                     return;
                 }
                 //判断新增的值是否重复
-                if(this.projectForm.addDirs.indexOf(inputValue) != -1){
+                if (this.projectForm.addDirs.indexOf(inputValue) != -1) {
                     this.isRepeatedData = true;
-                    notice(this, `模块'${inputValue}'已存在`,'warning')
+                    notice(this, `模块'${inputValue}'已存在`, 'warning')
                     return;
-                }
-                else{
+                } else {
                     this.isRepeatedData = false;
                 }
                 if (inputValue) {
@@ -459,9 +417,9 @@
                 this.inputValue = '';
             },
             //新增项目
-            addProject(){
-                this.$refs['projectForm'].validate(err=>{
-                    if(!err) return
+            addProject() {
+                this.$refs['projectForm'].validate(err => {
+                    if (!err) return
                     console.log(222)
                     //提交表单projectForm
                     this.dialogFormVisible = false
@@ -474,23 +432,27 @@
 </script>
 
 <style lang="less" scoped>
-  /deep/.el-form-item{
+  /deep/ .el-form-item {
     height: auto;
   }
+
   .button-new-tag {
     height: 32px;
     line-height: 30px;
     padding-top: 0;
     padding-bottom: 0;
   }
+
   .input-new-tag {
     width: 90px;
     margin-left: 10px;
     vertical-align: bottom;
   }
+
   .el-tag {
-    margin:0 10px 5px 0;
+    margin: 0 10px 5px 0;
   }
+
   /deep/ .el-form-item__content {
     display: flex;
     align-items: center;
