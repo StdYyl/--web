@@ -105,7 +105,7 @@
             },
             //添加文件夹
             addFolder() {
-                this.$prompt('请输入目录名称', '提示', {
+                this.$prompt('请输入目录名称', '添加分类', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     inputPattern: /^[\s\S]*.*[^\s][\s\S]*$/,

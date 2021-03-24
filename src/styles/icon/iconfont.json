@@ -20,6 +20,27 @@
       "unicode_decimal": 59313
     },
     {
+      "icon_id": "7578846",
+      "name": "用户",
+      "font_class": "denglu1",
+      "unicode": "e7d8",
+      "unicode_decimal": 59352
+    },
+    {
+      "icon_id": "8288841",
+      "name": "功能",
+      "font_class": "gongneng",
+      "unicode": "e84a",
+      "unicode_decimal": 59466
+    },
+    {
+      "icon_id": "8358212",
+      "name": "更多",
+      "font_class": "gengduo",
+      "unicode": "e65c",
+      "unicode_decimal": 58972
+    },
+    {
       "icon_id": "9826653",
       "name": "成员管理",
       "font_class": "chengyuanguanli",
@@ -39,6 +60,13 @@
       "font_class": "wenjian",
       "unicode": "e8cd",
       "unicode_decimal": 59597
+    },
+    {
+      "icon_id": "11816659",
+      "name": "时间",
+      "font_class": "shijian",
+      "unicode": "e630",
+      "unicode_decimal": 58928
     },
     {
       "icon_id": "12704884",
@@ -74,6 +102,13 @@
       "font_class": "tianjiayonghu",
       "unicode": "e885",
       "unicode_decimal": 59525
+    },
+    {
+      "icon_id": "18454394",
+      "name": "技术支持",
+      "font_class": "tubiaozhizuomoban",
+      "unicode": "e65b",
+      "unicode_decimal": 58971
     },
     {
       "icon_id": "20052232",
