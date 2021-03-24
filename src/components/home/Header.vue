@@ -84,7 +84,10 @@
         methods: {
             //切换菜单
             handleSelect(e) {
-                console.log(e)
+              console.log(e)
+              if(e==1) this.$router.push('/home/project');
+              else if (e==2) this.$router.push('/home/member');
+              else this.$router.push('/home/system');
             },
             //激活未读信息
             activeRead() {
@@ -111,7 +114,12 @@
             exitLogin() {
                 //调用退出登录页面
             }
-        }
+        },
+      mounted() {
+        if(this.$route.path.indexOf('/home/project')!=-1) this.activeIndex=1;
+        if(this.$route.path.indexOf('/home/member')!=-1) this.activeIndex=2;
+        if(this.$route.path.indexOf('/home/system')!=-1) this.activeIndex=3;
+      }
     }
 </script>
 
@@ -184,6 +192,7 @@
   //list 样式
   .el-menu.el-menu--horizontal {
     border-bottom: none;
+    padding-left: 8px;
   }
 
   //table

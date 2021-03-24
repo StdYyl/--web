@@ -3,12 +3,16 @@ import Router from 'vue-router'
 import login from '../views/member/login'
 import forgot from '../views/member/forgot'
 import perfectInfo from '../views/member/perfectInfo'
-import Register from '../views/member/register'
 import userLayout from '../components/layout/UserLayout'
 import home from '../views/home/home'
 
 import Project from '../views/project/project'
 import ProList from '../views/project/list'
+
+import System from '../views/system/system'
+import Setting from '../views/system/setting'
+import Log from '../views/system/log'
+import User from '../views/system/user'
 
 
 Vue.use(Router)
@@ -43,12 +47,6 @@ export default new Router({
           name: 'perfectInfo',
           component: perfectInfo,
           meta: {model: '完善信息'},
-        },
-        {
-          path: 'register',
-          name: 'register',
-          component: Register,
-          meta: {model: '注册'}
         }
       ]
     },
@@ -77,6 +75,32 @@ export default new Router({
               name: 'list',
               component: ProList,
               meta: {model: '项目列表'}
+            }
+          ]
+        },
+        {
+          path: 'system',
+          name: 'system',
+          component: System,
+          meta: {model: '系统管理'},
+          children: [
+            {
+              path: 'setting',
+              name: 'setting',
+              component: Setting,
+              meta: {model: '系统设置'},
+            },
+            {
+              path: 'logger',
+              name: 'logger',
+              component: Log,
+              meta: {model: '日志管理'},
+            },
+            {
+              path: 'user',
+              name: 'user',
+              component: User,
+              meta: {model: '用户管理'},
             }
           ]
         }
