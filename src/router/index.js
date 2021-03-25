@@ -9,13 +9,17 @@ import home from '../views/home/home'
 import Project from '../views/project/project'
 import ProList from '../views/project/list'
 
-import Setting from '../components/project/Setting'
-
+import SettingPro from '../components/project/Setting'
 
 import System from '../views/system/system'
 import Setting from '../views/system/setting'
 import Log from '../views/system/log'
 import User from '../views/system/user'
+
+import UserMgn from '../views/user/index'
+import intfIndex from '../views/interface/index'
+
+
 
 
 Vue.use(Router)
@@ -32,7 +36,7 @@ export default new Router({
       name: 'userLayout',
       component: userLayout,
       meta: {model: 'Login'},
-      children:[
+      children: [
         {
           path: 'login',
           name: 'login',
@@ -82,6 +86,12 @@ export default new Router({
           ]
         },
         {
+          path: 'member',
+          name: 'member',
+          component: UserMgn,
+          meta: {model: '成员管理'},
+        },
+        {
           path: 'system',
           name: 'system',
           component: System,
@@ -106,16 +116,21 @@ export default new Router({
               meta: {model: '用户管理'},
             }
           ]
-            },
-          ]
         },
         {
           path: 'setting/:id',
           name: 'setting',
-          component: Setting,
-          meta: {model: '项目列表'}
-        }
+          component: SettingPro,
+          meta: {model: '项目设置'}
+        },
+        {
+          path: 'intfIndex/:id',
+          name: 'intfIndex',
+          component: intfIndex,
+          meta: {model: '接口列表首页'}
+        },
       ]
-    }
+    },
+
   ]
 })

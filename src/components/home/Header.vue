@@ -116,9 +116,9 @@
             }
         },
       mounted() {
-        if(this.$route.path.indexOf('/home/project')!=-1) this.activeIndex=1;
-        if(this.$route.path.indexOf('/home/member')!=-1) this.activeIndex=2;
-        if(this.$route.path.indexOf('/home/system')!=-1) this.activeIndex=3;
+        if(this.$route.path.indexOf('/home/project')!=-1) this.activeIndex='1';
+        if(this.$route.path.indexOf('/home/member')!=-1) this.activeIndex='2';
+        if(this.$route.path.indexOf('/home/system')!=-1) this.activeIndex='3';
       }
     }
 </script>
@@ -190,7 +190,7 @@
 
 
   //list 样式
-  .el-menu.el-menu--horizontal {
+  .el-menu .el-menu--horizontal {
     border-bottom: none;
     padding-left: 8px;
   }

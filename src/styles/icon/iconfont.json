@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "3825232",
+      "name": "团队成员",
+      "font_class": "tuanduichengyuan",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
       "icon_id": "20576039",
       "name": "user-remove",
       "font_class": "user-remove",

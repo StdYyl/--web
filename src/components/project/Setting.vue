@@ -82,7 +82,7 @@
             <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime">修改</el-button>
           </div>
           <el-timeline >
-            <el-timeline-item v-for="item in moduleProject" :timestamp="item.createTime" placement="top">
+            <el-timeline-item :key="item.id" v-for="item in moduleProject" :timestamp="item.createTime" placement="top">
               <el-card>
                 <h4 style="display: flex;align-items: center;justify-content: center">
                   <img :src="item.head" style="width: 20px;margin-right: 5px">{{item.name}}
@@ -170,9 +170,9 @@
                 moduleProject:[
                     {id: 1, name: '张三', head: '/static/img/head.b818068.png',
                         createTime: '2021-3-24',moduleName:'用户管理',progress:10},
-                    {id: 1, name: '李四', head: '/static/img/head.b818068.png',
+                    {id: 2, name: '李四', head: '/static/img/head.b818068.png',
                         createTime: '2021-3-25',moduleName:'项目管理',progress:20},
-                    {id: 1, name: '李四', head: '/static/img/head.b818068.png',
+                    {id: 3, name: '李四', head: '/static/img/head.b818068.png',
                         createTime: '2021-3-25',moduleName:'项目管理',progress:20},
                 ],
                 endMouth:'',
@@ -278,7 +278,7 @@
     min-height: 500px;
     margin: 20px auto;
     background-color: #FFFFFF;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid rgb(187, 187, 187);
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
 

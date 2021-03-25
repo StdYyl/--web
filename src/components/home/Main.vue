@@ -13,7 +13,7 @@
               :show-overflow-tooltip="true"
               width="445">
               <template slot-scope="props">
-                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer" @click="$router.push(`../intfIndex/${props.row.id}`)">{{ props.row.name}}</div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
             </el-table-column>
@@ -254,7 +254,7 @@
             <div style="padding-bottom: 15px;text-indent: 5px">链接有效日期：{{linkEndTime}}</div>
             <el-input v-model="invitationLink" disabled="">
               <template slot="append">
-                <el-button class="tag-read" :data-clipboard-text="linkEndTime" @click="copy">复制链接</el-button>
+                <el-button class="tag-read" :data-clipboard-text="invitationLink" @click="copy">复制链接</el-button>
               </template>
             </el-input>
           </el-dialog>
