@@ -12,6 +12,7 @@
   "dependencies": {
     "af-table-column": "^1.0.3",
     "axios": "^0.18.0",
+    "clipboard": "^2.0.8",
     "echarts": "^4.1.0",
     "element-ui": "^2.5.4",
     "js-md5": "^0.7.3",

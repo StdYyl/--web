@@ -9,6 +9,9 @@ import home from '../views/home/home'
 import Project from '../views/project/project'
 import ProList from '../views/project/list'
 
+import Setting from '../components/project/Setting'
+
+
 import System from '../views/system/system'
 import Setting from '../views/system/setting'
 import Log from '../views/system/log'
@@ -103,6 +106,14 @@ export default new Router({
               meta: {model: '用户管理'},
             }
           ]
+            },
+          ]
+        },
+        {
+          path: 'setting/:id',
+          name: 'setting',
+          component: Setting,
+          meta: {model: '项目列表'}
         }
       ]
     }
