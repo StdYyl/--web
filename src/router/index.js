@@ -9,6 +9,9 @@ import home from '../views/home/home'
 import Project from '../views/project/project'
 import ProList from '../views/project/list'
 
+import Setting from '../components/project/Setting'
+
+
 
 Vue.use(Router)
 
@@ -70,8 +73,14 @@ export default new Router({
               name: 'list',
               component: ProList,
               meta: {model: '项目列表'}
-            }
+            },
           ]
+        },
+        {
+          path: 'setting/:id',
+          name: 'setting',
+          component: Setting,
+          meta: {model: '项目列表'}
         }
       ]
     }
