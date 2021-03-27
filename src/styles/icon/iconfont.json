@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "20647010",
+      "name": "功能",
+      "font_class": "gongneng1",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "20641069",
+      "name": "周报",
+      "font_class": "zhoubao",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "20639556",
+      "name": "download",
+      "font_class": "download",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "20638422",
+      "name": "问号",
+      "font_class": "wenhao",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
       "icon_id": "8427933",
       "name": "批量添加",
       "font_class": "piliangtianjia",

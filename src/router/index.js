@@ -10,6 +10,7 @@ import Project from '../views/project/project'
 import ProList from '../views/project/list'
 
 import SettingPro from '../components/project/Setting'
+import Progress from '../components/project/Progress'
 
 import System from '../views/system/system'
 import Setting from '../views/system/setting'
@@ -23,6 +24,8 @@ import ExportIntf from '../components/intf/ExportIntf'
 import AddIntf from '../components/intf/AddIntf'
 
 
+
+import Accept from '../views/member/accept'
 
 
 Vue.use(Router)
@@ -156,6 +159,18 @@ export default new Router({
             }
           ]
         },
+        {
+          path: 'progress/:id',
+          name: 'progress',
+          component: Progress,
+          meta: {model: '进度管理'}
+        },
+        {
+          path: 'member/accept',
+          name: 'accept',
+          component: Accept,
+          meta: {model: '接受邀请'}
+        }
       ]
     },
 

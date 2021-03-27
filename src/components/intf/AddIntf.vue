@@ -32,6 +32,31 @@
         <el-input v-model="from.path" placeholder="接口路径" style="width: 450px" size="small"></el-input>
       </el-form-item>
     </el-form>
+
+    <!--参数列表-->
+    <div class="rh_head">
+      <h4 style="margin: 5px 0 0 15px;color: #1890FF">参数列表
+        <span class="el-icon-info" style="color:#1890FF;"></span>
+      </h4>
+      <div>
+        <el-button type="primary" size="mini"
+                   style="margin-right: 10px;font-size: 12px;padding: 7px 15px">保存
+        </el-button>
+        <el-button type="primary" size="mini"
+                   style="margin-right: 20px;font-size: 12px;padding: 7px 15px">运行
+        </el-button>
+      </div>
+    </div>
+    <el-tabs v-model="editableTabsValue" type="card" closable @tab-remove="removeTab">
+      <el-tab-pane
+        v-for="(item, index) in editableTabs"
+        :key="item.name"
+        :label="item.title"
+        :name="item.name"
+      >
+        {{item.content}}
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -51,9 +76,12 @@
                     {id:4,name:'DELETE'},
                 ],
                 module:'',
+                //接口基本信息
                 from: {
                     name: '', introduction: '', directoryID: '', status: '', type: 'GET', path: ''
                 },
+                //接口参数列表
+
                 rules: {
                     name: {required: true, message: "请输入接口名称", trigger: 'blur'},
                     introduction: {required: true, message: "请输入接口简介", trigger: 'blur'},
