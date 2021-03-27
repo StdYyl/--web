@@ -18,6 +18,9 @@ import User from '../views/system/user'
 
 import UserMgn from '../views/user/index'
 import intfIndex from '../views/interface/index'
+import intfAll from '../components/intf/index'
+import ExportIntf from '../components/intf/ExportIntf'
+import AddIntf from '../components/intf/AddIntf'
 
 
 
@@ -127,7 +130,31 @@ export default new Router({
           path: 'intfIndex/:id',
           name: 'intfIndex',
           component: intfIndex,
-          meta: {model: '接口列表首页'}
+          meta: {model: '接口列表首页'},
+          children:[
+            {
+              path: '',
+              redirect: 'intfAll'
+            },
+            {
+              path: 'intfAll',
+              name: 'intfAll',
+              component: intfAll,
+              meta: {model: '所有接口'},
+            },
+            {
+              path: 'AddIntf',
+              name: 'AddIntf',
+              component: AddIntf,
+              meta: {model: '添加接口'},
+            },
+            {
+              path: 'ExportIntf',
+              name: 'ExportIntf',
+              component: ExportIntf,
+              meta: {model: '批量导入接口'},
+            }
+          ]
         },
       ]
     },
