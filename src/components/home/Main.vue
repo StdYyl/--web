@@ -44,7 +44,7 @@
               width="250">
               <template slot-scope="props">
                 <div>进度</div>
-                <div class="props_value">
+                <div class="props_value" @click="progressManagement(props.row.id, 0)">
                   <el-progress :percentage="props.row.progress"></el-progress>
                 </div>
               </template>
@@ -67,12 +67,16 @@
                     </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
-                  <el-tooltip class="item" effect="dark" content="项目周期" placement="top">
-                    <el-icon class="iconfont icon-wenjian"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
+                    <div @click="interfaceExport">
+                      <el-icon class="iconfont icon-wenjian"></el-icon>
+                    </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                    <el-icon class="iconfont icon-huishouzhan"></el-icon>
+                    <div @click="removeToCycle">
+                      <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                    </div>
                   </el-tooltip>
                 </div>
               </template>
@@ -86,6 +90,36 @@
             :total="totalCount">
           </el-pagination>
         </el-tab-pane>
+
+        <el-dialog
+          :visible.sync="exportDialogVisible"
+          width="30%">
+            <div slot="title" align="left"style="display: flex;align-items: center;">
+              <i class="el-icon-warning-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
+              <span style="font-weight: bold;font-size: 14px">接口导出</span>
+            </div>
+            <span slot="">
+            <el-form ref="form" :model="interface" label-width="80px">
+              <el-form-item style="margin-bottom: 5px;">
+                <el-select v-model="interface.format" placeholder="请选择导出格式">
+                  <el-option label="html文档" value="html"></el-option>
+                  <el-option label="word文档" value="word"></el-option>
+                  <el-option label="pdf文档" value="pdf"></el-option>
+                  <el-option label="markdown语法文档" value="markdown"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center">
+                <i class="iconfont icon-download" style="font-size: 24px;margin-right: 5px;"></i>
+                <span>导出项目文档为html文档</span>
+              </el-form-item>
+              <el-form-item style="margin-left: 30px;display: flex;align-items: center">
+                <el-button type="primary" @click="exportDialogVisible = false" style="padding: 10px 40px;">导 出</el-button>
+              </el-form-item>
+            </el-form>
+          </span>
+          <span slot="footer" style="display: flex;justify-content: center">
+          </span>
+        </el-dialog>
 
         <!--已加入-->
         <el-tab-pane label="已加入" name="in">
@@ -147,12 +181,16 @@
                   <el-icon class="iconfont icon-xitongshezhi"></el-icon>
                 </el-tooltip>
                 <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="项目周期" placement="top">
-                  <el-icon class="iconfont icon-wenjian"></el-icon>
+                <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
+                  <div @click="interfaceExport">
+                    <el-icon class="iconfont icon-wenjian"></el-icon>
+                  </div>
                 </el-tooltip>
                 <el-icon class="el-icon-minus icon_y"></el-icon>
                 <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                  <el-icon class="iconfont icon-huishouzhan"></el-icon>
+                  <div @click="removeToCycle">
+                    <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                  </div>
                 </el-tooltip>
               </div>
             </el-table-column>
@@ -167,10 +205,158 @@
         </el-tab-pane>
 
         <!--已创建-->
-        <el-tab-pane label="已创建" name="create">已创建</el-tab-pane>
+        <el-tab-pane label="已创建" name="create">
+          <el-table
+            :data="inProject"
+            :show-header="false"
+            style="width: 100%;font-size: 13px">
+            <el-table-column
+              prop="name"
+              :show-overflow-tooltip="true"
+              width="445">
+              <template slot-scope="props">
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div class="props_value">{{ props.row.introduction}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createTime"
+              :show-overflow-tooltip="true"
+              align="center"
+              width="130">
+              <template slot-scope="props">
+                <div>创建日期</div>
+                <div class="props_value">{{ props.row.createTime}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createUser"
+              align="center"
+              show-overflow-tooltip
+              width="130">
+              <template slot-scope="props">
+                <div>创建人</div>
+                <div class="props_value">{{ props.row.createUser}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="progress"
+              align="center"
+              :show-overflow-tooltip="true"
+              width="250">
+              <template slot-scope="props">
+                <div>进度</div>
+                <div class="props_value">
+                  <el-progress :percentage="props.row.progress"></el-progress>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="id"
+              :show-overflow-tooltip="true"
+              width="150">
+              <div style="height: 70px;display: flex;align-items: center">
+                <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
+                  <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
+                  <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
+                  <div @click="interfaceExport">
+                    <el-icon class="iconfont icon-wenjian"></el-icon>
+                  </div>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
+                  <div @click="removeToCycle">
+                    <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                  </div>
+                </el-tooltip>
+              </div>
+            </el-table-column>
+          </el-table>
+          <!--分页，每页最多8条数据-->
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="totalCountIn">
+          </el-pagination>
+        </el-tab-pane>
 
         <!--回收站-->
-        <el-tab-pane label="回收站" name="recycle">回收站</el-tab-pane>
+        <el-tab-pane label="回收站" name="recycle">
+          <el-table
+            :data="inProject"
+            :show-header="false"
+            style="width: 100%;font-size: 13px">
+            <el-table-column
+              prop="name"
+              :show-overflow-tooltip="true"
+              width="445">
+              <template slot-scope="props">
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div class="props_value">{{ props.row.introduction}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createTime"
+              :show-overflow-tooltip="true"
+              align="center"
+              width="130">
+              <template slot-scope="props">
+                <div>创建日期</div>
+                <div class="props_value">{{ props.row.createTime}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createUser"
+              align="center"
+              show-overflow-tooltip
+              width="130">
+              <template slot-scope="props">
+                <div>创建人</div>
+                <div class="props_value">{{ props.row.createUser}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="progress"
+              align="center"
+              :show-overflow-tooltip="true"
+              width="250">
+              <template slot-scope="props">
+                <div>进度</div>
+                <div class="props_value">
+                  <el-progress :percentage="props.row.progress"></el-progress>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="id"
+              :show-overflow-tooltip="true"
+              width="150">
+              <div style="height: 70px;display: flex;align-items: center;justify-content: center;">
+                <el-tooltip class="item" effect="dark" content="恢复项目" placement="top">
+                  <el-icon class="iconfont icon-yihuifu-xiugai" style="font-size: 20px"></el-icon>
+                </el-tooltip>
+                <el-icon class="el-icon-minus icon_y"></el-icon>
+                <el-tooltip class="item" effect="dark" content="彻底删除项目" placement="top">
+                  <el-icon class="iconfont icon-weihuifu-xiugai" style="font-size: 20px"></el-icon>
+                </el-tooltip>
+              </div>
+            </el-table-column>
+          </el-table>
+          <!--分页，每页最多8条数据-->
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="totalCountIn">
+          </el-pagination>
+        </el-tab-pane>
 
         <!--添加新项目-->
         <el-button class="new_project" size="small" type="primary" icon="el-icon-plus"
@@ -597,6 +783,10 @@
                     name: {required: true, message: "请输入项目名称", trigger: 'blur'},
                     introduction: {required: true, message: "请输入项目简介", trigger: 'blur'},
                     basePath: {required: true, message: "请输入项目基本路径", trigger: 'blur'},
+                },
+                exportDialogVisible: false,
+                interface: {
+                  format: 'html'
                 }
             }
         },
@@ -638,6 +828,10 @@
                 if (index == 1) this.inviteMember = true
                 else if (index == 2) this.$router.push('/home/setting/1')
                 else if (index == 3) ;
+            },
+            //进度管理
+            progressManagement(id, index) {
+              if(index==0) this.$router.push('/home/progress/1')
             },
             handleClick(tab) {
                 //获取项目列表
@@ -700,7 +894,29 @@
 
                 })
                 //
-            }
+            },
+            //移入回收站
+            removeToCycle() {
+              this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
+                type: 'warning',
+                confirmButtonText: '放入回收站',
+                cancelButtonText: '考虑一下',
+                confirmButtonClass: 'btnClass',
+              }).then(() => {
+                this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                });
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消删除'
+                });
+              });
+            },
+            interfaceExport() {
+              this.exportDialogVisible = true;
+            },
         }
     }
 </script>
@@ -807,8 +1023,13 @@
     }
   }
 
+  .btnClass {
+    color: #fff !important;
+    background: rgb(255,77,79) !important;
+  }
 
-  /deep/ .el-form-item {
+
+    /deep/ .el-form-item {
     height: auto;
   }
 

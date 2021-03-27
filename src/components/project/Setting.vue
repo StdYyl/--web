@@ -82,12 +82,13 @@
             <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime">修改</el-button>
           </div>
           <el-timeline >
-            <el-timeline-item v-for="item in moduleProject" :timestamp="item.createTime" placement="top">
+            <el-timeline-item v-for="item in moduleProject" :key="item.id" :timestamp="item.createTime" placement="top">
               <el-card>
                 <h4 style="display: flex;align-items: center;justify-content: center">
                   <img :src="item.head" style="width: 20px;margin-right: 5px">{{item.name}}
                 </h4>
-                <p>完成模块{{item.moduleName}}进度：{{item.progress}}%</p>
+                <p>完成模块：{{item.moduleName}}</p>
+                <p>进度：{{item.progress}}%</p>
               </el-card>
             </el-timeline-item>
           </el-timeline>
@@ -153,9 +154,166 @@
 
       <el-tab-pane label="所用技术">
         <span slot="label"><i class="iconfont icon-tubiaozhizuomoban"></i> 所用技术</span>
+
+        <div class="technology">
+          <div class="top">
+            <span>技术架构</span>
+            <div class="tech_img">
+              <el-upload
+                class="avatar-uploader"
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+                <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
+            </div>
+          </div>
+          <div class="main">
+            <div class="title">
+              <el-row>
+                <el-col :span="8">
+                  <div class="grid-content bg-purple tech_name">技术名</div>
+                </el-col>
+                <el-col :span="6">
+                  <p></p>
+                </el-col>
+                <el-col :span="6">
+                  <div class="grid-content bg-purple-light tech_version">版本号</div>
+                </el-col>
+                <el-col :span="4">
+                  <p></p>
+                </el-col>
+              </el-row>
+            </div>
+            <div class="tech_item">
+              <div class="data">
+                <el-row>
+                  <el-col :span="8">
+                    <div class="grid-content bg-purple tech">VUE</div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple-light link">
+                      <i class="el-icon-paperclip"></i>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple version">2.3.0</div>
+                  </el-col>
+                  <el-col :span="4">
+                    <div class="grid-content bg-purple-light remove" @click="removeTech">
+                      <i class="el-icon-close"></i>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="tech_item">
+              <div class="data">
+                <el-row>
+                  <el-col :span="8">
+                    <div class="grid-content bg-purple tech">VUE</div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple-light link">
+                      <i class="el-icon-paperclip"></i>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple version">2.3.0</div>
+                  </el-col>
+                  <el-col :span="4">
+                    <div class="grid-content bg-purple-light remove" @click="removeTech">
+                      <i class="el-icon-close"></i>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="tech_item">
+              <div class="data">
+                <el-row>
+                  <el-col :span="8">
+                    <div class="grid-content bg-purple tech">VUE</div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple-light link">
+                      <i class="el-icon-paperclip"></i>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div class="grid-content bg-purple version">2.3.0</div>
+                  </el-col>
+                  <el-col :span="4">
+                    <div class="grid-content bg-purple-light remove" @click="removeTech">
+                      <i class="el-icon-close"></i>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="add">
+                <el-row>
+                  <el-col :span="8">
+                    <div class="bind" @click="addTech">
+                      <i class="el-icon-circle-plus-outline"></i>
+                      <span>新增技术</span>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <p></p>
+                  </el-col>
+                  <el-col :span="6">
+                    <p></p>
+                  </el-col>
+                  <el-col :span="4">
+                    <p></p>
+                  </el-col>
+                </el-row>
+              </div>
+          </div>
+          <div class="footer">
+            <el-button type="primary">保存</el-button>
+          </div>
+        </div>
       </el-tab-pane>
+      <el-dialog
+        :visible.sync="techDialogVisible"
+        width="30%">
+        <div slot="title" align="left" style="display: flex;align-items: center;">
+          <i class="el-icon-document-add" style="color: rgb(250,194,0);margin-right: 5px"></i>
+          <span style="font-weight: bold;font-size: 14px">新增技术</span>
+        </div>
+        <span slot="">
+          <el-form ref="form" :model="technology" label-width="80px">
+            <el-form-item label="技术名称">
+              <el-input v-model="technology.name"></el-input>
+            </el-form-item>
+            <el-form-item label="技术版本">
+              <el-input v-model="technology.version"></el-input>
+            </el-form-item>
+          </el-form>
+        </span>
+        <span slot="footer">
+          <el-button @click="techDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="techDialogVisible = false">确 定</el-button>
+        </span>
+      </el-dialog>
       <el-tab-pane label="更多">
         <span slot="label"><i class="iconfont icon-gengduo"></i> 更多</span>
+        <div class="more">
+          <div class="title">项目操作</div>
+          <div class="note">您可以执行以下操作</div>
+          <div class="operations">
+            <el-button @click="archive">归档项目</el-button>
+            <el-button @click="exit">退出</el-button>
+            <el-button type="danger" @click="remove">移至回收站</el-button>
+          </div>
+        </div>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -170,8 +328,6 @@
                 moduleProject:[
                     {id: 1, name: '张三', head: '/static/img/head.b818068.png',
                         createTime: '2021-3-24',moduleName:'用户管理',progress:10},
-                    {id: 1, name: '李四', head: '/static/img/head.b818068.png',
-                        createTime: '2021-3-25',moduleName:'项目管理',progress:20},
                     {id: 1, name: '李四', head: '/static/img/head.b818068.png',
                         createTime: '2021-3-25',moduleName:'项目管理',progress:20},
                 ],
@@ -203,8 +359,17 @@
                 InvitationUserEmail: '',
                 //功能模块的开发人员
                 moduleUser: [
-                    {id: 1, name: '张三', head: '/static/img/head.b818068.png', joinTime: '2021-3-24'},
+                  {id: 1, name: '张三', head: '/static/img/head.b818068.png', joinTime: '2021-3-24'},
+                  {id: 1, name: '李四', head: '/static/img/head.b818068.png', joinTime: '2021-3-27'},
                 ],
+                techDialogVisible: false,
+                //新增技术窗口
+                technology: {
+                  name: 'Dubbo',
+                  version: '2.3.0',
+                },
+                imageUrl: '',
+                //技术架构图
             }
         },
         methods: {
@@ -239,12 +404,116 @@
                 let h = document.getElementById("bg").style.height
                 return `height:${h}`
                 console.log(h)
-            }
+            },
+            removeTech() {
+              this.$confirm('此操作将删除该技术, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                });
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消删除'
+                });
+              });
+            },
+            addTech() {
+              this.techDialogVisible = true
+            },
+            beforeAvatarUpload() {
+              //上传之前触发函数
+            },
+            handleAvatarSuccess() {
+              //上传完成触发函数
+            },
+            archive() {
+              //项目归档
+              this.$confirm('此操作将归档全部已完成接口，是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.$message({
+                  type: 'success',
+                  message: '归档成功!'
+                });
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消归档'
+                });
+              });
+            },
+            exit() {
+              //退出项目
+              this.$confirm('是否确认退出该项目?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.$message({
+                  type: 'success',
+                  message: '退出成功!'
+                });
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消退出'
+                });
+              });
+            },
+            remove() {
+              //移至回收站
+              this.$confirm('此操作奖项目移至回收站，稍后可在回收站恢复，是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.$message({
+                  type: 'success',
+                  message: '移除成功!'
+                });
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消移除'
+                });
+              });
+            },
         }
     }
 </script>
 
 <style lang="less" scoped>
+
+  .avatar-uploader i{
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    &:hover {
+      border-color: #409EFF;
+    }
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 
   .modifyBtn{
     height: 28px;
@@ -361,6 +630,104 @@
 
   /deep/ .el-dialog__body {
     padding: 25px 20px 30px;
+  }
+
+  .technology {
+    padding: 20px;
+    .top {
+      display: flex;
+      span {
+        flex: 3;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .tech_img {
+        flex: 5;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+    }
+    .main {
+      .title {
+        padding: 20px;
+        .tech_name,.tech_version {
+          font-size: 24px;
+        }
+      }
+      .tech_item {
+        padding: 20px 0 0 0;
+        .data {
+          .tech,.link,.version,.remove {
+            color: rgb(24,144,255);
+          }
+          .tech,.version {
+            font-size: 18px;
+          }
+          .link {
+            font-size: 20px;
+          }
+          .remove {
+            color: rgb(169,169,169);
+            font-size: 20px;
+            cursor: pointer;
+          }
+          .remove:hover {
+            color: rgb(24,144,255);
+          }
+        }
+        /*transform:rotate(-3deg);*/
+        /*-ms-transform:rotate(-3deg); !* IE 9 *!*/
+        /*-webkit-transform:rotate(-3deg); !* Safari and Chrome *!*/
+      }
+      .divider {
+        margin: 10px 240px 10px 130px;
+        border-bottom: 1px solid rgb(191,191,191);
+        /*transform:rotate(-3deg);*/
+        /*-ms-transform:rotate(-3deg); !* IE 9 *!*/
+        /*-webkit-transform:rotate(-3deg); !* Safari and Chrome *!*/
+      }
+      .add {
+        margin-top: 20px;
+        color: rgb(187,187,187);
+        .bind {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          i {
+            font-size: 28px;
+            cursor: pointer;
+          }
+          span {
+            margin: 10px 0;
+            font-size: 14px;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+    .footer {
+      padding: 10px;
+    }
+  }
+
+  .more {
+    padding: 20px 0 0 20px;
+    text-align: left;
+    .title {
+      font-size: 20px;
+      padding: 15px 0;
+    }
+    .note {
+      font-size: 16px;
+      color: rgb(140,151,170);
+    }
+
+    .operations {
+      margin-top: 15px;
+    }
   }
 
 

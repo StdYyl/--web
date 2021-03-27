@@ -6,6 +6,83 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "20641069",
+      "name": "周报",
+      "font_class": "zhoubao",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "20639556",
+      "name": "download",
+      "font_class": "download",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "20638422",
+      "name": "问号",
+      "font_class": "wenhao",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
+      "icon_id": "8427933",
+      "name": "批量添加",
+      "font_class": "piliangtianjia",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "12331672",
+      "name": "接口",
+      "font_class": "jiekou",
+      "unicode": "e669",
+      "unicode_decimal": 58985
+    },
+    {
+      "icon_id": "15657485",
+      "name": "分类",
+      "font_class": "fenlei",
+      "unicode": "e631",
+      "unicode_decimal": 58929
+    },
+    {
+      "icon_id": "18471380",
+      "name": "导出",
+      "font_class": "daochu",
+      "unicode": "e6a6",
+      "unicode_decimal": 59046
+    },
+    {
+      "icon_id": "20418379",
+      "name": "待归档 ",
+      "font_class": "wuzhihuashijianzhouiconjihewanjie1-01-copy",
+      "unicode": "e694",
+      "unicode_decimal": 59028
+    },
+    {
+      "icon_id": "20616914",
+      "name": "已恢复-修改",
+      "font_class": "yihuifu-xiugai",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "20616913",
+      "name": "未恢复-修改",
+      "font_class": "weihuifu-xiugai",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "3825232",
+      "name": "团队成员",
+      "font_class": "tuanduichengyuan",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
       "icon_id": "20576039",
       "name": "user-remove",
       "font_class": "user-remove",

@@ -10,12 +10,14 @@ import Project from '../views/project/project'
 import ProList from '../views/project/list'
 
 import Setting from '../components/project/Setting'
-
+import Progress from '../components/project/Progress'
 
 import System from '../views/system/system'
-import Setting from '../views/system/setting'
+import SettingPro from '../views/system/setting'
 import Log from '../views/system/log'
 import User from '../views/system/user'
+
+import Accept from '../views/member/accept'
 
 
 Vue.use(Router)
@@ -90,7 +92,7 @@ export default new Router({
             {
               path: 'setting',
               name: 'setting',
-              component: Setting,
+              component: SettingPro,
               meta: {model: '系统设置'},
             },
             {
@@ -106,16 +108,26 @@ export default new Router({
               meta: {model: '用户管理'},
             }
           ]
-            },
-          ]
         },
         {
           path: 'setting/:id',
           name: 'setting',
           component: Setting,
-          meta: {model: '项目列表'}
+          meta: {model: '项目设置'}
+        },
+        {
+          path: 'progress/:id',
+          name: 'progress',
+          component: Progress,
+          meta: {model: '进度管理'}
+        },
+        {
+          path: 'member/accept',
+          name: 'accept',
+          component: Accept,
+          meta: {model: '接受邀请'}
         }
       ]
-    }
+    },
   ]
 })
