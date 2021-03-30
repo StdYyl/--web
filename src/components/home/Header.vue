@@ -51,13 +51,13 @@
 
       <div class="user">
         <img src="../../assets/image/common/head.png" style="width: 24px;margin-right: 8px">
-        <el-dropdown trigger="click">
+        <el-dropdown trigger="click" @command="ShowView">
           <span class="el-dropdown-link">
             张三<i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>个人中心</el-dropdown-item>
-            <el-dropdown-item @click="exitLogin">退出登录</el-dropdown-item>
+            <el-dropdown-item command="user">个人中心</el-dropdown-item>
+            <el-dropdown-item command="exit">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -82,12 +82,35 @@
             }
         },
         methods: {
+            //个人中心（退出登陆）
+            ShowView(e) {
+                //个人中心
+                if (e == 'user') {
+                    this.$router.push('/home/project/information')
+                }
+                //退出登陆
+                if (e == 'exit') {
+
+                }
+            },
             //切换菜单
             handleSelect(e) {
-              console.log(e)
-              if(e==1) this.$router.push('/home/project');
-              else if (e==2) this.$router.push('/home/member');
-              else this.$router.push('/home/system');
+                let path = this.$route.path
+
+
+                if (e == 1){
+                    if(path.indexOf('/home/project/list') != -1) return;
+                    this.$router.push('/home/project');
+                }
+                else if (e == 2){
+                    if(path.indexOf('/home/member') != -1) return;
+                    this.$router.push('/home/member');
+                }
+                else{
+                    if(path.indexOf('/home/project/information') != -1) return;
+                    this.$router.push('/home/project/information')
+                }
+                // else this.$router.push('/home/system');
             },
             //激活未读信息
             activeRead() {
@@ -115,11 +138,11 @@
                 //调用退出登录页面
             }
         },
-      mounted() {
-        if(this.$route.path.indexOf('/home/project')!=-1) this.activeIndex='1';
-        if(this.$route.path.indexOf('/home/member')!=-1) this.activeIndex='2';
-        if(this.$route.path.indexOf('/home/system')!=-1) this.activeIndex='3';
-      }
+        mounted() {
+            if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
+            if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
+            if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
+        }
     }
 </script>
 
@@ -134,7 +157,7 @@
       box-sizing: content-box;
       width: 224px;
       line-height: 29px;
-      padding: 16px 16px 15px ;
+      padding: 16px 16px 15px;
       font-size: 18px;
       background: rgba(0, 33, 64, 0.77);
       color: rgb(239, 232, 232);

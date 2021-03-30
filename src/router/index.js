@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import login from '../views/member/login'
 import forgot from '../views/member/forgot'
 import perfectInfo from '../views/member/perfectInfo'
+import information from '../views/member/Information'
 import userLayout from '../components/layout/UserLayout'
 import home from '../views/home/home'
 
@@ -22,7 +23,7 @@ import intfIndex from '../views/interface/index'
 import intfAll from '../components/intf/index'
 import ExportIntf from '../components/intf/ExportIntf'
 import AddIntf from '../components/intf/AddIntf'
-
+import PreviewIntf from '../components/intf/Preview'
 
 
 import Accept from '../views/member/accept'
@@ -88,7 +89,13 @@ export default new Router({
               name: 'list',
               component: ProList,
               meta: {model: '项目列表'}
-            }
+            },
+            {
+              path: 'information',
+              name: 'information',
+              component: information,
+              meta: {model: '个人信息'},
+            },
           ]
         },
         {
@@ -134,7 +141,7 @@ export default new Router({
           name: 'intfIndex',
           component: intfIndex,
           meta: {model: '接口列表首页'},
-          children:[
+          children: [
             {
               path: '',
               redirect: 'intfAll'
@@ -156,7 +163,13 @@ export default new Router({
               name: 'ExportIntf',
               component: ExportIntf,
               meta: {model: '批量导入接口'},
-            }
+            },
+            {
+              path: 'PreviewIntf/:id',
+              name: 'PreviewIntf',
+              component: PreviewIntf,
+              meta: {model: '预览接口'},
+            },
           ]
         },
         {

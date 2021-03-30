@@ -1,0 +1,353 @@
+<template>
+  <div class="main">
+    <div class="lf">
+      <div class="bar">
+        <div :class="!selector[0]?'bar_item':'bar_item selected'" @click="changeBar(0)">
+          <i class="iconfont icon-tuanduichengyuan"></i>
+          基本信息
+        </div>
+        <div :class="!selector[1]?'bar_item':'bar_item selected'" @click="changeBar(1)">
+          <i class="iconfont icon-disable"></i>
+          安全信息
+        </div>
+      </div>
+    </div>
+    <div class="rh">
+      <el-form :model="baseMes" :rules="rules" ref="baseMes" label-position="top">
+        <div v-if="selector[0]" style="display: flex">
+          <div>
+            <h3>基本信息</h3>
+            <el-form-item label="昵称" prop="name">
+              <el-input v-model="baseMes.name" placeholder="用户名" size="small"></el-input>
+            </el-form-item>
+            <el-form-item label="组织" prop="organization">
+              <el-input v-model="baseMes.organization" placeholder="组织" size="small"></el-input>
+            </el-form-item>
+            <el-form-item label="职位" prop="job">
+              <el-input v-model="baseMes.job" placeholder="职位" size="small"></el-input>
+            </el-form-item>
+            <el-form-item label="简介" prop="introduction">
+              <el-input :rows="3" type="textarea" v-model="baseMes.introduction" placeholder="简介"
+                        size="small"></el-input>
+            </el-form-item>
+            <el-button type="primary" style="margin-top: 20px">更新基本信息</el-button>
+          </div>
+          <div class="form_head">
+            <div style="width: 100%;text-align: left;margin-bottom: 15px">头像</div>
+            <el-image :src="baseMes.head" style="width: 100px;margin-bottom: 10px"></el-image>
+            <el-upload
+              class="upload-demo"
+              action="https://jsonplaceholder.typicode.com/posts/"
+              list-type="picture">
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+          </div>
+        </div>
+        <div v-if="selector[1]">
+          <h3>安全信息</h3>
+          <div style="display: flex;justify-content: space-between;width: 750px">
+            <div>
+              <div>账户密码</div>
+              <div style="font-size: 13px;margin-top: 5px;color: #999999">当前密码强度：强</div>
+            </div>
+            <el-button type="text" @click="showAccount = true">修改</el-button>
+          </div>
+          <el-divider></el-divider>
+          <div style="display: flex;justify-content: space-between;width: 750px">
+            <div>
+              <div>手机账号</div>
+              <div style="font-size: 13px;margin-top: 5px;color: #999999">已绑定手机号:{{safeMes.phone}}</div>
+            </div>
+            <el-button type="text" @click="showPhone = true">修改</el-button>
+          </div>
+          <el-divider></el-divider>
+          <div style="display: flex;justify-content: space-between;width: 750px">
+            <div>
+              <div>邮箱账号</div>
+              <div style="font-size: 13px;margin-top: 5px;color: #999999">已绑定邮箱：{{safeMes.email}}</div>
+            </div>
+            <el-button type="text" @click="showEmail=true">修改</el-button>
+          </div>
+          <el-divider></el-divider>
+        </div>
+      </el-form>
+
+      <!--修改密码-->
+      <el-dialog title="" :visible.sync="showAccount" width="350px" class="memberCss">
+        <div slot="title" class="header-title">
+          <span><i class="el-icon-warning-outline"></i></span>
+          <span class="title-age">修改密码</span>
+        </div>
+        <div style="margin:0 0 10px 0">原密码</div>
+        <el-input type="password" placeholder="原始账号密码" v-model="password.oldPassword"></el-input>
+        <div style="margin: 10px 0">原密码</div>
+        <el-input type="password" placeholder="新密码" v-model="password.newPassword"></el-input>
+        <div style="margin: 10px 0">原密码</div>
+        <el-input type="password" placeholder="再次输入新密码" v-model="password.rePassword"></el-input>
+        <el-button type="primary" style="margin-top: 20px;width: 100%">修改</el-button>
+      </el-dialog>
+
+      <!--手机号-->
+      <el-dialog title="" :visible.sync="showPhone" width="350px" class="memberCss">
+        <div slot="title" class="header-title">
+          <span><i class="el-icon-warning-outline"></i></span>
+          <span class="title-age">修改手机号</span>
+        </div>
+        <el-input placeholder="请输入新手机号" v-model="phone"></el-input>
+        <div style="display: flex;margin-top: 15px">
+          <el-input placeholder="验证码" v-model="phoneCode"></el-input>
+          <el-button style="margin-left: 20px;width: 130px;"
+                     :disabled="state.smsSendBtn"
+                     @click.stop.prevent="getCaptcha"
+                     v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')">获取验证码
+          </el-button>
+        </div>
+        <el-button type="primary" style="margin-top: 20px;width: 100%">绑定</el-button>
+      </el-dialog>
+
+      <!--邮箱-->
+      <el-dialog title="" :visible.sync="showEmail" width="350px" class="memberCss">
+        <div slot="title" class="header-title">
+          <span><i class="el-icon-warning-outline"></i></span>
+          <span class="title-age">修改邮箱</span>
+        </div>
+        <el-input placeholder="请输入新手机号" v-model="email"></el-input>
+        <div style="display: flex;margin-top: 15px">
+          <el-input placeholder="验证码" v-model="emailCode"></el-input>
+          <el-button style="margin-left: 20px;width: 130px;"
+                     :disabled="states.smsSendBtn"
+                     @click.stop.prevent="getCaptchas"
+                     v-text="!states.smsSendBtn && '获取验证码' || (states.time+' s')">获取验证码
+          </el-button>
+        </div>
+        <el-button type="primary" style="margin-top: 20px;width: 100%">绑定</el-button>
+      </el-dialog>
+    </div>
+  </div>
+</template>
+
+<script>
+    import {notice} from '@/utils/elementUtils'
+
+    export default {
+        name: "Information",
+        data() {
+            return {
+                selector: [true, false],
+                //手机号
+                state: {
+                    time: 60,
+                    smsSendBtn: false
+                },
+                //邮箱
+                states: {
+                    time: 60,
+                    smsSendBtn: false
+                },
+                //修改手机号信息
+                phone: '',
+                phoneCode:'',
+                //修改邮箱信息
+                email:'',
+                emailCode:'',
+                //修改密码信息
+                password:{
+                  oldPassword:'',
+                  newPassword:'',
+                  rePassword:'',
+                },
+                showAccount: false,
+                showPhone: false,
+                showEmail: false,
+                safeMes: {phone: '15738258441', email: '321302995@qq.com',},
+
+                baseMes: {
+                    name: '张三',
+                    organization: '中原工学院',
+                    job: '学生',
+                    introduction: '站在巨人的肩膀上看比赛',
+                    head: '/static/img/head.b818068.png',
+                },
+                rules: {
+                    name: {required: true, message: "请输入用户昵称", trigger: 'blur'},
+                }
+            }
+        },
+        methods: {
+            changeBar(i) {
+                this.selector = [false, false, false];
+                this.selector[i] = true;
+            },
+            //获取邮箱验证码
+            handleSubmitCaptcha() {
+                this.forgotBtn = true;
+                //发送邮箱验证码
+                // SendEmailCode(this.from.email).then(res=>{
+                this.sended = true;
+                this.forgotBtn = false;
+            },
+            //邮箱验证码
+            getCaptchas(e){
+                e.preventDefault();
+                const app = this;
+                //校验手机号是否合法
+                if (!(/[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/.test(this.email))) {
+                    notice(this, '请输入正确的邮箱格式', 'error', 'Message', '发送失败')
+                    return;
+                }
+
+                //设置倒计时
+                this.states.smsSendBtn = true;
+                const interval = window.setInterval(() => {
+                    if (app.states.time-- <= 0) {
+                        app.states.time = 60;
+                        app.states.smsSendBtn = false;
+                        window.clearInterval(interval)
+                    }
+                }, 1000);
+                //调用接口发送验证码
+                // SendCode(app.formLogin.phone).then(res=>{
+                //   //校验结果
+                //   if (!checkResponse(this, res, true)) {
+                //     return false;
+                //   }
+                // })
+            },
+            //获取验证码手机
+            getCaptcha(e,x) {
+                e.preventDefault();
+                const app = this;
+                //校验手机号是否合法
+                if (!(/^1[34578]\d{9}$/.test(this.phone))) {
+                    notice(this, '请输入正确的手机号', 'error', 'Message', '发送失败')
+                    return;
+                }
+
+                //设置倒计时
+                this.state.smsSendBtn = true;
+                const interval = window.setInterval(() => {
+                    if (app.state.time-- <= 0) {
+                        app.state.time = 60;
+                        app.state.smsSendBtn = false;
+                        window.clearInterval(interval)
+                    }
+                }, 1000);
+                //调用接口发送验证码
+                // SendCode(app.formLogin.phone).then(res=>{
+                //   //校验结果
+                //   if (!checkResponse(this, res, true)) {
+                //     return false;
+                //   }
+                // })
+            }
+
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+
+  /deep/ .el-dialog__body {
+    padding-top: 20px;
+  }
+
+  /deep/ .el-divider {
+    margin: 18px 0;
+  }
+
+  .header-title {
+    text-align: left;
+  }
+
+  /deep/ .el-icon-warning-outline {
+    color: #FAC200;
+  }
+
+  /deep/ .el-dialog__header {
+    border-bottom: 1px solid #BBBBBB;
+  }
+
+  .main {
+    margin: 20px;
+    background: white;
+    height: 570px;
+    padding: 20px 0;
+    border-radius: 4px;
+    display: flex;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+
+    .lf {
+      width: 250px;
+      margin: 10px 0;
+      border-right: 1px solid rgb(195, 195, 195);
+      min-height: 350px;
+      overflow: hidden;
+      box-sizing: content-box;
+
+      .bar {
+        display: flex;
+        flex-direction: column;
+        width: 101%;
+
+        .bar_item {
+          cursor: pointer;
+
+          i {
+            font-size: 20px;
+            margin-right: 10px;
+          }
+
+          i.user {
+            font-size: 16px;
+          }
+
+          i.date {
+            font-size: 14px;
+          }
+
+          display: flex;
+          align-items: center;
+          padding: 10px 0 10px 40px;
+          font-size: 14px;
+        }
+
+        .bar_item.selected {
+          color: #ffffff;
+          background-color: rgb(24, 144, 255);
+        }
+      }
+    }
+
+    .rh {
+      text-align: left;
+      margin-left: 40px;
+
+      /deep/ .el-form {
+        padding-left: 30px;
+        display: flex;
+
+        .el-form-item {
+          margin-bottom: 15px;
+          width: 300px;
+        }
+
+        .el-form-item__label {
+          padding-bottom: 0;
+          line-height: 30px;
+        }
+      }
+
+      .form_head {
+        margin-left: 200px;
+        height: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+
+      }
+    }
+  }
+
+</style>

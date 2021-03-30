@@ -15,11 +15,11 @@
                   <div class="intf_left_in">
                     <el-input v-model="searchIntfName" placeholder="接口名称" size="small"
                               style="width: 155px;margin-left: 15px"></el-input>
-                    <el-dropdown trigger="click" placement="bottom"  @command="ShowView">
+                    <el-dropdown trigger="click" placement="bottom" @command="ShowView">
                       <el-button type="primary"
                                  style="margin-left: 10px;font-size: 20px;height: 30px;line-height: 0px">+
                       </el-button>
-                      <el-dropdown-menu slot="dropdown" class="drops" >
+                      <el-dropdown-menu slot="dropdown" class="drops">
                         <el-dropdown-item :command="{'index':'one'}">
                           <span class="iconfont icon-jiekou" style=" margin-right: 5px;"></span>添加接口
                         </el-dropdown-item>
@@ -83,6 +83,8 @@
                     </span>
                   </el-tree>
                 </el-tab-pane>
+
+                <!--历史记录-->
                 <el-tab-pane label="历史记录">
                   <div class="intf_left_in">
                     <el-input v-model="searchHistory" placeholder="接口名称" size="small"
@@ -92,6 +94,30 @@
                       搜索
                     </el-button>
                   </div>
+                  <el-tree
+                    id="history"
+                    :data="historyData"
+                    @node-click="nodeClick"
+                    :props="defaultProps"
+                    :filter-node-method="searchIntf"
+                    :highlight-current='true'
+                    accordion
+                    ref="tree"
+                    :expand-on-click-node="isShowMore">
+                    <span class="custom-tree-node" slot-scope="{ node, data }">
+                      <div v-if="data.isIntf">
+                         <span class='custom-tree-node'>
+                           <strong style='width:50px;text-align: left;font-size:12px;color:#66B1FF'>{{data.method.toUpperCase()}}</strong>
+                           <span class='folder_name'> {{node.label}} </span>
+                           <span class='el-icon-delete-solid' @click=deleteIntf(data)></span>
+                         </span>
+                      </div>
+                      <span v-else class='custom-tree-node'>
+                          <span class="el-icon-date"></span>
+                          <span class='folder_name' style="padding-left: 6px"> {{node.label}} </span>
+                      </span>
+                    </span>
+                  </el-tree>
                 </el-tab-pane>
               </el-tabs>
             </div>
@@ -224,13 +250,31 @@
                 activeName: 'interface',
                 projectName: "软件测试项目",
                 isShowMore: true,
+                //历史记录
+                historyData: [
+                    {
+                        id: 1,
+                        label: "2020年11月",
+                        children: [
+                            {id: 3, label: "用户名修改", isIntf: true, method: 'put'},
+                        ],
+                    },
+                    {
+                        id: 3,
+                        label: "2020年10月",
+                    },
+                    {
+                        id: 4,
+                        label: "2020年9月",
+                    },
+                ],
                 //添加分类名称
-                addModuleName:'',
+                addModuleName: '',
                 //文件类型
                 fileType: "html",
                 //选择的模块
                 moduleMes: {},
-                showDialog:[false,false,false,false],
+                showDialog: [false, false, false, false],
                 //搜索
                 searchIntfName: '',
                 //历史搜索
@@ -279,8 +323,8 @@
         },
         methods: {
             nodeClick(e) {
-                if(e.id != 0)
-                  document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
+                if (e.id != 0)
+                    document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
                 else
                     this.$router.push(`/home/intfIndex/1/`)
             },
@@ -300,15 +344,15 @@
             ShowView(command) {
                 console.log(command)
 
-                if(command.index == 'one'){
+                if (command.index == 'one') {
                     this.$router.push("./AddIntf")
                     return;
                 }
-                if(command.index == 'some'){
+                if (command.index == 'some') {
                     this.$router.push("./ExportIntf")
                     return;
                 }
-                if(command.data) this.moduleMes = command.data
+                if (command.data) this.moduleMes = command.data
                 this.showDialog[command.index] = true;
                 this.showDialog.push()
                 console.log(this.showDialog)
@@ -381,11 +425,32 @@
 
 <style lang="less" scoped>
 
-  /deep/.iconfont{
+  /deep/ #history {
+    .el-tree-node__children {
+      .el-tree-node__content {
+        padding-left: 40px !important;
+      }
+    }
+
+    .el-tree-node__content {
+      padding-left: 20px !important;
+    }
+
+    .el-tree-node__expand-icon {
+      padding: 0;
+    }
+
+    .el-tree-node__expand-icon:before, .el-icon-caret-right:before {
+      content: "" !important;
+      display: none;
+    }
+  }
+
+  /deep/ .iconfont {
     font-size: 14px;
   }
 
-    //dialog
+  //dialog
   /deep/ .el-dialog__body {
     display: none;
   }
@@ -502,9 +567,6 @@
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
 
 
-    .intf_rh {
-    }
-
     .intfBg_header {
       display: flex;
       padding: 10px 0;
@@ -543,7 +605,7 @@
     .el-tree /deep/ .folder_name {
       font-size: 13px;
       text-align: left;
-      width: 110px;
+      width: 120px;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -554,6 +616,7 @@
       color: #101010a6;
       margin-right: 20px;
     }
+
 
     .el-tree /deep/ .custom-tree-node {
       flex: 1;

@@ -48,8 +48,7 @@
         <el-table-column
           prop="name"
           :show-overflow-tooltip="true"
-          align="center"
-          width="182">
+          align="center">
           <template slot-scope="props">
             <div style="display: flex;align-items: center;justify-content: center" v-if="selector[0]">
               <el-tooltip class="item" effect="dark" content="禁用成员" placement="top">
@@ -199,7 +198,7 @@
         },
         methods: {
             changeBar(i) {
-                this.selector = [false, false, false];
+                this.selector = [false, false];
                 this.selector[i] = true;
             },
             //恢复成员
