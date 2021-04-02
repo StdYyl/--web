@@ -4,7 +4,7 @@
     <el-form :model="from" :rules="rules" ref="from">
       <!--用户名-->
       <el-form-item prop="name">
-        <el-input v-model="from.name" type="text" placeholder="用户名" >
+        <el-input v-model="from.name" type="text" placeholder="用户名">
         </el-input>
       </el-form-item>
       <!--密码-->
@@ -21,7 +21,7 @@
             </div>
           </template>
           <el-input slot="reference" type="password" v-model="from.password"
-                    autocomplete="false" placeholder="密码须至少6位，且区分大小写" >
+                    autocomplete="false" placeholder="密码须至少6位，且区分大小写">
           </el-input>
         </el-popover>
       </el-form-item>
@@ -42,7 +42,7 @@
       </el-form-item>
       <!--邮箱-->
       <el-form-item prop="email">
-        <el-input v-model="from.email" type="text" placeholder="邮箱" >
+        <el-input v-model="from.email" type="text" placeholder="邮箱">
         </el-input>
       </el-form-item>
       <!--验证码-->
@@ -71,6 +71,8 @@
     import md5 from 'js-md5'
     import {notice} from '../../utils/elementUtils'
     import {checkResponse} from '../../utils/utils'
+    import {SendEmailCode, completeMsg} from '../../api/user'
+
 
     const levelNames = {
         0: '低',
@@ -94,7 +96,7 @@
         name: "perfectInfo",
         data() {
             return {
-                registerBtn:false,
+                registerBtn: false,
                 state: {
                     passwordLevel: 0,
                     percent: 10,
@@ -102,6 +104,7 @@
                     smsSendBtn: false
                 },
                 from: {
+                    phone: '',
                     name: '',
                     password: '',
                     password2: '',
@@ -110,8 +113,8 @@
                     email: '',
                     captcha: ''
                 },
-                rules:{
-                    name:{required:true, message:"请输入用户名", trigger:'blur'},
+                rules: {
+                    name: {required: true, message: "请输入用户名", trigger: 'blur'},
                     password: [
                         {required: true, message: '至少6位密码，区分大小写', trigger: 'change', min: 6},
                         {validator: this.handlePasswordLevel, trigger: 'change'}
@@ -143,7 +146,7 @@
                 return levelColor[this.state.passwordLevel]
             },
         },
-        methods:{
+        methods: {
             //校验首次输入密码
             handlePasswordLevel(rule, value, callback) {
                 let level = 0;
@@ -190,7 +193,7 @@
             getCaptcha(e) {
                 e.preventDefault();
                 const app = this;
-                //校验手机号是否合法
+                //校验邮箱是否合法
                 app.$refs['from'].validateField(('email'), (err) => {
                     if (err) {
                         notice(this, '请输入正确的邮箱', 'error', 'Message', '发送失败')
@@ -206,27 +209,37 @@
                         }
                     }, 1000);
                     //调用接口发送验证码
-                    // SendCode(app.formLogin.phone).then(res=>{
-                    //   //校验结果
-                    //   if (!checkResponse(this, res, true)) {
-                    //     return false;
-                    //   }
-                    // })
+                    SendEmailCode(app.from.email,app.from.phone).then(res=>{
+                      //校验结果
+                      if (!checkResponse(this, res.data, true)) {
+                        return false;
+                      }
+                    })
                 })
             },
             //提交注册
             handleSubmit() {
                 const app = this
-                this.$refs['from'].validate(err=>{
-                    if(!err) return;
+                this.$refs['from'].validate(err => {
+                    if (!err) return;
                     let params = JSON.parse(JSON.stringify(app.from))
                     //加密
                     params.password = md5(params.password);
-                    //修改密码
+                    completeMsg(params).then(res=>{
+                        //校验结果
+                        if (!checkResponse(this, res.data, true)) {
+                            return false;
+                        }
+                        localStorage.setItem("id",res.data.data.id);
+                        app.$router.push("/home")
+                    })
 
                 })
             },
 
+        },
+        mounted() {
+            this.from.phone = this.$route.query.phone
         }
     }
 </script>

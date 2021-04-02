@@ -73,7 +73,7 @@
 
 <script>
     import md5 from 'js-md5'
-    import {forget, SendEmailCode} from '../../api/user'
+    import {forget, SendEmailCode,emailIsRegister} from '../../api/user'
     import {checkResponse} from "../../utils/utils";
     import {notice} from "../../utils/elementUtils";
 
@@ -147,17 +147,26 @@
         methods: {
             //获取邮箱验证码
             handleSubmitCaptcha() {
+                let app = this
                 this.$refs['formForgot'].validateField(('email'), err => {
                     if (err) return;
-                    this.forgotBtn = true;
-                    //发送邮箱验证码
-                    // SendEmailCode(this.from.email).then(res=>{
-                    this.sended = true;
-                    this.forgotBtn = false;
-                    //     if (!checkResponse(res)) {
-                    //         return false;
-                    //     }
-                    // })
+                    emailIsRegister(this.from.email).then(res => {
+                        console.log(res)
+                        if(res.data.code == -9999){
+                            notice(app, res.data.msg, "error")
+                            return;
+                        }
+                        //发送邮箱验证码
+                        SendEmailCode(this.from.email).then(res=>{
+                            console.log(res.data)
+                            if (res.data.code != 200) {
+                                return false;
+                            }
+                            notice(app, res.data.msg)
+                            this.sended = true;
+                        })
+                    })
+
                 })
             },
             //提交修改
@@ -169,6 +178,7 @@
                     //加密
                     params.password = md5(params.password);
                     //修改密码
+
 
                 })
             },

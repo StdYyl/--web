@@ -63,11 +63,10 @@
 </template>
 
 <script>
-    import {mapActions} from 'vuex'
     import md5 from 'js-md5';
     import {notice} from '../../utils/elementUtils'
     import {checkResponse} from '../../utils/utils'
-    // import {SendCode, registerOrLand, land} from '../../api/User'
+    import {SendCode, registerOrLand, land} from '../../api/user'
 
     export default {
         components: {},
@@ -106,51 +105,60 @@
             },
             //登陆、注册
             handleSubmit() {
-                this.$router.push('/home');
-                // const app = this;
-                //
-                // let loginParams = {
-                //     remember_me: app.formLogin.rememberMe
-                // };
-                //
-                // // 使用账户密码登录
-                // if (app.loginType === 1) {
-                //     //校验入参
-                //     app.$refs['formLogin'].validateField(('account'), (err) => {
-                //         if (err) return;
-                //         app.$refs['formLogin'].validateField(('password'), (err) => {
-                //             if (err) return;
-                //             loginParams.account = this.formLogin.account
-                //             loginParams.password = md5(this.formLogin.password)
-                //             //登录
-                //             console.log(loginParams);
-                //             // land(loginParams).then(res=>{
-                //             //   if (!checkResponse(this, res, true)) {
-                //             //     return false;
-                //             //   }
-                //             // })
-                //         })
-                //     })
-                // }
-                // //手机号+验证码登录
-                // else {
-                //     //校验入参
-                //     app.$refs['formLogin'].validateField(('phone'), (err) => {
-                //         if (err) return;
-                //         app.$refs['formLogin'].validateField(('captcha'), (err) => {
-                //             if (err) return;
-                //             loginParams.phone = this.formLogin.phone
-                //             loginParams.captcha = this.formLogin.captcha
-                //             //登录
-                //             console.log(loginParams);
-                //             registerOrLand(loginParams).then(res => {
-                //                 if (!checkResponse(this, res, true)) {
-                //                     return false;
-                //                 }
-                //             })
-                //         })
-                //     })
-                // }
+                const app = this;
+                let loginParams = {
+                    remember_me: app.formLogin.rememberMe
+                };
+
+                // 使用账户密码登录
+                if (app.loginType === 1) {
+                    //校验入参
+                    app.$refs['formLogin'].validateField(('account'), (err) => {
+                        if (err) return;
+                        app.$refs['formLogin'].validateField(('password'), (err) => {
+                            if (err) return;
+                            loginParams.account = this.formLogin.account
+                            loginParams.password = md5(this.formLogin.password)
+                            //登录
+                            console.log(loginParams);
+                            land(loginParams).then(res=>{
+                              if (!checkResponse(this, res.data, true)) {
+                                return false;
+                              }
+                                localStorage.setItem("token", res.data.data.token);
+                                localStorage.setItem("id",res.data.data.id);
+                                this.$router.push('/home');
+                            })
+                        })
+                    })
+                }
+                //手机号+验证码登录
+                else {
+                    //校验入参
+                    app.$refs['formLogin'].validateField(('phone'), (err) => {
+                        if (err) return;
+                        app.$refs['formLogin'].validateField(('captcha'), (err) => {
+                            if (err) return;
+                            loginParams.phone = this.formLogin.phone
+                            loginParams.captcha = this.formLogin.captcha
+                            //登录
+                            console.log(loginParams);
+                            registerOrLand(JSON.stringify(loginParams)).then(res => {
+                                console.log(res)
+                                if (!checkResponse(this, res.data, true)) {
+                                    return false;
+                                }
+                                if(res.data.data.isFirst == '1'){
+                                    this.$router.push({path:'/user/perfectInfo',query:{phone:this.formLogin.phone}});
+                                    return;
+                                }
+                                localStorage.setItem("token", res.data.data.token);
+                                localStorage.setItem("id",res.data.data.id);
+                                this.$router.push('/home');
+                            })
+                        })
+                    })
+                }
             },
             //获取验证码
             getCaptcha(e) {
@@ -172,12 +180,13 @@
                             }
                         }, 1000);
                         //调用接口发送验证码
-                        // SendCode(app.formLogin.phone).then(res=>{
-                        //   //校验结果
-                        //   if (!checkResponse(this, res, true)) {
-                        //     return false;
-                        //   }
-                        // })
+                        SendCode(app.formLogin.phone).then(res=>{
+                          //校验结果
+                          if (!checkResponse(this, res.data, true)) {
+                            return false;
+                          }
+                            notice(this, '验证码已发送！')
+                        })
                     }
                 })
             },

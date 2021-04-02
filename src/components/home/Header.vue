@@ -50,10 +50,10 @@
       </div>
 
       <div class="user">
-        <img src="../../assets/image/common/head.png" style="width: 24px;margin-right: 8px">
+        <img :src="head" style="width: 24px;margin-right: 8px">
         <el-dropdown trigger="click" @command="ShowView">
           <span class="el-dropdown-link">
-            张三<i class="el-icon-arrow-down el-icon--right"></i>
+            {{name}}<i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="user">个人中心</el-dropdown-item>
@@ -66,10 +66,15 @@
 </template>
 
 <script>
+
+    import {exitLogin, getUserMesByID} from '../../api/user'
+
     export default {
         name: "aside",
         data() {
             return {
+                name: '',
+                head:'',
                 //仅展示最多三条数据
                 tableData: [
                     {id: 1, content: "张三邀请您加入项目接口管理平台项目", isCheck: false},
@@ -84,30 +89,29 @@
         methods: {
             //个人中心（退出登陆）
             ShowView(e) {
+                const app = this
                 //个人中心
                 if (e == 'user') {
                     this.$router.push('/home/project/information')
                 }
                 //退出登陆
                 if (e == 'exit') {
+                    localStorage.clear();
+                    app.$router.push("/")
 
                 }
             },
             //切换菜单
             handleSelect(e) {
                 let path = this.$route.path
-
-
-                if (e == 1){
-                    if(path.indexOf('/home/project/list') != -1) return;
+                if (e == 1) {
+                    // if (path.indexOf('/home/project/list') != -1) return;
                     this.$router.push('/home/project');
-                }
-                else if (e == 2){
-                    if(path.indexOf('/home/member') != -1) return;
+                } else if (e == 2) {
+                    // if (path.indexOf('/home/member') != -1) return;
                     this.$router.push('/home/member');
-                }
-                else{
-                    if(path.indexOf('/home/project/information') != -1) return;
+                } else {
+                    // if (path.indexOf('/home/project/information') != -1) return;
                     this.$router.push('/home/project/information')
                 }
                 // else this.$router.push('/home/system');
@@ -138,10 +142,20 @@
                 //调用退出登录页面
             }
         },
-        mounted() {
-            if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
-            if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
-            if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
+        async mounted() {
+            let rs = await getUserMesByID(localStorage.getItem("id"))
+            this.name = rs.data.data.name
+            this.head = rs.data.data.head
+            // if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
+            // if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
+            // if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
+        },
+        watch: {
+            $route() {
+                if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
+                if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
+                if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
+            }
         }
     }
 </script>
