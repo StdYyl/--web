@@ -38,7 +38,7 @@
             <el-upload
               action="#"
               :before-upload="beforeAvatarUpload"
-              >
+            >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
           </div>
@@ -80,11 +80,11 @@
         </div>
         <div style="margin:0 0 10px 0">原密码</div>
         <el-input type="password" placeholder="原始账号密码" v-model="password.oldPassword"></el-input>
-        <div style="margin: 10px 0">原密码</div>
+        <div style="margin: 10px 0">新密码</div>
         <el-input type="password" placeholder="新密码" v-model="password.newPassword"></el-input>
-        <div style="margin: 10px 0">原密码</div>
+        <div style="margin: 10px 0">新密码</div>
         <el-input type="password" placeholder="再次输入新密码" v-model="password.rePassword"></el-input>
-        <el-button type="primary" style="margin-top: 20px;width: 100%">修改</el-button>
+        <el-button type="primary" style="margin-top: 20px;width: 100%" @click="updatePass">修改</el-button>
       </el-dialog>
 
       <!--手机号-->
@@ -102,7 +102,7 @@
                      v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')">获取验证码
           </el-button>
         </div>
-        <el-button type="primary" style="margin-top: 20px;width: 100%">绑定</el-button>
+        <el-button type="primary" style="margin-top: 20px;width: 100%" @click="updatePhone">绑定</el-button>
       </el-dialog>
 
       <!--邮箱-->
@@ -111,7 +111,7 @@
           <span><i class="el-icon-warning-outline"></i></span>
           <span class="title-age">修改邮箱</span>
         </div>
-        <el-input placeholder="请输入新手机号" v-model="email"></el-input>
+        <el-input placeholder="请输入新邮箱" v-model="email"></el-input>
         <div style="display: flex;margin-top: 15px">
           <el-input placeholder="验证码" v-model="emailCode"></el-input>
           <el-button style="margin-left: 20px;width: 130px;"
@@ -120,7 +120,7 @@
                      v-text="!states.smsSendBtn && '获取验证码' || (states.time+' s')">获取验证码
           </el-button>
         </div>
-        <el-button type="primary" style="margin-top: 20px;width: 100%">绑定</el-button>
+        <el-button type="primary" style="margin-top: 20px;width: 100%" @click="updateEmail">绑定</el-button>
       </el-dialog>
     </div>
   </div>
@@ -128,8 +128,11 @@
 
 <script>
     import {notice} from '@/utils/elementUtils'
-    import {getUserMesByID,modifyUserMes} from '@/api/user'
+    import {getUserMesByID, modifyUserMes, modifyPass, modifyPhone, modifyEmail} from '@/api/user'
     import {sendImage} from '@/api/staticMes'
+    import md5 from 'js-md5'
+    import {emailIsRegister, phoneIsRegister, SendCode, SendEmailCode} from "../../api/user";
+    import {checkResponse} from "../../utils/utils";
 
     export default {
         name: "Information",
@@ -161,7 +164,7 @@
                 showAccount: false,
                 showPhone: false,
                 showEmail: false,
-                safeMes: {phone: '15738258441', email: '321302995@qq.com',},
+                safeMes: {phone: '', email: '',},
 
                 baseMes: {
                     id: '',
@@ -177,14 +180,84 @@
             }
         },
         methods: {
+            async updateEmail(){
+                if (!(/[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/.test(this.email))) {
+                    notice(this, '请输入正确的邮箱格式', 'error', 'Message', '发送失败')
+                    return;
+                }
+                if (this.emailCode == '') {
+                    notice(this, '请输入验证码', 'error')
+                    return;
+                }
+                let param = {
+                    id: localStorage.getItem("id"),
+                    email: this.email,
+                    captcha: this.emailCode
+                }
+                let rs = await modifyEmail(param);
+                if (rs.data.code != 200) {
+                    notice(this, rs.data.msg, "error");
+                    return;
+                }
+                notice(this, "修改成功！");
+                this.safeMes.email = this.email
+                this.showEmail = false
+            },
+            async updatePhone() {
+                if (!(/^1[34578]\d{9}$/.test(this.phone))) {
+                    notice(this, '请输入正确的手机号', 'error', 'Message', '发送失败')
+                    return;
+                }
+                if (this.phoneCode == '') {
+                    notice(this, '请输入验证码', 'error')
+                    return;
+                }
+                let param = {
+                    id: localStorage.getItem("id"),
+                    phone: this.phone,
+                    captcha: this.phoneCode
+                }
+                let rs = await modifyPhone(param);
+                if (rs.data.code != 200) {
+                    notice(this, rs.data.msg, "error");
+                    return;
+                }
+                notice(this, "修改成功！");
+                this.safeMes.phone = this.phone
+                this.showPhone = false
+
+            },
+            async updatePass() {
+                if (this.password.newPassword == '' || this.password.oldPassword == '') {
+                    notice(this, "请补全信息！", "error")
+                    return;
+                }
+                if (this.password.newPassword != this.password.rePassword) {
+                    notice(this, "两次密码不一致！", "error")
+                    return;
+                }
+                let form = {
+                    id: localStorage.getItem("id"),
+                    oldPassword: md5(this.password.oldPassword),
+                    newPassword: md5(this.password.newPassword)
+                }
+                let rs = await modifyPass(form)
+                if (rs.data.code != 200) {
+                    notice(this, rs.data.msg, "error");
+                    return;
+                }
+                notice(this, "修改成功！");
+                localStorage.setItem("token", rs.data.data.token)
+                this.showAccount = false
+            },
             //更新基本信息
-            updateBaseMes(){
+            updateBaseMes() {
                 let app = this
-                this.$refs['baseMes'].validate(async err=> {
+                this.$refs['baseMes'].validate(async err => {
                     if (!err) return;
                     let rs = await modifyUserMes(this.baseMes)
-                    if(rs.data.code == 200){
-                        notice(this,"修改成功！")
+                    if (rs.data.code == 200) {
+                        notice(this, "修改成功！")
                         this.$store.commit("setName", app.baseMes.name)
                         this.$store.commit("setHead", app.baseMes.head)
                     }
@@ -192,7 +265,7 @@
                 })
             },
             //上传图片
-            async beforeAvatarUpload(file){
+            async beforeAvatarUpload(file) {
                 const isPhoto =
                     file.type === "image/jpeg" ||
                     file.type === "image/jpg" ||
@@ -206,12 +279,12 @@
                 } else if (!isLt5M) {
                     this.$message.error("上传文件大小不能超过 5MB!");
                     return false;
-                }else{
+                } else {
                     // this.baseMes.head =URL.createObjectURL(file)
                     let param = new FormData(); //创建form对象
-                    param.append("file",file);
+                    param.append("file", file);
                     let rs = await sendImage(param);
-                    if(rs.data.data.code == 200)
+                    if (rs.data.data.code == 200)
                         this.baseMes.head = rs.data.data.path
                 }
                 return false;
@@ -220,21 +293,19 @@
                 this.selector = [false, false, false];
                 this.selector[i] = true;
             },
-            //获取邮箱验证码
-            handleSubmitCaptcha() {
-                this.forgotBtn = true;
-                //发送邮箱验证码
-                // SendEmailCode(this.from.email).then(res=>{
-                this.sended = true;
-                this.forgotBtn = false;
-            },
             //邮箱验证码
-            getCaptchas(e) {
+            async getCaptchas(e) {
                 e.preventDefault();
                 const app = this;
                 //校验手机号是否合法
                 if (!(/[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/.test(this.email))) {
                     notice(this, '请输入正确的邮箱格式', 'error', 'Message', '发送失败')
+                    return;
+                }
+
+                let rs = await emailIsRegister(this.email)
+                if (rs.data.code != -9999) {
+                    notice(app, "该邮箱已注册，请更换邮箱！", "error")
                     return;
                 }
 
@@ -247,21 +318,27 @@
                         window.clearInterval(interval)
                     }
                 }, 1000);
-                //调用接口发送验证码
-                // SendCode(app.formLogin.phone).then(res=>{
-                //   //校验结果
-                //   if (!checkResponse(this, res, true)) {
-                //     return false;
-                //   }
-                // })
+                //发送邮箱验证码
+                SendEmailCode(this.email).then(res => {
+                    console.log(res.data)
+                    if (res.data.code != 200) {
+                        return false;
+                    }
+                    notice(app, res.data.msg)
+                })
             },
             //获取验证码手机
-            getCaptcha(e, x) {
+            async getCaptcha(e, x) {
                 e.preventDefault();
                 const app = this;
                 //校验手机号是否合法
                 if (!(/^1[34578]\d{9}$/.test(this.phone))) {
                     notice(this, '请输入正确的手机号', 'error', 'Message', '发送失败')
+                    return;
+                }
+                let rs = await phoneIsRegister(this.phone);
+                if (rs.data.code != 200) {
+                    notice(this, rs.data.msg, 'error');
                     return;
                 }
 
@@ -275,12 +352,13 @@
                     }
                 }, 1000);
                 //调用接口发送验证码
-                // SendCode(app.formLogin.phone).then(res=>{
-                //   //校验结果
-                //   if (!checkResponse(this, res, true)) {
-                //     return false;
-                //   }
-                // })
+                SendCode(app.phone).then(res => {
+                    //校验结果
+                    if (!checkResponse(this, res.data, true)) {
+                        return false;
+                    }
+                    notice(this, '验证码已发送！')
+                })
             }
 
         },
@@ -288,7 +366,9 @@
             let id = localStorage.getItem("id")
             let rs = await getUserMesByID(id);
             this.baseMes.id = id;
-            let {name, head, organization, job, introduction} = rs.data.data
+            let {name, head, organization, job, introduction, phone, email} = rs.data.data
+            this.safeMes.phone = phone
+            this.safeMes.email = email
             this.baseMes.name = name;
             this.baseMes.head = head;
             this.baseMes.organization = organization;
@@ -301,7 +381,7 @@
 
 <style lang="less" scoped>
 
-  /deep/.el-upload-list{
+  /deep/ .el-upload-list {
     display: none;
   }
 

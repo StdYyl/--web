@@ -31,11 +31,27 @@ export function exitLogin(){
 export function getUserMesByID(data) {
   return requested(`api/imp/user/getUserMesById?id=${data}`)
 }
-//邮箱是否注册 emailIsRegister
+//邮箱是否注册
 export function emailIsRegister(data) {
   return requested(`api/imp/user/emailIsRegister?email=${data}`)
 }
 //更新用户基本信息
 export function modifyUserMes(data) {
   return requested(`api/imp/user/modifyUserMes`,"POST",data)
+}
+//修改手机号
+export function modifyPass(data) {
+  return requested(`api/imp/user/modifyPass`,"POST",data)
+}
+//修改密码
+export function modifyPhone(data) {
+  return requested(`api/imp/user/modifyPhone`,"POST",data)
+}
+//修改邮箱
+export function modifyEmail(data) {
+  return requested(`api/imp/user/modifyEmail`,"POST",data)
+}
+//手机号是否注册
+export function phoneIsRegister(data) {
+  return requested(`api/imp/user/phoneIsRegister?phone=${data}`)
 }
