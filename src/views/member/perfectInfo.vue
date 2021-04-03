@@ -71,7 +71,7 @@
     import md5 from 'js-md5'
     import {notice} from '../../utils/elementUtils'
     import {checkResponse} from '../../utils/utils'
-    import {SendEmailCode, completeMsg} from '../../api/user'
+    import {SendEmailCode, completeMsg, emailIsRegister} from '../../api/user'
 
 
     const levelNames = {
@@ -199,6 +199,13 @@
                         notice(this, '请输入正确的邮箱', 'error', 'Message', '发送失败')
                         return;
                     }
+                    //校验邮箱是否已经注册
+                    emailIsRegister(app.from.email).then(rs =>{
+                        if(rs.data.code == -9999){
+                            notice(app, rs.data.msg, "error")
+                            return;
+                        }
+                    })
                     //设置倒计时
                     this.state.smsSendBtn = true;
                     const interval = window.setInterval(() => {
@@ -209,7 +216,7 @@
                         }
                     }, 1000);
                     //调用接口发送验证码
-                    SendEmailCode(app.from.email,app.from.phone).then(res=>{
+                    SendEmailCode(app.from.email).then(res=>{
                       //校验结果
                       if (!checkResponse(this, res.data, true)) {
                         return false;

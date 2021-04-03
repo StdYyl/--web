@@ -68,13 +68,21 @@
 <script>
 
     import {exitLogin, getUserMesByID} from '../../api/user'
+    import {mapState} from "vuex"
+
 
     export default {
         name: "aside",
+        computed: {
+            ...mapState({
+                name: (state) => state.name,
+                head: (state) => state.head
+            }),
+        },
         data() {
             return {
-                name: '',
-                head:'',
+                // name:'',
+                // head:'',
                 //仅展示最多三条数据
                 tableData: [
                     {id: 1, content: "张三邀请您加入项目接口管理平台项目", isCheck: false},
@@ -144,8 +152,8 @@
         },
         async mounted() {
             let rs = await getUserMesByID(localStorage.getItem("id"))
-            this.name = rs.data.data.name
-            this.head = rs.data.data.head
+            this.$store.commit('setName',rs.data.data.name)
+            this.$store.commit('setHead',rs.data.data.head)
             // if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
             // if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
             // if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';

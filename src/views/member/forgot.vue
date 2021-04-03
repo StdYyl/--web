@@ -156,6 +156,7 @@
                             notice(app, res.data.msg, "error")
                             return;
                         }
+                        this.sended = true;
                         //发送邮箱验证码
                         SendEmailCode(this.from.email).then(res=>{
                             console.log(res.data)
@@ -163,7 +164,6 @@
                                 return false;
                             }
                             notice(app, res.data.msg)
-                            this.sended = true;
                         })
                     })
 
@@ -178,7 +178,13 @@
                     //加密
                     params.password = md5(params.password);
                     //修改密码
-
+                    forget(params).then(res => {
+                        if (!checkResponse(this, res.data, true)) {
+                            return false;
+                        }
+                        notice(app, res.data.msg)
+                        this.$router.push("/")
+                    })
 
                 })
             },

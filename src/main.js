@@ -6,6 +6,7 @@ import router from './router'
 import ElementUI from 'element-ui'
 import AFTableColumn from 'af-table-column'
 import 'element-ui/lib/theme-chalk/index.css'
+import store from './store/index'
 
 //css样式初始化
 import 'normalize.css/normalize.css'
@@ -22,6 +23,7 @@ Vue.use(AFTableColumn)
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

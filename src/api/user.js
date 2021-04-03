@@ -12,12 +12,12 @@ export function SendCode(phone) {
   return requested(`api/imp/user/sendCode?phone=${phone}`);
 }
 //获取邮箱验证码
-export function SendEmailCode(email,phone) {
-  return requested(`api/imp/user/sendEmailCode?email=${email}&phone=${phone}`);
+export function SendEmailCode(email) {
+  return requested(`api/imp/user/sendEmailCode?email=${email}`);
 }
 //忘记密码
 export function forget(data) {
-  return requested('api/imp/user/forget','POST',data);
+  return requested('api/imp/user/forgetPass','POST',data);
 }
 //信息补全
 export function completeMsg(data) {
@@ -34,4 +34,8 @@ export function getUserMesByID(data) {
 //邮箱是否注册 emailIsRegister
 export function emailIsRegister(data) {
   return requested(`api/imp/user/emailIsRegister?email=${data}`)
+}
+//更新用户基本信息
+export function modifyUserMes(data) {
+  return requested(`api/imp/user/modifyUserMes`,"POST",data)
 }

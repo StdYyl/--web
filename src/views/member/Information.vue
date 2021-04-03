@@ -30,15 +30,15 @@
               <el-input :rows="3" type="textarea" v-model="baseMes.introduction" placeholder="简介"
                         size="small"></el-input>
             </el-form-item>
-            <el-button type="primary" style="margin-top: 20px">更新基本信息</el-button>
+            <el-button type="primary" style="margin-top: 20px" @click="updateBaseMes">更新基本信息</el-button>
           </div>
           <div class="form_head">
             <div style="width: 100%;text-align: left;margin-bottom: 15px">头像</div>
             <el-image :src="baseMes.head" style="width: 100px;margin-bottom: 10px"></el-image>
             <el-upload
-              class="upload-demo"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              list-type="picture">
+              action="#"
+              :before-upload="beforeAvatarUpload"
+              >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
           </div>
@@ -128,6 +128,8 @@
 
 <script>
     import {notice} from '@/utils/elementUtils'
+    import {getUserMesByID,modifyUserMes} from '@/api/user'
+    import {sendImage} from '@/api/staticMes'
 
     export default {
         name: "Information",
@@ -146,15 +148,15 @@
                 },
                 //修改手机号信息
                 phone: '',
-                phoneCode:'',
+                phoneCode: '',
                 //修改邮箱信息
-                email:'',
-                emailCode:'',
+                email: '',
+                emailCode: '',
                 //修改密码信息
-                password:{
-                  oldPassword:'',
-                  newPassword:'',
-                  rePassword:'',
+                password: {
+                    oldPassword: '',
+                    newPassword: '',
+                    rePassword: '',
                 },
                 showAccount: false,
                 showPhone: false,
@@ -162,11 +164,12 @@
                 safeMes: {phone: '15738258441', email: '321302995@qq.com',},
 
                 baseMes: {
-                    name: '张三',
-                    organization: '中原工学院',
-                    job: '学生',
+                    id: '',
+                    name: '',
+                    organization: '',
+                    job: '',
                     introduction: '站在巨人的肩膀上看比赛',
-                    head: '/static/img/head.b818068.png',
+                    head: '',
                 },
                 rules: {
                     name: {required: true, message: "请输入用户昵称", trigger: 'blur'},
@@ -174,6 +177,45 @@
             }
         },
         methods: {
+            //更新基本信息
+            updateBaseMes(){
+                let app = this
+                this.$refs['baseMes'].validate(async err=> {
+                    if (!err) return;
+                    let rs = await modifyUserMes(this.baseMes)
+                    if(rs.data.code == 200){
+                        notice(this,"修改成功！")
+                        this.$store.commit("setName", app.baseMes.name)
+                        this.$store.commit("setHead", app.baseMes.head)
+                    }
+
+                })
+            },
+            //上传图片
+            async beforeAvatarUpload(file){
+                const isPhoto =
+                    file.type === "image/jpeg" ||
+                    file.type === "image/jpg" ||
+                    file.type === "image/png" ||
+                    file.type === "image/gif";
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (isPhoto) this.fileType = "image";
+                if (!isPhoto) {
+                    this.$message.error("上传文件的后缀 只能是 jpg/jpeg/png/gif");
+                    return false;
+                } else if (!isLt5M) {
+                    this.$message.error("上传文件大小不能超过 5MB!");
+                    return false;
+                }else{
+                    // this.baseMes.head =URL.createObjectURL(file)
+                    let param = new FormData(); //创建form对象
+                    param.append("file",file);
+                    let rs = await sendImage(param);
+                    if(rs.data.data.code == 200)
+                        this.baseMes.head = rs.data.data.path
+                }
+                return false;
+            },
             changeBar(i) {
                 this.selector = [false, false, false];
                 this.selector[i] = true;
@@ -187,7 +229,7 @@
                 this.forgotBtn = false;
             },
             //邮箱验证码
-            getCaptchas(e){
+            getCaptchas(e) {
                 e.preventDefault();
                 const app = this;
                 //校验手机号是否合法
@@ -214,7 +256,7 @@
                 // })
             },
             //获取验证码手机
-            getCaptcha(e,x) {
+            getCaptcha(e, x) {
                 e.preventDefault();
                 const app = this;
                 //校验手机号是否合法
@@ -241,11 +283,27 @@
                 // })
             }
 
+        },
+        async created() {
+            let id = localStorage.getItem("id")
+            let rs = await getUserMesByID(id);
+            this.baseMes.id = id;
+            let {name, head, organization, job, introduction} = rs.data.data
+            this.baseMes.name = name;
+            this.baseMes.head = head;
+            this.baseMes.organization = organization;
+            this.baseMes.job = job;
+            this.baseMes.introduction = introduction;
+
         }
     }
 </script>
 
 <style lang="less" scoped>
+
+  /deep/.el-upload-list{
+    display: none;
+  }
 
   /deep/ .el-dialog__body {
     padding-top: 20px;

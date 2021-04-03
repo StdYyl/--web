@@ -121,12 +121,12 @@
                             loginParams.password = md5(this.formLogin.password)
                             //登录
                             console.log(loginParams);
-                            land(loginParams).then(res=>{
-                              if (!checkResponse(this, res.data, true)) {
-                                return false;
-                              }
+                            land(loginParams).then(res => {
+                                if (!checkResponse(this, res.data, true)) {
+                                    return false;
+                                }
                                 localStorage.setItem("token", res.data.data.token);
-                                localStorage.setItem("id",res.data.data.id);
+                                localStorage.setItem("id", res.data.data.id);
                                 this.$router.push('/home');
                             })
                         })
@@ -148,12 +148,15 @@
                                 if (!checkResponse(this, res.data, true)) {
                                     return false;
                                 }
-                                if(res.data.data.isFirst == '1'){
-                                    this.$router.push({path:'/user/perfectInfo',query:{phone:this.formLogin.phone}});
+                                if (res.data.data.isFirst == '1') {
+                                    this.$router.push({
+                                        path: '/user/perfectInfo',
+                                        query: {phone: this.formLogin.phone}
+                                    });
                                     return;
                                 }
                                 localStorage.setItem("token", res.data.data.token);
-                                localStorage.setItem("id",res.data.data.id);
+                                localStorage.setItem("id", res.data.data.id);
                                 this.$router.push('/home');
                             })
                         })
@@ -166,10 +169,10 @@
                 const app = this;
                 //校验手机号是否合法
                 app.$refs['formLogin'].validateField(('phone'), (err) => {
-                    if (err){
+                    if (err) {
                         notice(this, '请输入正确的手机号', 'error', 'Message', '发送失败')
                         return;
-                    }else{
+                    } else {
                         //设置倒计时
                         this.state.smsSendBtn = true;
                         const interval = window.setInterval(() => {
@@ -180,11 +183,11 @@
                             }
                         }, 1000);
                         //调用接口发送验证码
-                        SendCode(app.formLogin.phone).then(res=>{
-                          //校验结果
-                          if (!checkResponse(this, res.data, true)) {
-                            return false;
-                          }
+                        SendCode(app.formLogin.phone).then(res => {
+                            //校验结果
+                            if (!checkResponse(this, res.data, true)) {
+                                return false;
+                            }
                             notice(this, '验证码已发送！')
                         })
                     }
