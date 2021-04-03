@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import ElementUI from 'element-ui'
 import AFTableColumn from 'af-table-column'
+import echarts from 'echarts'
 import 'element-ui/lib/theme-chalk/index.css'
 import store from './store/index'
 
@@ -14,7 +15,11 @@ import 'normalize.css/normalize.css'
 //导入icon样式
 import './styles/icon/iconfont.css'
 
+//导入animate动画库
+import 'animate.css'
+
 Vue.config.productionTip = false
+Vue.prototype.$echarts = echarts
 
 Vue.use(ElementUI)
 Vue.use(AFTableColumn)
