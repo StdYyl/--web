@@ -43,6 +43,9 @@
 </template>
 
 <script>
+    import {addDir, getDirOneList} from "../../api/directory";
+    import {notice} from "../../utils/elementUtils";
+
     export default {
         watch: {
             searchMes(val) {
@@ -52,34 +55,30 @@
         data() {
             return {
                 folderData: [
-                    {
-                        id: 1,
-                        label: "中原工学院",
-                        children: [
-                            {
-                                id: 2,
-                                label: "软件学院",
-                                children: [
-                                    {id: 3, label: "学生管理系统"},
-                                    {id: 4, label: "宿舍管理系统宿舍管理系统宿舍管理系统"},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        id: 5,
-                        label: "郑州大学",
-                        children: [
-                            {
-                                id: 6,
-                                label: "计算机学院",
-                                children: [
-                                    {id: 7, label: "学生管理系统"},
-                                    {id: 8, label: "宿舍管理系统宿舍管理系统宿舍管理系统"},
-                                ]
-                            },
-                        ]
-                    },
+                    // {
+                    //     id: 1,
+                    //     label: "中原工学院",
+                    //     children: [
+                    //         {
+                    //             id: 2,
+                    //             label: "软件学院",
+                    //             children: [
+                    //                 {id: 3, label: "学生管理系统"},
+                    //                 {id: 4, label: "宿舍管理系统宿舍管理系统宿舍管理系统"},
+                    //             ]
+                    //         },
+                    //     ]
+                    // },
+                    // {
+                    //     id: 5,
+                    //     label: "郑州大学",
+                    //     children: [
+                    //         {
+                    //             id: 6,
+                    //             label: "计算机学院"
+                    //         },
+                    //     ]
+                    // },
 
                 ],
                 defaultProps: {
@@ -111,8 +110,21 @@
                     inputPattern: /^[\s\S]*.*[^\s][\s\S]*$/,
                     inputErrorMessage: '请输入目录名称',
                     iconClass: ''
-                }).then(({value}) => {
+                }).then(async value => {
                     console.log(value)
+                   let param = {
+                       name:value.value,
+                       category:"2",
+                       archive:"2",
+                       createby:localStorage.getItem("id"),
+                   }
+                   let rs = await addDir(param);
+                   if(rs.data.code != 200){
+                       notice(this, rs.data.msg, 'error')
+                       return ;
+                   }
+                   //调用查询目录接口
+                    this.getDirList();
                 })
             },
             //点击删除icon
@@ -133,7 +145,22 @@
                     < span class='el-icon-delete-solid' on-click={() => this.deleteFolder(data)}>< /span>
                     < /span> );
             },
+            //查询目录列表
+            async getDirList(){
+                let rs = await getDirOneList(localStorage.getItem("id"))
+                if(rs.data.code == 200){
+                    this.folderData.splice(0, this.folderData.length)
+                    let arr = rs.data.data;
+                    for (let i = 0; i < arr.length; i++) {
+                        this.folderData.push({id:arr[i].id, label:arr[i].name})
+                    }
+                }
+                console.log(this.folderData)
+            },
         },
+        async mounted() {
+           this.getDirList();
+        }
     }
 
 </script>

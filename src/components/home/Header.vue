@@ -113,13 +113,13 @@
             handleSelect(e) {
                 let path = this.$route.path
                 if (e == 1) {
-                    // if (path.indexOf('/home/project/list') != -1) return;
+                    if (path.indexOf('/home/project/list') != -1) return;
                     this.$router.push('/home/project');
                 } else if (e == 2) {
-                    // if (path.indexOf('/home/member') != -1) return;
+                    if (path.indexOf('/home/member') != -1) return;
                     this.$router.push('/home/member');
                 } else {
-                    // if (path.indexOf('/home/project/information') != -1) return;
+                    if (path.indexOf('/home/project/information') != -1) return;
                     this.$router.push('/home/project/information')
                 }
                 // else this.$router.push('/home/system');
@@ -154,9 +154,9 @@
             let rs = await getUserMesByID(localStorage.getItem("id"))
             this.$store.commit('setName',rs.data.data.name)
             this.$store.commit('setHead',rs.data.data.head)
-            // if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
-            // if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
-            // if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
+            if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
+            if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
+            if (this.$route.path.indexOf('/home/project/information') != -1) this.activeIndex = '3';
         },
         watch: {
             $route() {
