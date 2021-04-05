@@ -8,3 +8,8 @@ export function addDir(data) {
 export function getDirOneList(id, category=2) {
   return requested(`api/imp/directory/queryDirListLevOne?id=${id}&category=${category}`)
 }
+//查询二级目录列表 category(2:项目、1.接口)
+export function queryDirListLevSecond(dirId, userId) {
+  return requested(`api/imp/directory/queryDirListLevSecond?dirId=${dirId}&userId=${userId}`)
+}
+
