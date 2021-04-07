@@ -12,7 +12,7 @@
         <el-input size="mini" placeholder="搜索分类" prefix-icon="el-icon-search" v-model="searchMes"></el-input>
       </div>
       <el-tree :data="folderData" :props="defaultProps" :filter-node-method="search" ref="tree" accordion
-               :highlight-current='true' :load="handleNodeClick" lazy
+               :highlight-current='true' :load="handleNodeClick" lazy @node-click="changeRuoter" id="xxx"
                :render-content="renderContent" :expand-on-click-node="isRemove" v-infinite-scroll="load">
       </el-tree>
 
@@ -92,6 +92,10 @@
                 parentId:-1,
                 folderList:[],
                 folderData: [
+                    {
+                        id:-1,
+                        label:"项目列表",
+                    }
                     // {
                     //     id: 1,
                     //     label: "中原工学院",
@@ -121,21 +125,34 @@
             }
         },
         methods: {
+            //控制路由
+            changeRuoter(node){
+                let id = this.$route.params.id
+                if(node.id != -1)  document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
+                if(id == node.id || (id == 'all' && node.id === -1)) return;
+                if(node.id === -1){
+                    this.$router.push(`/home/project/list/all`)
+                    return;
+                }
+                this.$router.push(`/home/project/list/${node.id}`)
+            },
             //点击节点
             async handleNodeClick(node,resolve){
-                if(node.level > 1) resolve([]);
+                if(node.level > 1 || node.data.id == -1) resolve([]);
                 if(node.expanded) return ;
                 let index = this.folderData.findIndex(oj => oj.id === node.data.id)
                 this.folderData[index] = []
                 let rs = await queryDirListLevSecond(node.data.id, localStorage.getItem("id"))
                 if(rs.data.data){
                     let arr = rs.data.data;
+                    console.log(arr)
                     let child= []
                     for (let i = 0; i < arr.length; i++) {
                         child.push({id: arr[i].id, label: arr[i].name})
                     }
                     resolve(child);
                 }
+
 
             },
             async showAddDirList(){
@@ -149,7 +166,6 @@
                     }
                 }
                 this.showAddDir = true;
-                console.log(this.folderList)
             },
             load() {
 
@@ -196,6 +212,12 @@
             },
             //目录
             renderContent(h, {node, data, store}) {
+                if(data.id == -1){
+                    return (
+                        < span class='custom-tree-node'>
+                        < span class='folder_name'> {node.label} < /span>
+                    < /span> );
+                }
                 return (
                     < span class='custom-tree-node'>
                     < span class='folder_name'> {node.label} < /span>
@@ -206,7 +228,8 @@
             async getDirList() {
                 let rs = await getDirOneList(localStorage.getItem("id"))
                 if (rs.data.code == 200) {
-                    this.folderData = []
+                    this.folderData = [{id:-1, label:"项目列表",}]
+                    this.folderData.push()
                     let arr = rs.data.data;
                     for (let i = 0; i < arr.length; i++) {
                         this.folderData.push({id: arr[i].id, label: arr[i].name, children:[]})
@@ -215,7 +238,10 @@
             },
         },
         async mounted() {
-            this.getDirList();
+            await this.getDirList();
+            if(this.$route.params.id == 'all')
+                document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-current is-focusable';
+
         }
     }
 

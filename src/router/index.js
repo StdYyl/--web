@@ -85,10 +85,10 @@ export default new Router({
               redirect: 'list'
             },
             {
-              path: 'list',
+              path: 'list/:id?',
               name: 'list',
               component: ProList,
-              meta: {model: '项目列表'}
+              meta: {model: '项目列表'},
             },
             {
               path: 'information',
