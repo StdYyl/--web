@@ -1,9 +1,9 @@
 <template>
   <div class="main">
     <div class="tabs">
-      <el-tabs v-model="activeName" @tab-click="handleClick">
+      <el-tabs v-model="activeName" @tab-click="handleClick" >
         <!--全部项目-->
-        <el-tab-pane label="全部项目" name="all">
+        <el-tab-pane label="全部项目" name="all" v-loading="loading[0]">
           <el-table
             :data="allProject"
             :show-header="false"
@@ -13,7 +13,9 @@
               :show-overflow-tooltip="true"
               width="445">
               <template slot-scope="props">
-                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer" @click="$router.push(`../intfIndex/${props.row.id}`)">{{ props.row.name}}</div>
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
+                     @click="$router.push(`../intfIndex/${props.row.id}`)">{{ props.row.name}}
+                </div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
             </el-table-column>
@@ -51,8 +53,7 @@
             </el-table-column>
             <el-table-column
               prop="id"
-              :show-overflow-tooltip="true"
-              width="150">
+              :show-overflow-tooltip="true">
               <template slot-scope="scope">
                 <div style="height: 70px;display: flex;align-items: center">
                   <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
@@ -75,7 +76,7 @@
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
                     <div @click="removeToCycle">
-                      <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                      <el-icon class="iconfont icon-huishouzhan"></el-icon>
                     </div>
                   </el-tooltip>
                 </div>
@@ -84,7 +85,9 @@
           </el-table>
           <!--分页，每页最多8条数据-->
           <el-pagination
+            v-if="totalCount>0"
             background
+            @current-change="changeIndex"
             layout="prev, pager, next"
             :page-size="pageSize"
             :total="totalCount">
@@ -94,11 +97,11 @@
         <el-dialog
           :visible.sync="exportDialogVisible"
           width="30%">
-            <div slot="title" align="left"style="display: flex;align-items: center;">
-              <i class="el-icon-warning-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
-              <span style="font-weight: bold;font-size: 14px">接口导出</span>
-            </div>
-            <span slot="">
+          <div slot="title" align="left" style="display: flex;align-items: center;">
+            <i class="el-icon-warning-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
+            <span style="font-weight: bold;font-size: 14px">接口导出</span>
+          </div>
+          <span slot="">
             <el-form ref="form" :model="interface" label-width="80px">
               <el-form-item style="margin-bottom: 5px;">
                 <el-select v-model="interface.format" placeholder="请选择导出格式">
@@ -113,7 +116,8 @@
                 <span>导出项目文档为html文档</span>
               </el-form-item>
               <el-form-item style="margin-left: 30px;display: flex;align-items: center">
-                <el-button type="primary" @click="exportDialogVisible = false" style="padding: 10px 40px;">导 出</el-button>
+                <el-button type="primary" @click="exportDialogVisible = false"
+                           style="padding: 10px 40px;">导 出</el-button>
               </el-form-item>
             </el-form>
           </span>
@@ -122,7 +126,7 @@
         </el-dialog>
 
         <!--已加入-->
-        <el-tab-pane label="已加入" name="in">
+        <el-tab-pane label="已加入" name="in" v-loading="loading[1]">
           <el-table
             :data="inProject"
             :show-header="false"
@@ -189,7 +193,7 @@
                 <el-icon class="el-icon-minus icon_y"></el-icon>
                 <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
                   <div @click="removeToCycle">
-                    <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                    <el-icon class="iconfont icon-huishouzhan"></el-icon>
                   </div>
                 </el-tooltip>
               </div>
@@ -198,16 +202,18 @@
           <!--分页，每页最多8条数据-->
           <el-pagination
             background
+            v-if="totalCount>0"
+            @current-change="changeIndex"
             layout="prev, pager, next"
             :page-size="pageSize"
-            :total="totalCountIn">
+            :total="totalCount">
           </el-pagination>
         </el-tab-pane>
 
         <!--已创建-->
-        <el-tab-pane label="已创建" name="create">
+        <el-tab-pane label="已创建" name="create" v-loading="loading[2]">
           <el-table
-            :data="inProject"
+            :data="createProject"
             :show-header="false"
             style="width: 100%;font-size: 13px">
             <el-table-column
@@ -272,7 +278,7 @@
                 <el-icon class="el-icon-minus icon_y"></el-icon>
                 <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
                   <div @click="removeToCycle">
-                    <el-icon class="iconfont icon-huishouzhan" ></el-icon>
+                    <el-icon class="iconfont icon-huishouzhan"></el-icon>
                   </div>
                 </el-tooltip>
               </div>
@@ -281,16 +287,18 @@
           <!--分页，每页最多8条数据-->
           <el-pagination
             background
+            v-if="totalCount>0"
+            @current-change="changeIndex"
             layout="prev, pager, next"
             :page-size="pageSize"
-            :total="totalCountIn">
+            :total="totalCount">
           </el-pagination>
         </el-tab-pane>
 
         <!--回收站-->
-        <el-tab-pane label="回收站" name="recycle">
+        <el-tab-pane label="回收站" name="recycle" v-loading="loading[3]">
           <el-table
-            :data="inProject"
+            :data="recycleProject"
             :show-header="false"
             style="width: 100%;font-size: 13px">
             <el-table-column
@@ -352,15 +360,17 @@
           <!--分页，每页最多8条数据-->
           <el-pagination
             background
+            v-if="totalCount>0"
+            @current-change="changeIndex"
             layout="prev, pager, next"
             :page-size="pageSize"
-            :total="totalCountIn">
+            :total="totalCount">
           </el-pagination>
         </el-tab-pane>
 
         <!--添加新项目-->
         <el-button class="new_project" size="small" type="primary" icon="el-icon-plus"
-                   @click="dialogFormVisible = true">创建新项目
+                   @click="dialogFormVisible = true" v-if="this.$route.params.id != 'all'">创建新项目
         </el-button>
         <!--添加新项目-->
         <el-dialog title="项目创建" :visible.sync="dialogFormVisible" width="500px" class="projectCss">
@@ -444,6 +454,7 @@
               </template>
             </el-input>
           </el-dialog>
+
           <!--邀请-->
           <div style="display: flex;justify-content: space-between;margin-bottom: 10px">
             <div>账号邀请</div>
@@ -495,102 +506,102 @@
           <div slot="title" class="header-title">
             <span class="title-age">项目设置</span>
           </div>
-<!--          <el-tabs tab-position="left" style="height: 500px;">-->
-<!--            <el-tab-pane>-->
-<!--              <span slot="label"><i class="el-icon-warning-outline"></i> 基本信息</span>-->
-<!--              <div>-->
-<!--                <el-form :rules="systemFormRules" :model="systemForm" ref="systemForm">-->
-<!--                  <el-form-item prop="name" label="项目名称" label-width="125px">-->
-<!--                    <el-input v-model="systemForm.name" size="small"></el-input>-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item prop="basePath" label="接口基本路径" label-width="125px">-->
-<!--                    <el-input v-model="systemForm.basePath" size="small"></el-input>-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item prop="introduction" label="项目简介" label-width="125px">-->
-<!--                    <el-input type="textarea" :row="0" v-model="systemForm.introduction" size="small"></el-input>-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item label="创建人" label-width="125px" class="crtUser">-->
-<!--                    {{systemForm.createUser}}-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item label="创建时间" label-width="125px" class="crtUser">-->
-<!--                    {{systemForm.createTime}}-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item label-width="125px" class="save">-->
-<!--                    <div style="margin: 10px 15px 0 0;">-->
-<!--                      <el-button size="small" type="primary">保存</el-button>-->
-<!--                    </div>-->
-<!--                  </el-form-item>-->
-<!--                </el-form>-->
-<!--              </div>-->
-<!--            </el-tab-pane>-->
+          <!--          <el-tabs tab-position="left" style="height: 500px;">-->
+          <!--            <el-tab-pane>-->
+          <!--              <span slot="label"><i class="el-icon-warning-outline"></i> 基本信息</span>-->
+          <!--              <div>-->
+          <!--                <el-form :rules="systemFormRules" :model="systemForm" ref="systemForm">-->
+          <!--                  <el-form-item prop="name" label="项目名称" label-width="125px">-->
+          <!--                    <el-input v-model="systemForm.name" size="small"></el-input>-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item prop="basePath" label="接口基本路径" label-width="125px">-->
+          <!--                    <el-input v-model="systemForm.basePath" size="small"></el-input>-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item prop="introduction" label="项目简介" label-width="125px">-->
+          <!--                    <el-input type="textarea" :row="0" v-model="systemForm.introduction" size="small"></el-input>-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item label="创建人" label-width="125px" class="crtUser">-->
+          <!--                    {{systemForm.createUser}}-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item label="创建时间" label-width="125px" class="crtUser">-->
+          <!--                    {{systemForm.createTime}}-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item label-width="125px" class="save">-->
+          <!--                    <div style="margin: 10px 15px 0 0;">-->
+          <!--                      <el-button size="small" type="primary">保存</el-button>-->
+          <!--                    </div>-->
+          <!--                  </el-form-item>-->
+          <!--                </el-form>-->
+          <!--              </div>-->
+          <!--            </el-tab-pane>-->
 
-<!--            <el-tab-pane label="项目周期">-->
-<!--              <span slot="label"><i class="iconfont icon-shijian"></i> 项目周期</span>-->
-<!--              <div>-->
+          <!--            <el-tab-pane label="项目周期">-->
+          <!--              <span slot="label"><i class="iconfont icon-shijian"></i> 项目周期</span>-->
+          <!--              <div>-->
 
-<!--              </div>-->
-<!--            </el-tab-pane>-->
+          <!--              </div>-->
+          <!--            </el-tab-pane>-->
 
-<!--            <el-tab-pane label="功能模块" class="fc">-->
-<!--              <span slot="label"><i class="iconfont icon-gongneng"></i> 功能模块</span>-->
-<!--              <div style="text-align: left;margin-top: 15px">-->
-<!--                <el-form label-position="top">-->
-<!--                  <el-form-item label="分类名称">-->
-<!--                    <el-select v-model="searchModule" filterable placeholder="请选择" size="small">-->
-<!--                      <el-option-->
-<!--                        v-for="item in moduleList"-->
-<!--                        :key="item.value"-->
-<!--                        :label="item.label"-->
-<!--                        :value="item.value">-->
-<!--                      </el-option>-->
-<!--                    </el-select>-->
-<!--                  </el-form-item>-->
-<!--                  <el-form-item label="开发人员">-->
-<!--                    <el-tag-->
-<!--                      :key="tag.id"-->
-<!--                      v-for="tag in moduleUser"-->
-<!--                      closable-->
-<!--                      :disable-transitions="false"-->
-<!--                      @close="handleRemoveUser(tag)">-->
-<!--                      <div>-->
-<!--                        <div style="display: flex;align-items: center;height: 20px">-->
-<!--                          <el-image style="width: 20px; height: 20px;" :src="tag.head" fit="cover"></el-image>-->
-<!--                          <span style="margin-left: 10px">{{tag.name}}</span>-->
-<!--                        </div>-->
-<!--                        <span>{{tag.joinTime}}</span>-->
-<!--                      </div>-->
-<!--                    </el-tag>-->
-<!--                    <el-button type="text" class="el-icon-circle-plus-outline" size="small"-->
-<!--                    style="font-size: 14px" @click="isInvitationUser = true">人员</el-button>-->
-<!--                  </el-form-item>-->
-<!--                </el-form>-->
-<!--              </div>-->
-<!--            </el-tab-pane>-->
-<!--            &lt;!&ndash;邀请链接&ndash;&gt;-->
-<!--            <el-dialog-->
-<!--              width="30%"-->
-<!--              title="邀请成员"-->
-<!--              :visible.sync="isInvitationUser"-->
-<!--              class="invateMember"-->
-<!--              append-to-body>-->
-<!--              <div slot="title" class="header-title">-->
-<!--                <span><i class="el-icon-warning-outline"></i></span>-->
-<!--                <span class="title-age">邀请成员</span>-->
-<!--              </div>-->
-<!--              <el-input v-model="InvitationUserEmail" placeholder="邀请项目中人员邮箱">-->
-<!--                <template slot="append">-->
-<!--                  <el-button class="tag-read"   @click="copy">邀请</el-button>-->
-<!--                </template>-->
-<!--              </el-input>-->
-<!--            </el-dialog>-->
+          <!--            <el-tab-pane label="功能模块" class="fc">-->
+          <!--              <span slot="label"><i class="iconfont icon-gongneng"></i> 功能模块</span>-->
+          <!--              <div style="text-align: left;margin-top: 15px">-->
+          <!--                <el-form label-position="top">-->
+          <!--                  <el-form-item label="分类名称">-->
+          <!--                    <el-select v-model="searchModule" filterable placeholder="请选择" size="small">-->
+          <!--                      <el-option-->
+          <!--                        v-for="item in moduleList"-->
+          <!--                        :key="item.value"-->
+          <!--                        :label="item.label"-->
+          <!--                        :value="item.value">-->
+          <!--                      </el-option>-->
+          <!--                    </el-select>-->
+          <!--                  </el-form-item>-->
+          <!--                  <el-form-item label="开发人员">-->
+          <!--                    <el-tag-->
+          <!--                      :key="tag.id"-->
+          <!--                      v-for="tag in moduleUser"-->
+          <!--                      closable-->
+          <!--                      :disable-transitions="false"-->
+          <!--                      @close="handleRemoveUser(tag)">-->
+          <!--                      <div>-->
+          <!--                        <div style="display: flex;align-items: center;height: 20px">-->
+          <!--                          <el-image style="width: 20px; height: 20px;" :src="tag.head" fit="cover"></el-image>-->
+          <!--                          <span style="margin-left: 10px">{{tag.name}}</span>-->
+          <!--                        </div>-->
+          <!--                        <span>{{tag.joinTime}}</span>-->
+          <!--                      </div>-->
+          <!--                    </el-tag>-->
+          <!--                    <el-button type="text" class="el-icon-circle-plus-outline" size="small"-->
+          <!--                    style="font-size: 14px" @click="isInvitationUser = true">人员</el-button>-->
+          <!--                  </el-form-item>-->
+          <!--                </el-form>-->
+          <!--              </div>-->
+          <!--            </el-tab-pane>-->
+          <!--            &lt;!&ndash;邀请链接&ndash;&gt;-->
+          <!--            <el-dialog-->
+          <!--              width="30%"-->
+          <!--              title="邀请成员"-->
+          <!--              :visible.sync="isInvitationUser"-->
+          <!--              class="invateMember"-->
+          <!--              append-to-body>-->
+          <!--              <div slot="title" class="header-title">-->
+          <!--                <span><i class="el-icon-warning-outline"></i></span>-->
+          <!--                <span class="title-age">邀请成员</span>-->
+          <!--              </div>-->
+          <!--              <el-input v-model="InvitationUserEmail" placeholder="邀请项目中人员邮箱">-->
+          <!--                <template slot="append">-->
+          <!--                  <el-button class="tag-read"   @click="copy">邀请</el-button>-->
+          <!--                </template>-->
+          <!--              </el-input>-->
+          <!--            </el-dialog>-->
 
-<!--            <el-tab-pane label="所用技术">-->
-<!--              <span slot="label"><i class="iconfont icon-tubiaozhizuomoban"></i> 所用技术</span>-->
-<!--            </el-tab-pane>-->
-<!--            <el-tab-pane label="更多">-->
-<!--              <span slot="label"><i class="iconfont icon-gengduo"></i> 更多</span>-->
-<!--            </el-tab-pane>-->
-<!--          </el-tabs>-->
+          <!--            <el-tab-pane label="所用技术">-->
+          <!--              <span slot="label"><i class="iconfont icon-tubiaozhizuomoban"></i> 所用技术</span>-->
+          <!--            </el-tab-pane>-->
+          <!--            <el-tab-pane label="更多">-->
+          <!--              <span slot="label"><i class="iconfont icon-gengduo"></i> 更多</span>-->
+          <!--            </el-tab-pane>-->
+          <!--          </el-tabs>-->
         </el-dialog>
       </el-tabs>
     </div>
@@ -600,11 +611,14 @@
 <script>
     import {notice} from '@/utils/elementUtils'
     import Clipboard from 'clipboard'
+    import {addProject, getProjectListById} from "../../api/project";
 
     export default {
         name: "aside",
         data() {
             return {
+                //数据加载
+                loading:[false,false,false,false],
                 activeName: "all",
                 dialogFormVisible: false,
                 //项目设置窗口
@@ -633,9 +647,9 @@
                 ],
                 searchModule: '',
                 //功能模块 邀请成员窗口
-                isInvitationUser:false,
+                isInvitationUser: false,
                 //功能模块 邀请成员邮箱
-                InvitationUserEmail:'',
+                InvitationUserEmail: '',
                 //功能模块的开发人员
                 moduleUser: [
                     {id: 1, name: '张三', head: '/static/img/head.b818068.png', joinTime: '2021-3-24'},
@@ -666,108 +680,15 @@
                     addDirs: []
 
                 },
-                allProject: [
-                    {
-                        id: 1,
-                        name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 2,
-                        name: "软件测试项目2",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 3,
-                        name: "软件测试项目3",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目4",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目5",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目6",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目7",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                ],
-                inProject: [
-                    {
-                        id: 1,
-                        name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                    {
-                        id: 1,
-                        name: "软件测试项目2",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-
-                ],
-                createProject: [
-                    {
-                        id: 1,
-                        name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                ],
-                recycleProject: [
-                    {
-                        id: 1,
-                        name: "软件测试项目1",
-                        introduction: "那时候我只会想自己想要什么",
-                        createTime: "2020-11-12",
-                        createUser: "张三张三张三张三",
-                        progress: 20
-                    },
-                ],
+                allProject: [],
+                inProject: [],
+                createProject: [],
+                recycleProject: [],
 
                 //当前页码
                 currentPage: 1,
                 //总条数（全部项目）
-                totalCount: 20,
+                totalCount: 0,
                 //已加入
                 totalCountIn: 10,
                 //已创建
@@ -786,20 +707,42 @@
                 },
                 exportDialogVisible: false,
                 interface: {
-                  format: 'html'
+                    format: 'html'
                 }
             }
         },
         methods: {
+            //更换页码
+            async changeIndex(index){
+                console.log(this.activeName == 'all')
+                console.log(this.activeName)
+                //所有
+                if(this.activeName == 'all'){
+                    let rs = await this.getProListFc(0,index)
+                    console.log(rs)
+                }
+                if(this.activeName == 'in'){
+                    let rs = this.getProListFc(1,index)
+                }
+                if(this.activeName == 'create'){
+                    let rs = this.getProListFc(2,index)
+                }
+                if(this.activeName == 'recycle'){
+                    let rs = this.getProListFc(3,index)
+                }
+
+
+            },
             //删除成员
-            handleRemoveUser(e){
+            handleRemoveUser(e) {
                 this.$confirm(`确定在该模块中移除成员${e.name}吗？`, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
                     this.moduleUser.splice(this.moduleUser.indexOf(e), 1);
-                }).then(() => {})
+                }).then(() => {
+                })
             },
             //复制链接
             copy() {
@@ -831,24 +774,58 @@
             },
             //进度管理
             progressManagement(id, index) {
-              if(index==0) this.$router.push('/home/progress/1')
+                if (index == 0) this.$router.push('/home/progress/1')
             },
-            handleClick(tab) {
-                //获取项目列表
-
-                if (tab.index == 0) {
+            //查询项目列表
+            async getProListFc(type,index=1){
+                let app = this
+                if (type == 0) {
                     //全部 allProject
-
-                } else if (tab.index == 1) {
+                    let rs = await this.getProList(1,index);
+                    if (rs.data.code == 200) {
+                        app.allProject.splice(0, this.allProject.length)
+                        app.totalCount = rs.data.data.count
+                        if (app.totalCount > 0)
+                            app.allProject.push(...rs.data.data.list)
+                    }
+                } else if (type == 1) {
                     //已加入 inProject
-
-                } else if (tab.index == 2) {
+                    let rs = await this.getProList(2,index);
+                    if (rs.data.code == 200) {
+                        app.inProject.splice(0, this.inProject.length)
+                        console.log(rs.data)
+                        app.totalCount = rs.data.data.count
+                        if (app.totalCount > 0)
+                            app.inProject.push(...rs.data.data.list)
+                    }
+                } else if (type == 2) {
                     //已创建  createProject
-
-                } else if (tab.index == 3) {
+                    let rs = await this.getProList(3,index);
+                    if (rs.data.code == 200) {
+                        app.createProject.splice(0, this.createProject.length)
+                        app.totalCount = rs.data.data.count
+                        if (app.totalCount > 0)
+                            app.createProject.push(...rs.data.data.list)
+                    }
+                } else if (type == 3) {
                     //已删除  recycleProject
-
+                    let rs = await this.getProList(4,index);
+                    if (rs.data.code == 200) {
+                        app.recycleProject.splice(0, this.recycleProject.length)
+                        app.totalCount = rs.data.data.count
+                        if (app.totalCount > 0)
+                            app.recycleProject.push(...rs.data.data.list)
+                    }
                 }
+            },
+            async handleClick(tab) {
+                this.loading[tab.index] = true
+                this.loading.push()
+                //获取项目列表
+                let rs = await this.getProListFc(tab.index)
+                app.currentPage = 1
+                this.loading[tab.index] = false
+                this.loading.push()
             },
             //处理
             handleClose(tag) {
@@ -886,37 +863,95 @@
             },
             //新增项目
             addProject() {
-                this.$refs['projectForm'].validate(err => {
+                let app = this
+                this.$refs['projectForm'].validate(async err => {
                     if (!err) return
-                    console.log(222)
                     //提交表单projectForm
                     this.dialogFormVisible = false
-
+                    let param = {
+                        name: app.projectForm.name,
+                        basepath: app.projectForm.basePath,
+                        introduction: app.projectForm.introduction,
+                        endmonth: app.projectForm.endMonth,
+                        endday: app.projectForm.endDay,
+                        createuserid: localStorage.getItem("id"),
+                        directoryid: app.$route.params.id,
+                        module: app.projectForm.addDirs
+                    }
+                    let rs = await addProject(param);
+                    if (rs.data.code == 200) {
+                        notice(this, "创建成功")
+                    }
+                    Object.keys(this.projectForm).forEach(key => this.projectForm[key] = key == 'addDirs' ? [] : '')
+                    let rss = await this.getProList();
+                    if (rss.data.code == 200) {
+                        app.allProject.splice(0, this.allProject.length)
+                        app.totalCount = rss.data.data.count
+                        if (app.totalCount > 0)
+                            app.allProject.push(...rss.data.data.list)
+                    }
                 })
-                //
             },
             //移入回收站
             removeToCycle() {
-              this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
-                type: 'warning',
-                confirmButtonText: '放入回收站',
-                cancelButtonText: '考虑一下',
-                confirmButtonClass: 'btnClass',
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '删除成功!'
+                this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
+                    type: 'warning',
+                    confirmButtonText: '放入回收站',
+                    cancelButtonText: '考虑一下',
+                    confirmButtonClass: 'btnClass',
+                }).then(() => {
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功!'
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
                 });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消删除'
-                });
-              });
             },
             interfaceExport() {
-              this.exportDialogVisible = true;
+                this.exportDialogVisible = true;
             },
+            //获取项目列表
+            //type 1:全部  2:已加入  3:已创建  4：回收站
+            //current 页码、
+            async getProList(type = 1, current = 1) {
+                let id = this.$route.params.id
+                let param = {
+                    current: current,
+                    size: this.pageSize,
+                    id: id,
+                    type: type,
+                    userId: localStorage.getItem("id")
+                }
+                let rs = await getProjectListById(param);
+                return rs;
+            }
+        },
+        async mounted() {
+            let app = this
+            let rs = await this.getProList();
+            if (rs.data.code == 200) {
+                app.allProject.splice(0, this.allProject.length)
+                app.totalCount = rs.data.data.count
+                if (app.totalCount > 0)
+                    app.allProject.push(...rs.data.data.list)
+            }
+        },
+        watch: {
+            async $route() {
+                let app = this
+                let rs = await this.getProList();
+                this.activeName = "all"
+                if (rs.data.code == 200) {
+                    app.allProject.splice(0, this.allProject.length)
+                    app.totalCount = rs.data.data.count
+                    if (app.totalCount > 0)
+                        app.allProject.push(...rs.data.data.list)
+                }
+            }
         }
     }
 </script>
@@ -947,15 +982,15 @@
   .systemCss /deep/ .el-dialog__body {
     padding-top: 0;
 
-    .el-tag .el-tag__close{
+    .el-tag .el-tag__close {
       color: rgb(16, 16, 16);
 
-      &:hover{
+      &:hover {
         color: white;
       }
     }
 
-    .el-icon-circle-plus-outline span{
+    .el-icon-circle-plus-outline span {
       margin-left: 5px;
     }
 
@@ -970,7 +1005,7 @@
       margin-bottom: 0;
     }
 
-    .el-form-item__content{
+    .el-form-item__content {
       padding-left: 15px;
     }
 
@@ -1025,11 +1060,11 @@
 
   .btnClass {
     color: #fff !important;
-    background: rgb(255,77,79) !important;
+    background: rgb(255, 77, 79) !important;
   }
 
 
-    /deep/ .el-form-item {
+  /deep/ .el-form-item {
     height: auto;
   }
 

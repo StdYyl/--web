@@ -151,6 +151,7 @@
             }
         },
         async mounted() {
+            if(this.$route.path == "/home/project/list") this.$router.push("/home/project/list/all")
             let rs = await getUserMesByID(localStorage.getItem("id"))
             this.$store.commit('setName',rs.data.data.name)
             this.$store.commit('setHead',rs.data.data.head)
