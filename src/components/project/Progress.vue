@@ -1,6 +1,6 @@
 <template>
   <div class="set" id="bd">
-    <el-page-header @back="goBack" content="接口归档"></el-page-header>
+    <el-page-header @back="goBack" content="进度管理"></el-page-header>
     <el-tabs tab-position="left" style="" class="tabsH">
       <el-tab-pane>
         <span slot="label"><i class="el-icon-warning-outline"></i> 接口归档</span>
@@ -26,21 +26,18 @@
             <div class="total">
               一共有
               <el-input-number v-model="interface.total_number" @change="handleChangeTotal" :min="1" :max="10" label="接口总数"
-                               size="small" style="margin-left: 20px"></el-input-number>
+                               size="small" style="margin-left: 20px" disabled></el-input-number>
               接口
             </div>
             <div class="archived">
               已归档
               <el-input-number v-model="interface.archived_number" @change="handleChangeArchived" :min="1" :max="10" label="已归档接口数"
-                               size="small" style="margin-left: 20px"></el-input-number>
+                               size="small" style="margin-left: 20px" disabled></el-input-number>
               接口
             </div>
             <div class="progress">
               <div>完成进度</div>
               <el-progress :percentage="50" style="width: 300px"></el-progress>
-            </div>
-            <div class="btn">
-              <el-button type="primary" class="assure">确定</el-button>
             </div>
           </div>
         </div>
@@ -251,7 +248,6 @@
 
   .itfFL {
     padding: 30px;
-    padding-bottom: 0px;
     display: flex;
     flex-direction: column;
     .title {
@@ -315,7 +311,6 @@
         margin-top: 20px;
         padding-bottom: 20px;
         display: flex;
-        border-bottom: 2px solid rgb(222,222,222);
       }
       .btn {
         text-align: right;
