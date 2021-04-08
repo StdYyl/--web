@@ -43,13 +43,13 @@
       changeBar(i) {
         this.selector=[false,false,false];
         this.selector[i]=true;
-        if(i==0) this.$router.push('/home/system/setting');
-        if(i==1) this.$router.push('/home/system/logger');
-        if(i==2) this.$router.push('/home/system/user');
+        if(i==0) this.$router.push('/dashboard/system/setting');
+        if(i==1) this.$router.push('/dashboard/system/logger');
+        if(i==2) this.$router.push('/dashboard/system/user');
       }
     },
     mounted() {
-      this.$router.push('/home/system/setting');
+      this.$router.push('/dashboard/system/setting');
     }
   }
 </script>

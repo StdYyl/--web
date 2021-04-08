@@ -60,6 +60,17 @@ export function phoneIsRegister(data) {
 export function listUser(data) {
   return post('api/imp/user/list/user', data);
 }
+//移除用户
+export function removeUser(data) {
+  return fetch('api/imp/user/remove', data);
+}
+//禁用用户
+export function disableUser(data) {
+  return fetch('api/imp/user/disable', data);
+}
+export function cancelDisabled(data) {
+  return fetch('api/imp/user/cancel', data);
+}
 //查询团队成员
 export function listMember(data) {
   return post('api/imp/user/list/member', data);

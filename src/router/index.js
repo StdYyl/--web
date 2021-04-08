@@ -6,6 +6,7 @@ import perfectInfo from '../views/member/perfectInfo'
 import information from '../views/member/Information'
 import userLayout from '../components/layout/UserLayout'
 import home from '../views/home/home'
+import dashboard from '../views/dashboard/dashboard'
 
 import Project from '../views/project/project'
 import ProList from '../views/project/list'
@@ -105,32 +106,6 @@ export default new Router({
           meta: {model: '成员管理'},
         },
         {
-          path: 'system',
-          name: 'system',
-          component: System,
-          meta: {model: '系统管理'},
-          children: [
-            {
-              path: 'setting',
-              name: 'setting',
-              component: Setting,
-              meta: {model: '系统设置'},
-            },
-            {
-              path: 'logger',
-              name: 'logger',
-              component: Log,
-              meta: {model: '日志管理'},
-            },
-            {
-              path: 'user',
-              name: 'user',
-              component: User,
-              meta: {model: '用户管理'},
-            }
-          ]
-        },
-        {
           path: 'setting/:id',
           name: 'setting',
           component: SettingPro,
@@ -186,6 +161,50 @@ export default new Router({
         }
       ]
     },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: dashboard,
+      meta: {model: '管理员主页'},
+      children: [
+        {
+          path: '',
+          redirect: 'system'
+        },
+        {
+          path: 'system',
+          name: 'system',
+          component: System,
+          meta: {model: '系统管理'},
+          children: [
+            {
+              path: 'setting',
+              name: 'setting',
+              component: Setting,
+              meta: {model: '系统设置'},
+            },
+            {
+              path: 'logger',
+              name: 'logger',
+              component: Log,
+              meta: {model: '日志管理'},
+            },
+            {
+              path: 'user',
+              name: 'user',
+              component: User,
+              meta: {model: '用户管理'},
+            }
+          ]
+        },
+        {
+          path: 'member/accept',
+          name: 'accept',
+          component: Accept,
+          meta: {model: '接受邀请'}
+        }
+      ]
+    }
 
   ]
 })

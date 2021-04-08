@@ -1,109 +1,35 @@
 <template>
     <div class="setting">
       <div class="title">
-        所有日志
-        <div class="circle"></div>
-        11
+        <div class="info">
+          所有日志
+          <div class="circle"></div>
+          {{total}}
+        </div>
+        <div class="search">
+          <el-input v-model="search" placeholder="查询用户" @change="listUser"></el-input>
+        </div>
       </div>
       <div class="divider"></div>
       <div class="main">
         <div class="table">
-          <div class="table_item">
+          <div class="table_item" v-for="item in userList" :key="item.id">
             <div class="left">
               <div class="portrait">
-                <img src="../../assets/image/common/head.png" alt="头像">
+                <img :src="item.head" alt="头像">
               </div>
               <div class="info">
-                <div class="name">yyl123</div>
-                <div class="email">545522390@qq.com</div>
+                <div class="name">{{item.name}}</div>
+                <div class="email">{{item.email}}</div>
               </div>
             </div>
             <div class="right">
-              <div class="disable">
-                <i class="iconfont icon-disable"></i>
+              <div class="disable" @click="disableUser(item.id, item.isdisabled)">
+                <i class="iconfont icon-disable" v-if="item.isdisabled==0"></i>
+                <i class="el-icon-refresh-left" v-if="item.isdisabled==1"></i>
               </div>
               <div class="divide"></div>
-              <div class="remove">
-                <i class="iconfont icon-user-remove"></i>
-              </div>
-            </div>
-          </div>
-          <div class="table_item">
-            <div class="left">
-              <div class="portrait">
-                <img src="../../assets/image/common/head.png" alt="头像">
-              </div>
-              <div class="info">
-                <div class="name">yyl123</div>
-                <div class="email">545522390@qq.com</div>
-              </div>
-            </div>
-            <div class="right">
-              <div class="disable">
-                <i class="iconfont icon-disable"></i>
-              </div>
-              <div class="divide"></div>
-              <div class="remove">
-                <i class="iconfont icon-user-remove"></i>
-              </div>
-            </div>
-          </div>
-          <div class="table_item">
-            <div class="left">
-              <div class="portrait">
-                <img src="../../assets/image/common/head.png" alt="头像">
-              </div>
-              <div class="info">
-                <div class="name">yyl123</div>
-                <div class="email">545522390@qq.com</div>
-              </div>
-            </div>
-            <div class="right">
-              <div class="disable">
-                <i class="iconfont icon-disable"></i>
-              </div>
-              <div class="divide"></div>
-              <div class="remove">
-                <i class="iconfont icon-user-remove"></i>
-              </div>
-            </div>
-          </div>
-          <div class="table_item">
-            <div class="left">
-              <div class="portrait">
-                <img src="../../assets/image/common/head.png" alt="头像">
-              </div>
-              <div class="info">
-                <div class="name">yyl123</div>
-                <div class="email">545522390@qq.com</div>
-              </div>
-            </div>
-            <div class="right">
-              <div class="disable">
-                <i class="iconfont icon-disable"></i>
-              </div>
-              <div class="divide"></div>
-              <div class="remove">
-                <i class="iconfont icon-user-remove"></i>
-              </div>
-            </div>
-          </div>
-          <div class="table_item">
-            <div class="left">
-              <div class="portrait">
-                <img src="../../assets/image/common/head.png" alt="头像">
-              </div>
-              <div class="info">
-                <div class="name">yyl123</div>
-                <div class="email">545522390@qq.com</div>
-              </div>
-            </div>
-            <div class="right">
-              <div class="disable">
-                <i class="iconfont icon-disable"></i>
-              </div>
-              <div class="divide"></div>
-              <div class="remove">
+              <div class="remove" @click="removeUser(item.id)">
                 <i class="iconfont icon-user-remove"></i>
               </div>
             </div>
@@ -126,16 +52,20 @@
 </template>
 
 <script>
+  import {listUser, removeUser, disableUser, cancelDisabled} from "../../api/user";
+  import {notice} from "../../utils/elementUtils";
+
   export default {
     name: "setting",
     data() {
       return {
-        ctl: false,
         loading: true,
+        search: '',
         pageSizes: [1,2,3,4,5,6,7,8,9],
-        pageSize: 1,
-        currentPage: 3,
-        total: 4,
+        pageSize: 5,
+        currentPage: 1,
+        total: 0,
+        userList: [],
       }
     },
     methods: {
@@ -146,17 +76,84 @@
           }
         })
       },
-      handleSizeChange() {
+      handleSizeChange(size) {
         //当每一页条数发生改变时触发
+        this.pageSize = size;
+        this.listUser();
       },
-      handleCurrentChange() {
+      handleCurrentChange(current) {
         //当页数发生改变时除法
+        this.currentPage=current;
+        this.listUser();
+      },
+      async listUser() {
+        let res = await listUser({
+          current: this.currentPage,
+          size: this.pageSize,
+          search: this.search,
+        });
+        if(res.data.code === 200) {
+          this.userList = res.data.data.list;
+          this.total = res.data.data.total;
+        }
+      },
+      async disableUser(uid, isdisabled) {
+        if(isdisabled==0) {
+          this.$confirm('此操作将禁用该用户, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(async () => {
+            let res = await disableUser({
+              uid: uid
+            });
+            if(res.data.code === 200) {
+              notice(this, '禁用成功', 'success');
+            } else {
+              notice(this, '禁用失败', 'error');
+            }
+            this.listUser();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消禁用'
+            });
+          });
+        } else {
+          let res = await cancelDisabled({
+            uid: uid,
+          });
+          if(res.data.code === 200) {
+            notice(this, '撤销禁用成功');
+          }
+          this.listUser();
+        }
+      },
+      removeUser(uid) {
+        this.$confirm('此操作将禁用该用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          let res = await removeUser({
+            uid: uid
+          });
+          if(res.data.code === 200) {
+            notice(this, '移除成功', 'success');
+          } else {
+            notice(this, '移除失败', 'error');
+          }
+          this.listUser();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消移除'
+          });
+        });
       }
     },
     mounted() {
-      setTimeout(() => {
-        this.loading=false;
-      },1000)
+      this.listUser();
     }
   }
 </script>
@@ -170,16 +167,21 @@
     display: flex;
     flex-direction: column;
     .title {
-      padding: 0 0 10px 10px;
+      padding: 10px;
       font-size: 18px;
       display: flex;
       align-items: center;
-      .circle {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background-color: #101010;
-        margin: 0 10px;
+      justify-content: space-between;
+      .info {
+        display: flex;
+        align-items: center;
+        .circle {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: #101010;
+          margin: 0 10px;
+        }
       }
     }
     .divider {
@@ -229,11 +231,16 @@
             display: flex;
             align-items: center;
             .disable {
+              cursor: pointer;
               i {
-                font-size: 24px;
+                font-size: 20px;
                 color: #C2C2C2;
               }
+              i:hover {
+                color: #919191;
+              }
             }
+
 
             .divide {
               border-right: 1px solid rgba(187,187,187,.85);
@@ -242,9 +249,13 @@
             }
 
             .remove {
+              cursor: pointer;
               i {
-                font-size: 24px;
+                font-size: 20px;
                 color: #C2C2C2;
+              }
+              i:hover {
+                color: #919191;
               }
             }
           }

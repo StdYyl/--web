@@ -67,6 +67,7 @@
     import {notice} from '../../utils/elementUtils'
     import {checkResponse} from '../../utils/utils'
     import {SendCode, registerOrLand, land} from '../../api/user'
+    import {loginManager} from "../../api/manager";
 
     export default {
         components: {},
@@ -120,14 +121,27 @@
                             loginParams.account = this.formLogin.account
                             loginParams.password = md5(this.formLogin.password)
                             //登录
-                            console.log(loginParams);
-                            land(loginParams).then(res => {
-                                if (!checkResponse(this, res.data, true)) {
-                                    return false;
+                            land(loginParams).then(async res => {
+                              if(res.data.code !== 200) {
+                                let result = await loginManager({
+                                  account: this.formLogin.account,
+                                  password: this.formLogin.password,
+                                });
+                                console.log(result);
+                                if (!checkResponse(this, result.data, true)) {
+                                  return false;
                                 }
-                                localStorage.setItem("token", res.data.data.token);
-                                localStorage.setItem("id", res.data.data.id);
-                                this.$router.push('/home');
+                                notice(this, result.data.msg);
+                                localStorage.setItem("id", result.data.data.id);
+                                localStorage.setItem("token", result.data.data.token);
+                                localStorage.setItem("role", result.data.data.role);
+                                this.$router.push('/dashboard');
+                                return;
+                              }
+                              notice(this, res.data.msg);
+                              localStorage.setItem("token", res.data.data.token);
+                              localStorage.setItem("id", res.data.data.id);
+                              this.$router.push('/home');
                             })
                         })
                     })
