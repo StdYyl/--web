@@ -1,9 +1,14 @@
 <template>
     <div class="setting">
       <div class="title">
-        所有日志
-        <div class="circle"></div>
-        11
+        <div class="info">
+          所有日志
+          <div class="circle"></div>
+          {{total}}
+        </div>
+        <div class="search">
+          <el-input v-model="search" placeholder="查询日志文件" @change="listSystemLog"></el-input>
+        </div>
       </div>
       <div class="divider"></div>
       <div class="main">
@@ -29,18 +34,21 @@
             </template>
           </af-table-column>
           <af-table-column
-            prop="name"
+            prop="user.name"
             label="姓名"
             width="80">
           </af-table-column>
           <af-table-column
-            prop="date"
+            prop="time"
             label="时间"
             width="100"
             fit>
+            <template slot-scope="scope">
+              {{new Date(scope.row.time).getFullYear()}}-{{new Date(scope.row.time).getMonth()+1}}-{{new Date(scope.row.time).getDate()}}
+            </template>
           </af-table-column>
           <af-table-column
-            prop="desc"
+            prop="describes"
             label="描述"
             min-width="1"
             fit>
@@ -51,7 +59,9 @@
             width="100"
             align="center">
             <template slot-scope="scope">
-              <span  style="color: #FF4D4F;font-size: 12px;">删除</span>
+              <span style="color: #1890ff;font-size: 12px;" v-if="scope.row.operation=='添加'">添加</span>
+              <span style="color: #fcd95c;font-size: 12px;" v-if="scope.row.operation=='修改'">修改</span>
+              <span  style="color: #FF4D4F;font-size: 12px;" v-if="scope.row.operation=='删除'">删除</span>
             </template>
           </af-table-column>
         </el-table>
@@ -72,47 +82,19 @@
 </template>
 
 <script>
+  import {listSystemLog} from "../../api/systemlog";
+
   export default {
     name: "setting",
     data() {
       return {
-        ctl: false,
         loading: true,
-        tableData: [
-          {
-            id: 1,
-            open: true,
-            name: '王小虎',
-            date: '2016-05-02',
-            desc: '文件上传',
-            ope: '添加',
-          }, {
-            id: 2,
-            open: true,
-            name: '王小虎',
-            date: '2016-05-02',
-            desc: '添加成员列表',
-            ope: '修改',
-          }, {
-            id: 3,
-            open: true,
-            name: '王小虎',
-            date: '2016-05-02',
-            desc: '添加yyl123成员',
-            ope: '删除',
-          }, {
-            id: 4,
-            open: true,
-            name: '王小虎',
-            date: '2016-05-02',
-            desc: '添加yyl123成员',
-            ope: '添加',
-          }
-        ],
+        tableData: [],
+        search: '',
         pageSizes: [1,2,3,4,5,6,7,8,9],
-        pageSize: 1,
-        currentPage: 3,
-        total: 4,
+        pageSize: 5,
+        currentPage: 1,
+        total: 0,
       }
     },
     methods: {
@@ -123,17 +105,34 @@
           }
         })
       },
-      handleSizeChange() {
+      handleSizeChange(size) {
         //当每一页条数发生改变时触发
+        console.log(this.pageSize);
+        this.pageSize = size;
+        this.listSystemLog();
       },
-      handleCurrentChange() {
-        //当页数发生改变时除法
+      handleCurrentChange(current) {
+        //当页数发生改变时触发
+        console.log(this.pageSize);
+        this.currentPage = current;
+        this.listSystemLog();
+      },
+      async listSystemLog() {
+        let res = await listSystemLog({
+          current: this.currentPage,
+          size: this.pageSize,
+          search: this.search,
+        });
+        console.log(res);
+        if(res.data.code === 200) {
+          this.tableData = res.data.data.list;
+          this.total = res.data.data.total;
+          this.loading = false;
+        }
       }
     },
     mounted() {
-      setTimeout(() => {
-        this.loading=false;
-      },1000)
+      this.listSystemLog();
     }
   }
 </script>
@@ -147,16 +146,21 @@
     display: flex;
     flex-direction: column;
     .title {
-      padding: 0 0 10px 10px;
+      padding: 10px;
       font-size: 18px;
       display: flex;
       align-items: center;
-      .circle {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background-color: #101010;
-        margin: 0 10px;
+      justify-content: space-between;
+      .info {
+        display: flex;
+        align-items: center;
+        .circle {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: #101010;
+          margin: 0 10px;
+        }
       }
     }
     .divider {

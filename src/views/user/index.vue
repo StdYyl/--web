@@ -2,7 +2,7 @@
   <div class="userBg">
     <div class="lf">
       <el-input v-model="searchUser" placeholder="搜索" size="small" style="width: 190px"
-                prefix-icon="el-icon-search"></el-input>
+                prefix-icon="el-icon-search" @change="changeSearch"></el-input>
       <div style="margin: 15px 15px 15px 30px; text-align: left;font-size: 16px">成员</div>
       <div class="bar">
         <div :class="!selector[0]?'bar_item':'bar_item selected'" @click="changeBar(0)">
@@ -10,39 +10,108 @@
           所有成员
         </div>
         <div :class="!selector[1]?'bar_item':'bar_item selected'" @click="changeBar(1)">
-          <i class="iconfont icon-disable"></i>
-          停用成员
+          <i class="iconfont icon-tuanduichengyuan1"></i>
+          团队成员
         </div>
       </div>
     </div>
     <!--所有成员-->
     <div class="rh">
       <div class="rh_head" v-if="selector[0]">
-        <h4>所有成员 · {{memberCount}}</h4>
-        <el-button type="text" icon="icon-tianjiayonghu iconfont" @click="inviteMember=true">添加成员</el-button>
+        <h4>所有成员 · {{userCount}}</h4>
       </div>
       <div class="rh_head" v-if="selector[1]">
-        <h4>停用成员 · {{stopMemberCount}}</h4>
+        <h4>团队成员 · {{memberCount}}</h4>
       </div>
       <el-table
-        :data="selector[0] ? memberList : stopMemberList"
-        :show-header="false"
+        :data="userList"
+        :show-header="true"
+        v-loading="loading"
+        v-show="selector[0]"
         style="width: 100%;font-size: 13px">
         <el-table-column
-          prop="name"
+          label="头像"
           :show-overflow-tooltip="true"
-          width="30">
+          width="60"
+          align="center">
           <template slot-scope="props">
-            <el-image style="width: 20px; height: 20px" :src="props.row.head" fit="cover"></el-image>
+            <el-image style="width: 20px; height: 20px;vertical-align: middle" :src="props.row.head" fit="cover"></el-image>
           </template>
         </el-table-column>
         <el-table-column
           prop="name"
+          label="姓名"
           :show-overflow-tooltip="true"
-          width="720">
+          width="60"
+          align="center">
           <template slot-scope="props">
             <div style="font-size: 16px;cursor: pointer">{{ props.row.name}}</div>
-            <div class="props_value">{{ props.row.email}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="organization"
+          label="组织"
+          :show-overflow-tooltip="true"
+          width="100">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">{{ props.row.organization}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="job"
+          label="职位"
+          :show-overflow-tooltip="true"
+          width="100">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">{{ props.row.job}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="introduction"
+          label="简介"
+          :show-overflow-tooltip="true"
+          min-width="1">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">{{ props.row.introduction}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="createtime"
+          label="注册时间"
+          :show-overflow-tooltip="true"
+          min-width="1">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">{{ props.row.createtime}}</div>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-table
+        :data="memberList"
+        :show-header="false"
+        v-loading="loading"
+        v-show="selector[1]"
+        style="width: 100%;font-size: 13px">
+        <el-table-column
+          :show-overflow-tooltip="true"
+          width="30">
+          <template slot-scope="props">
+            <el-image style="width: 20px; height: 20px" :src="props.row.user.head" fit="cover"></el-image>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :show-overflow-tooltip="true"
+          width="360">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">{{ props.row.user.name}}</div>
+            <div class="props_value">{{ props.row.user.email}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="projectid"
+          :show-overflow-tooltip="true"
+          width="360">
+          <template slot-scope="props">
+            <div style="font-size: 16px;cursor: pointer">属于{{ props.row.project.name}}的{{props.row.user.job}}</div>
           </template>
         </el-table-column>
         <el-table-column
@@ -50,25 +119,13 @@
           :show-overflow-tooltip="true"
           align="center">
           <template slot-scope="props">
-            <div style="display: flex;align-items: center;justify-content: center" v-if="selector[0]">
-              <el-tooltip class="item" effect="dark" content="禁用成员" placement="top">
-                <div @click="banMember(props.row)">
-                  <el-icon class="iconfont icon-disable"></el-icon>
-                </div>
-              </el-tooltip>
-              <el-icon class="el-icon-minus icon_y"></el-icon>
+            <div style="display: flex;align-items: center;justify-content: center" v-if="selector[1]">
               <el-tooltip class="item" effect="dark" content="移除成员" placement="top">
                 <div @click="removeMember(props.row)">
                   <el-icon class="iconfont icon-user-remove"></el-icon>
                 </div>
               </el-tooltip>
             </div>
-
-            <el-tooltip class="item" effect="dark" content="恢复成员" placement="top" v-if="selector[1]">
-              <div @click="restoreMember(props.row)">
-                <el-icon class="el-icon-refresh-left"></el-icon>
-              </div>
-            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -77,86 +134,18 @@
         background
         layout="prev, pager, next"
         :page-size="pageSize"
-        :total="totalCount">
+        :total="totalCount"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange">
       </el-pagination>
     </div>
-
-    <!--邀请新成员-->
-    <el-dialog title="" :visible.sync="inviteMember" width="400px" class="memberCss">
-      <div slot="title" class="header-title">
-        <span><i class="el-icon-warning-outline"></i></span>
-        <span class="title-age">添加成员</span>
-      </div>
-      <!--邀请链接-->
-      <el-dialog
-        width="30%"
-        title="邀请成员"
-        :visible.sync="isInvitationLink"
-        class="invateMember"
-        append-to-body>
-        <div slot="title" class="header-title">
-          <span><i class="el-icon-warning-outline"></i></span>
-          <span class="title-age">邀请成员</span>
-        </div>
-        <div style="padding-bottom: 15px;text-indent: 5px">链接有效日期：{{linkEndTime}}</div>
-        <el-input v-model="invitationLink" disabled>
-          <template slot="append">
-            <el-button class="tag-read" :data-clipboard-text="invitationLink" @click="copy">复制链接</el-button>
-          </template>
-        </el-input>
-      </el-dialog>
-      <!--邀请-->
-      <div style="display: flex;justify-content: space-between;margin-bottom: 10px">
-        <div>账号邀请</div>
-        <el-link :underline="false" type="primary" @click="InviteMembers">通过链接邀请</el-link>
-      </div>
-      <el-input placeholder="输入昵称或邮箱查找" v-model="selectMember" prefix-icon="el-icon-search"></el-input>
-      <el-table
-        :data="memberList"
-        :show-header="false"
-        style="width: 100%;font-size: 13px">
-        <el-table-column
-          prop="name"
-          :show-overflow-tooltip="true"
-          width="30">
-          <template slot-scope="props">
-            <el-image style="width: 20px; height: 20px" :src="props.row.head" fit="cover"></el-image>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="name"
-          :show-overflow-tooltip="true"
-          width="220">
-          <template slot-scope="props">
-            <div style="font-size: 16px;cursor: pointer">{{ props.row.name}}</div>
-            <div class="props_value">{{ props.row.email}}</div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="name"
-          :show-overflow-tooltip="true" m
-          align="center"
-          width="110">
-          <template slot-scope="props">
-            <div v-if="props.row.isJoin == 1">
-              <el-button icon="iconfont icon-tianjiayonghu" size="mini"
-                         style="font-size: 14px;border-style: dashed" @click="InviteMember(props.row)">邀请
-              </el-button>
-            </div>
-            <div v-else>
-              <el-button icon="iconfont icon-denglu1" size="mini" type="text" disabled>已加入</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
-
   </div>
 </template>
 
 <script>
     import {notice} from '@/utils/elementUtils'
     import Clipboard from 'clipboard'
+    import {listUser, listMember, removeMember} from "../../api/user";
 
     export default {
         name: "index",
@@ -164,66 +153,58 @@
             return {
                 searchUser: '',
                 selector: [true, false],
-                memberCount: 10,
-                stopMemberCount: 5,
+                //是否加载中
+                loading: true,
+                //全部成员总条数
+                userCount: '',
+                //团队成员总条数
+                memberCount: '',
                 selectMember: '',
-                //邀请链接
-                invitationLink: 'http://www.baidu.com',
-                //链接有效时间
-                linkEndTime: '2021年3月23日 18:11',
-                //添加成员窗口
-                inviteMember: false,
-                //邀请链接窗口
-                isInvitationLink: false,
                 //每页展示条数
-                pageSize: 7,
+                pageSize: 5,
+                //当前页码
+                current: 1,
                 //总条数（正常）
-                totalCount: 10,
-                //总条数（禁用）
-                totalCountDisable: 10,
+                totalCount: 0,
                 //成员列表 (isJoin:1未加入，2已加入)
-                memberList: [
-                    {id: 1, name: '张三', head: '/static/img/head.b818068.png', email: '528243772@qq.com', isJoin: 1},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                ],
-                stopMemberList: [
-                    {id: 1, name: '王五', head: '/static/img/head.b818068.png', email: '528243772@qq.com', isJoin: 1},
-                    {id: 2, name: '王五', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 3, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                ],
+                userList: [],
+                memberList: [],
             }
         },
         methods: {
             changeBar(i) {
                 this.selector = [false, false];
                 this.selector[i] = true;
-            },
-            //恢复成员
-            restoreMember(e){
-                this.$confirm(`是否要恢复用户${e.name}`, '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    console.log('删除')
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
+                this.current=1;
+                this.pageSize=5;
+                this.searchUser='';
+                this.totalCount=0;
+                this.userCount = '';
+                this.memberCount = '';
+                if(i==0) {
+                  this.listUser();
+                } else {
+                  this.listMember();
+                }
             },
             //删除成员
             removeMember(e){
-                this.$confirm(`是否要删除用户${e.name}`, '提示', {
+                this.$confirm(`是否要删除项目「 ${e.project.name} 」的用户${e.user.name}`, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
-                }).then(() => {
-                    console.log('删除')
+                }).then(async () => {
+                  let res = await removeMember({
+                    userId: e.user.id,
+                    projectId: e.project.id,
+                  });
+                  if(res.data.code == 200) {
+                    this.$message({
+                      type: 'success',
+                      message: '删除成功'
+                    })
+                    this.listMember()
+                  }
                 }).catch(() => {
                     this.$message({
                         type: 'info',
@@ -231,37 +212,62 @@
                     });
                 });
             },
-            //禁用成员
-            banMember(e) {
-                this.$confirm(`是否要禁用用户${e.name}`, '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    console.log('删除')
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
+            async listUser() {
+              let res = await listUser({
+                current: this.current,
+                size: this.pageSize,
+                search: this.searchUser,
+              });
+              console.log(res);
+              if(res.data.code == 200) {
+                this.userList = res.data.data.list;
+                this.totalCount = res.data.data.total;
+                this.userCount = res.data.data.total;
+                this.loading = false;
+              }
             },
-            //生成邀请链接
-            InviteMembers() {
-                //调用生成邀请链接的接口，（出参：结束时间、链接）
-                this.isInvitationLink = true
+            async listMember() {
+              let res = await listMember({
+                current: this.current,
+                size: this.pageSize,
+                search: this.searchUser,
+                userId: localStorage.getItem("id"),
+              });
+              console.log(res);
+              if(res.data.code == 200) {
+                this.memberList = res.data.data.list;
+                this.totalCount = res.data.data.total;
+                this.memberCount = res.data.data.total;
+                this.loading = false;
+              }
             },
-            //复制链接
-            copy() {
-                let clipboard = new Clipboard('.tag-read')
-                clipboard.on('success', e => {
-                    notice(this, `复制成功！`, 'success')
-                })
-                clipboard.on('error', e => {
-                    notice(this, `复制失败！`, 'error')
-                })
+            changeSearch() {
+              if(this.selector[0]) {
+                this.listUser();
+              } else {
+                this.listMember();
+              }
+              this.searchUser='';
             },
-
+            handleSizeChange(size) {
+              this.pageSize = size;
+              if(this.selector[0]) {
+                this.listUser();
+              } else {
+                this.listMember();
+              }
+            },
+            handleCurrentChange(current) {
+              this.current = current;
+              if(this.selector[0]) {
+                this.listUser();
+              } else {
+                this.listMember();
+              }
+            },
+        },
+        async mounted() {
+          this.listUser();
         }
     }
 </script>

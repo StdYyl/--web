@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "20805378",
+      "name": "团队成员",
+      "font_class": "tuanduichengyuan1",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
       "icon_id": "20647010",
       "name": "功能",
       "font_class": "gongneng1",

@@ -1,4 +1,5 @@
 import requested from "./axios";
+import {fetch, post} from './http';
 //注册（验证码登录）
 export function registerOrLand(data) {
   return requested('api/imp/user/login/code','POST',data);
@@ -54,4 +55,26 @@ export function modifyEmail(data) {
 //手机号是否注册
 export function phoneIsRegister(data) {
   return requested(`api/imp/user/phoneIsRegister?phone=${data}`)
+}
+//查询所有用户
+export function listUser(data) {
+  return post('api/imp/user/list/user', data);
+}
+//移除用户
+export function removeUser(data) {
+  return fetch('api/imp/user/remove', data);
+}
+//禁用用户
+export function disableUser(data) {
+  return fetch('api/imp/user/disable', data);
+}
+export function cancelDisabled(data) {
+  return fetch('api/imp/user/cancel', data);
+}
+//查询团队成员
+export function listMember(data) {
+  return post('api/imp/user/list/member', data);
+}
+export function removeMember(data) {
+  return fetch('api/imp/user/member/remove', data);
 }
