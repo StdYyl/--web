@@ -12,7 +12,7 @@
         <el-input size="mini" placeholder="搜索分类" prefix-icon="el-icon-search" v-model="searchMes"></el-input>
       </div>
       <el-tree :data="folderData" :props="defaultProps" :filter-node-method="search" ref="tree" accordion
-               :highlight-current='true' :load="handleNodeClick" lazy @node-click="changeRuoter" id="xxx"
+               :highlight-current='true' :load="handleNodeClick" lazy @node-click="changeRuoter" id="xxx" node-key="id"
                :render-content="renderContent" :expand-on-click-node="isRemove" v-infinite-scroll="load">
       </el-tree>
 
@@ -128,7 +128,7 @@
             //控制路由
             changeRuoter(node){
                 let id = this.$route.params.id
-                if(node.id != -1)  document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
+                // if(node.id != -1)  document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
                 if(id == node.id || (id == 'all' && node.id === -1)) return;
                 if(node.id === -1){
                     this.$router.push(`/home/project/list/all`)
@@ -235,13 +235,20 @@
                         this.folderData.push({id: arr[i].id, label: arr[i].name, children:[]})
                     }
                 }
+                this.$nextTick(function(){
+                    let id = this.$route.params.id
+                    this.$refs.tree.setCurrentKey(id == 'all' ? -1 : id);
+                })
             },
         },
         async mounted() {
             await this.getDirList();
-            if(this.$route.params.id == 'all')
-                document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-current is-focusable';
-
+            // if(this.$route.params.id == 'all')
+                // document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-current is-focusable';
+            this.$nextTick(function(){
+                let id = this.$route.params.id
+                this.$refs.tree.setCurrentKey(id == 'all' ? -1 : id);
+            })
         }
     }
 

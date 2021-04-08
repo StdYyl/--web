@@ -114,7 +114,7 @@
                 let path = this.$route.path
                 if (e == 1) {
                     if (path.indexOf('/home/project/list') != -1) return;
-                    this.$router.push('/home/project');
+                    this.$router.push('/home/project/list/all');
                 } else if (e == 2) {
                     if (path.indexOf('/home/member') != -1) return;
                     this.$router.push('/home/member');

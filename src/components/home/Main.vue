@@ -14,7 +14,7 @@
               width="445">
               <template slot-scope="props">
                 <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
-                     @click="$router.push(`../intfIndex/${props.row.id}`)">{{ props.row.name}}
+                     @click="$router.push(`/home/intfIndex/${props.row.id}/intf/all`)">{{ props.row.name}}
                 </div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
@@ -136,7 +136,8 @@
               :show-overflow-tooltip="true"
               width="445">
               <template slot-scope="props">
-                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
+                     @click="$router.push(`/home/intfIndex/${props.row.id}`)">{{ props.row.name}}</div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
             </el-table-column>
@@ -221,7 +222,8 @@
               :show-overflow-tooltip="true"
               width="445">
               <template slot-scope="props">
-                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
+                     @click="$router.push(`/home/intfIndex/${props.row.id}`)">{{ props.row.name}}</div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
             </el-table-column>
@@ -306,7 +308,8 @@
               :show-overflow-tooltip="true"
               width="445">
               <template slot-scope="props">
-                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer">{{ props.row.name}}</div>
+                <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
+                     @click="$router.push(`/home/intfIndex/${props.row.id}`)">{{ props.row.name}}</div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
             </el-table-column>

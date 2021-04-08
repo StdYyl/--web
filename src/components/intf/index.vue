@@ -4,7 +4,7 @@
       <h4 style="margin: 0px 0 0 15px;color: #1890FF">接口列表
         <span class="el-icon-info" style="color:#1890FF;"></span>
       </h4>
-      <el-button type="primary" icon="el-icon-plus" size="mini" @click="$router.push('./AddIntf')"
+      <el-button type="primary" icon="el-icon-plus" size="mini" @click="$router.push('../AddIntf')"
                  style="margin-right: 20px;font-size: 12px;padding: 7px 15px">新增接口
       </el-button>
     </div>
@@ -18,7 +18,8 @@
         label="接口名称"
         width="230">
         <template slot-scope="props">
-          <el-button type="text" @click="$router.push(`./PreviewIntf/${props.row.id}`)">{{props.row.name}}</el-button>
+          <el-button type="text"
+                     @click="changeRouter(props.row.id)">{{props.row.name}}</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -74,6 +75,13 @@
                     {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
                     {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
                 ]
+            }
+        },
+        methods:{
+            //点击项目
+            changeRouter(e){
+                let {id,moduleId} = this.$route.params
+                this.$router.push(`/home/intfIndex/${id}/intf/${moduleId}/detail/${e}`)
             }
         }
     }

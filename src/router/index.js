@@ -144,13 +144,19 @@ export default new Router({
           children: [
             {
               path: '',
-              redirect: 'intfAll'
+              redirect: 'all'
             },
             {
-              path: 'intfAll',
-              name: 'intfAll',
+              path: 'intf/:moduleId',
+              name: 'all',
               component: intfAll,
               meta: {model: '所有接口'},
+            },
+            {
+              path: 'intf/:moduleId/detail/:intfId',
+              name: 'PreviewIntf',
+              component: PreviewIntf,
+              meta: {model: '预览接口'},
             },
             {
               path: 'AddIntf',
@@ -164,12 +170,7 @@ export default new Router({
               component: ExportIntf,
               meta: {model: '批量导入接口'},
             },
-            {
-              path: 'PreviewIntf/:id',
-              name: 'PreviewIntf',
-              component: PreviewIntf,
-              meta: {model: '预览接口'},
-            },
+
           ]
         },
         {

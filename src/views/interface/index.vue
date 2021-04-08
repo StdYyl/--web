@@ -34,20 +34,23 @@
                   </div>
                   <!--接口列表树-->
                   <el-tree
-                    id="xxx"
+                    id="sss"
                     :data="intfData"
-                    @node-click="nodeClick"
+                    @node-click="changeRouter"
+                    node-key="id"
                     :props="defaultProps"
                     :filter-node-method="searchIntf"
                     :highlight-current='true'
                     accordion
-                    ref="tree"
+                    lazy
+                    :load="nodeClick"
+                    ref="intfTree"
                     :expand-on-click-node="isShowMore">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <div v-if="data.id == 0">
                         <span class='custom-tree-node'>
-                          <span class="el-tree-node__expand-icon el-icon-caret-right"></span>
-                            <span class='folder_name' style="padding-left: 6px"> {{node.label}} </span>
+<!--                          <span class="el-tree-node__expand-icon el-icon-caret-right"></span>-->
+                            <span class='folder_name' style="padding-left: 6px"> {{node.label}}</span>
                          </span>
                       </div>
                       <div v-else-if="data.isIntf">
@@ -59,7 +62,11 @@
                       </div>
                       <div v-else>
                         <span class='custom-tree-node'>
-                           <span class='folder_name'> {{node.label}} </span>
+<!--                          <span>-->
+                          <!--                            <span class="el-tree-node__expand-icon el-icon-caret-right"></span>-->
+                            <span class='folder_name' style="padding-left: 6px"> {{node.label}}</span>
+                          <!--                          </span>-->
+                          <!--<span class='folder_name'> {{node.label}} +2</span>-->
                            <el-dropdown trigger="click" @visible-change=menuChange @command="ShowView">
                              <span class="el-icon-s-fold" @click="isShowMore=false"></span>
                              <el-dropdown-menu slot="dropdown" class="drop">
@@ -102,7 +109,6 @@
                     :filter-node-method="searchIntf"
                     :highlight-current='true'
                     accordion
-                    ref="tree"
                     :expand-on-click-node="isShowMore">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <div v-if="data.isIntf">
@@ -160,10 +166,11 @@
         </span>
         </el-dialog>
 
-        <!--删除分类提示-->
+        <!--添加分类提示-->
         <el-dialog
           title="提示"
           :visible.sync="showDialog[2]"
+          @close="addModuleName='';parentId=-1"
           width="25%">
           <div slot="title" class="dialog-title">
             <div class="dialog_head">
@@ -175,18 +182,24 @@
                 <span class="title-close" @click="showDelete = false"></span>
               </div>
             </div>
+            <div class="dialog_mes" style="padding-bottom: 5px">
+              <span style="padding-right: 5px">选择目录</span>
+              <el-select v-model="parentId" size="small" style="width: 210px">
+                <el-option :key="item.id" v-for="item in folderList" :label="item.label" :value="item.id"></el-option>
+              </el-select>
+            </div>
             <div class="dialog_mes">
               <span style="padding-right: 5px">分类名称</span>
-              <el-input size="small" v-model="addModuleName" placeholder="分类名称" style="width: 200px"></el-input>
+              <el-input size="small" v-model="addModuleName" placeholder="分类名称" style="width: 210px"></el-input>
             </div>
           </div>
           <span slot="footer" class="dialog-footer">
           <el-button @click="showDialog[2] = false;showDialog.push()" size="small">取 消</el-button>
-          <el-button type="primary" @click="removeIntf" size="small">确 定</el-button>
+          <el-button type="primary" @click="addModule" size="small">确 定</el-button>
         </span>
         </el-dialog>
 
-        <!--添加分类提示-->
+        <!--删除分类提示-->
         <el-dialog
           title="提示"
           :visible.sync="showDialog[1]"
@@ -455,15 +468,15 @@
               </transition>
             </div>
           </div>
-<!--          <el-drawer-->
-<!--            title="我是标题"-->
-<!--            :visible.sync="right_drawer"-->
-<!--            direction="rtl"-->
-<!--            :before-close="handleCloseRight"-->
-<!--            :modal="false"-->
-<!--            size="45%">-->
-<!--            <span>我来啦!</span>-->
-<!--          </el-drawer>-->
+          <!--          <el-drawer-->
+          <!--            title="我是标题"-->
+          <!--            :visible.sync="right_drawer"-->
+          <!--            direction="rtl"-->
+          <!--            :before-close="handleCloseRight"-->
+          <!--            :modal="false"-->
+          <!--            size="45%">-->
+          <!--            <span>我来啦!</span>-->
+          <!--          </el-drawer>-->
         </el-tab-pane>
 
         <!--环境设置-->
@@ -475,6 +488,8 @@
 
 <script>
     import {MarkdownPreview, MarkdownPro} from 'vue-meditor'
+    import {addDir, getDirOneList, queryModuleListSecond} from "../../api/directory";
+    import {notice} from "../../utils/elementUtils";
     // 引入基本模板
     let echarts = require('echarts/lib/echarts')
     // 引入柱状图组件
@@ -486,6 +501,8 @@
         name: "index",
         data() {
             return {
+                folderList: [],
+                parentId: -1,
                 activeName: 'interface',
                 projectName: "软件测试项目",
                 isShowMore: true,
@@ -523,34 +540,34 @@
                     {
                         id: 0, label: '我的接口'
                     },
-                    {
-                        id: 1,
-                        label: "用户中心",
-                        children: [
-                            {
-                                id: 2,
-                                label: "个人信息",
-                                children: [
-                                    {id: 3, label: "用户名修改", isIntf: true, method: 'put'},
-                                    {id: 4, label: "密码修改", isIntf: true, method: 'put'},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        id: 5,
-                        label: "客户管理",
-                        children: [
-                            {
-                                id: 6,
-                                label: "计算机学院",
-                                children: [
-                                    {id: 7, label: "学生管理系统", isIntf: true, method: 'put'},
-                                    {id: 8, label: "宿舍管理系统宿舍管理系统宿舍管理系统", isIntf: true, method: 'put'},
-                                ]
-                            },
-                        ]
-                    },
+                    // {
+                    //     id: 1,
+                    //     label: "用户中心",
+                    //     children: [
+                    //         {
+                    //             id: 2,
+                    //             label: "个人信息",
+                    //             children: [
+                    //                 {id: 3, label: "用户名修改", isIntf: true, method: 'put'},
+                    //                 {id: 4, label: "密码修改", isIntf: true, method: 'put'},
+                    //             ]
+                    //         },
+                    //     ]
+                    // },
+                    // {
+                    //     id: 5,
+                    //     label: "客户管理",
+                    //     children: [
+                    //         {
+                    //             id: 6,
+                    //             label: "计算机学院",
+                    //             children: [
+                    //                 {id: 7, label: "学生管理系统", isIntf: true, method: 'put'},
+                    //                 {id: 8, label: "宿舍管理系统宿舍管理系统宿舍管理系统", isIntf: true, method: 'put'},
+                    //             ]
+                    //         },
+                    //     ]
+                    // },
 
                 ],
                 defaultProps: {
@@ -566,15 +583,72 @@
             }
         },
         components: {
-          MarkdownPreview,
-          MarkdownPro
+            MarkdownPreview,
+            MarkdownPro
         },
         methods: {
-            nodeClick(e) {
-                if (e.id != 0)
-                    document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-focusable';
-                else
-                    this.$router.push(`/home/intfIndex/1/`)
+            //更换路由
+            changeRouter(e) {
+                let {id,moduleId} = this.$route.params
+                if (moduleId == e.id || (moduleId == 'all' && e.id === 0)) return;
+                if (e.id == 0) {
+                    this.$router.push(`/home/intfIndex/${id}/intf/all`)
+                    return;
+                }
+                this.$router.push(`/home/intfIndex/${id}/intf/${e.id}`)
+            },
+            //添加模块
+            async addModule() {
+                if (this.addModuleName == '') {
+                    notice(this, '请输入模块名称', 'error')
+                    return;
+                }
+                let param = {
+                    name: this.addModuleName,
+                    category: "1",
+                    parentid: this.parentId,
+                    createby: localStorage.getItem("id"),
+                    projectid: this.$route.params.id,
+                    updateby: localStorage.getItem("id"),
+                }
+                let rs = await addDir(param);
+                console.log(rs)
+                if (rs.data.code != 200) {
+                    notice(this, rs.data.msg, 'error')
+                    return;
+                }
+                notice(this, "添加成功")
+                this.parentId = -1
+                this.addModuleName = ''
+                //调用查询目录接口
+                let msg = await this.getModuleList();
+                if (msg.data.data) {
+                    this.intfData = [{id: 0, label: '我的接口'}]
+                    this.intfData.push()
+                    let arr = msg.data.data;
+                    for (let i = 0; i < arr.length; i++) {
+                        this.intfData.push({id: arr[i].id, label: arr[i].name, children: []})
+                    }
+                }
+                this.$nextTick(function () {
+                    let id = this.$route.params.moduleId
+                    this.$refs.intfTree.setCurrentKey(id == 'all' ? 0 : id);
+                })
+                this.showDialog[2] = false
+                this.showDialog.push()
+            },
+            async nodeClick(node, resolve) {
+
+                //查询子目录
+                let rs = await queryModuleListSecond(node.data.id)
+                if (rs.data.data) {
+                    let arr = rs.data.data;
+                    let child = []
+                    for (let i = 0; i < arr.length; i++) {
+                        child.push({id: arr[i].id, label: arr[i].name})
+                    }
+                    resolve(child);
+                }
             },
             //导出接口
             exportIntf() {
@@ -589,21 +663,32 @@
                 console.log(this.moduleMes)
             },
             //点击模块右侧menu
-            ShowView(command) {
+            async ShowView(command) {
                 console.log(command)
 
+                //添加接口
                 if (command.index == 'one') {
                     this.$router.push("./AddIntf")
                     return;
                 }
+                //导出接口
                 if (command.index == 'some') {
                     this.$router.push("./ExportIntf")
                     return;
                 }
+                //新增分类
+                this.folderList.splice(0, this.folderList.length)
+                this.folderList.push({id: -1, label: "无"})
+                let rs = await getDirOneList(localStorage.getItem("id"), 1, this.$route.params.id);
+                if (rs.data.data) {
+                    let arr = rs.data.data;
+                    for (let i = 0; i < arr.length; i++) {
+                        this.folderList.push({id: arr[i].id, label: arr[i].name})
+                    }
+                }
                 if (command.data) this.moduleMes = command.data
                 this.showDialog[command.index] = true;
                 this.showDialog.push()
-                console.log(this.showDialog)
             },
             menuChange(e) {
                 this.isShowMore = !e
@@ -654,69 +739,91 @@
             //     < /span> );
             // },
             writeWeekly() {
-              //写周报
-              this.weeklyFlag=2;
+                //写周报
+                this.weeklyFlag = 2;
             },
             handleCloseRight() {
-              this.$confirm('确认关闭？')
-                .then(_ => {
-                  this.right_drawer = false;
-                })
-                .catch(_ => {});
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        this.right_drawer = false;
+                    })
+                    .catch(_ => {
+                    });
             },
             changeBar() {
-              this.weeklyFlag=1;
+                this.weeklyFlag = 1;
             },
             drawLine() {
-              // 基于准备好的dom，初始化echarts实例
-              let myChart = echarts.init(document.getElementById('myChart'))
-              // 绘制图表
-              myChart.setOption({
-                title: {
-                  text: '本周接口使用统计图',
-                  subtext: '详细统计'
-                },
-                tooltip: {
-                  trigger: 'axis',
-                  axisPointer: {
-                    type: 'shadow'
-                  }
-                },
-                grid: {
-                  left: '3%',
-                  right: '4%',
-                  bottom: '3%',
-                  containLabel: true
-                },
-                xAxis: {
-                  type: 'value',
-                  data: ["10", "20", "30", "40", "50", "60"]
-                },
-                yAxis: {
-                  type: 'category',
-                  data: ['响应成功数量', '新增用例数', '接口调用次数', '新建接口数', '待定XX数量']
-                },
-                series: [{
-                  name: '数量',
-                  type: 'bar',
-                  data: [57, 38, 47, 34, 46],
-                  barWidth: 25,
-                  itemStyle: {
-                    normal: {
-                      color: function(params) {
-                        //注意，如果颜色太少的话，后面颜色不会自动循环，最好多定义几个颜色
-                        var colorList = ['#52C41A', '#FF4D4F', '#52C41A', '#FF4D4F', '#52C41A'];
-                        return colorList[params.dataIndex]
-                      }
+                // 基于准备好的dom，初始化echarts实例
+                let myChart = echarts.init(document.getElementById('myChart'))
+                // 绘制图表
+                myChart.setOption({
+                    title: {
+                        text: '本周接口使用统计图',
+                        subtext: '详细统计'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        data: ["10", "20", "30", "40", "50", "60"]
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['响应成功数量', '新增用例数', '接口调用次数', '新建接口数', '待定XX数量']
+                    },
+                    series: [{
+                        name: '数量',
+                        type: 'bar',
+                        data: [57, 38, 47, 34, 46],
+                        barWidth: 25,
+                        itemStyle: {
+                            normal: {
+                                color: function (params) {
+                                    //注意，如果颜色太少的话，后面颜色不会自动循环，最好多定义几个颜色
+                                    var colorList = ['#52C41A', '#FF4D4F', '#52C41A', '#FF4D4F', '#52C41A'];
+                                    return colorList[params.dataIndex]
+                                }
+                            }
+                        }
+                    }]
+                });
+            },
+            //获取模块列表
+            async getModuleList() {
+                let app = this
+                let id = this.$route.params.id
+                let rs = await getDirOneList(localStorage.getItem("id"), 1, id);
+                if (rs.data.data) {
+                    app.intfData.splice(0, this.intfData.length)
+                    app.intfData.push({id: 0, label: '我的接口'})
+                    let arr = rs.data.data;
+                    for (let i = 0; i < arr.length; i++) {
+                        this.intfData.push({id: arr[i].id, label: arr[i].name, children: []})
                     }
-                  }
-                }]
-              });
+                }
+                return rs;
+
             }
         },
-        mounted() {
-          document.getElementById('xxx').getElementsByTagName('div')[0].className = 'el-tree-node is-current is-focusable';
-          this.drawLine();
+        async mounted() {
+            let app = this
+            await this.getModuleList();
+            this.$nextTick(function () {
+                let id = this.$route.params.moduleId
+                this.$refs.intfTree.setCurrentKey(id == 'all' ? 0 : id);
+            })
+            this.drawLine();
         }
     }
 </script>
@@ -733,6 +840,10 @@
 </style>
 
 <style lang="less" scoped>
+
+  /deep/ .el-tree-node__loading-icon {
+    display: none;
+  }
 
   /deep/ #history {
     .el-tree-node__children {
@@ -905,58 +1016,70 @@
       /*height: 550px;*/
       position: relative;
       z-index: 1;
-      background-color: rgb(247,247,247);
+      background-color: rgb(247, 247, 247);
       margin: 0 20px 10px 20px;
       box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
       border-radius: 10px;
+
       .header {
         margin: 0 20px;
         padding: 30px 0 10px 0;
-        border-bottom: 1px solid rgb(217,217,217);
+        border-bottom: 1px solid rgb(217, 217, 217);
         display: flex;
         justify-content: space-between;
+
         .info {
-          color: rgb(24,144,255);
+          color: rgb(24, 144, 255);
           margin-left: 40px;
           cursor: pointer;
         }
+
         .add {
           margin-right: 40px;
           cursor: pointer;
+
           i {
             font-size: 16px;
           }
         }
+
         .add:hover {
-          color: rgb(24,144,255);
+          color: rgb(24, 144, 255);
         }
       }
+
       .list.main {
         margin: 10px 40px;
         display: flex;
         /*height: 470px;*/
         clear: both;
+
         .left {
           flex: 6;
           background-color: #fff;
-          border: 1px solid rgb(215,215,215);
+          border: 1px solid rgb(215, 215, 215);
           border-radius: 0 45% 0 0;
           padding: 10px;
+
           .content {
             width: 60%;
-            border: 1px solid rgb(219,219,219);
+            border: 1px solid rgb(219, 219, 219);
             height: 92%;
             border-radius: 10px;
             padding: 15px;
+
             .week {
               padding-bottom: 20px;
-              border-bottom: 1px solid rgb(215,215,215);
+              border-bottom: 1px solid rgb(215, 215, 215);
+
               .head {
                 display: flex;
                 align-items: center;
+
                 .logo {
                   display: flex;
                   align-items: center;
+
                   img {
                     width: 35px;
                     height: 35px;
@@ -966,44 +1089,52 @@
                 .info {
                   .user {
                     font-weight: 700;
-                    color: rgb(16,16,16);
+                    color: rgb(16, 16, 16);
                     text-align: left;
                     padding: 10px 0 10px 10px;
                   }
+
                   .date {
                     font-size: 10px;
-                    color: rgb(189,189,189);
+                    color: rgb(189, 189, 189);
                     padding: 0 0 10px 10px;
                   }
                 }
               }
+
               .modul, .progress {
                 text-align: left;
                 margin-left: 45px;
                 font-size: 15px;
                 font-weight: 700;
-                color: rgb(16,16,16);
+                color: rgb(16, 16, 16);
                 padding: 0 0 10px 0;
+
                 span {
                   font-weight: 400;
                 }
               }
+
               .assignment {
                 display: flex;
+
                 .ass_left {
                   text-align: left;
                   margin-right: 18px;
+
                   i {
                     font-size: 25px;
                   }
                 }
+
                 .ass_right {
                   .ass_right_header {
                     font-size: 15px;
                     font-weight: 700;
-                    color: rgb(16,16,16);
+                    color: rgb(16, 16, 16);
                     text-align: left;
                   }
+
                   .ass_right_desc {
                     font-size: 12px;
                     padding: 10px 100px 0 0;
@@ -1018,41 +1149,50 @@
               .comment_item {
                 display: flex;
                 margin-bottom: 10px;
+
                 .item_left {
                   padding: 10px 10px 10px 5px;
+
                   img {
                     width: 23px;
                     height: 23px;
                   }
                 }
+
                 .item_right {
                   .item_right_name {
                     padding-top: 10px;
                     text-align: left;
                     font-weight: 700;
-                    color: rgb(16,16,16);
+                    color: rgb(16, 16, 16);
                   }
+
                   .item_right_content {
                     padding: 10px 0;
                   }
+
                   .item_right_footer {
                     font-size: 13px;
+
                     span {
                       margin-right: 10px;
-                      color: rgb(116,116,116);
+                      color: rgb(116, 116, 116);
                     }
-                    span.reply,span.delete {
+
+                    span.reply, span.delete {
                       cursor: pointer;
                     }
                   }
                 }
               }
             }
+
             .comment_input_container {
               width: 100%;
+
               .comment_input {
                 border: none;
-                border: 1px solid rgb(195,195,195);
+                border: 1px solid rgb(195, 195, 195);
                 padding: 10px;
                 padding-left: 20px;
                 border-radius: 20px;
@@ -1065,6 +1205,7 @@
           .more {
             width: 60%;
             text-align: left;
+
             .more_content {
               display: flex;
               align-items: center;
@@ -1072,12 +1213,13 @@
               width: 90%;
               margin: 5px auto;
               padding: 10px 0;
-              background-color: rgb(252,252,252);
+              background-color: rgb(252, 252, 252);
               cursor: pointer;
               border-radius: 5px;
             }
+
             .more_content:hover {
-              background-color: rgb(247,247,247);
+              background-color: rgb(247, 247, 247);
             }
           }
         }
@@ -1086,7 +1228,7 @@
           flex: 4;
           margin-left: 10px;
           background-color: #fff;
-          border: 1px solid rgb(215,215,215);
+          border: 1px solid rgb(215, 215, 215);
           padding: 30px 10px;
           text-align: center;
         }
@@ -1096,13 +1238,15 @@
         margin: 10px 40px;
         height: 600px;
         background-color: #fff;
-        border: 1px solid rgb(200,200,200);
+        border: 1px solid rgb(200, 200, 200);
+
         .write_wrapper {
           display: flex;
           padding: 20px;
           flex-wrap: wrap;
           height: 500px;
           overflow: hidden;
+
           .write_item {
             cursor: pointer;
             padding: 20px 50px 20px 20px;
@@ -1112,49 +1256,59 @@
             height: 100px;
             width: 200px;
             text-align: left;
+
             .week {
               font-weight: 700;
-              color: rgb(16,16,16);
+              color: rgb(16, 16, 16);
               padding-bottom: 10px;
             }
+
             .date {
-              color: rgb(130,130,130);
+              color: rgb(130, 130, 130);
               line-height: 20px;
             }
           }
+
           .write_item:hover {
             transform: translate(2px, 2px);
           }
+
           .write_item.yellow {
-            border-top: 3px solid rgb(250,194,0);
+            border-top: 3px solid rgb(250, 194, 0);
           }
+
           .write_item.blue {
-            border-top: 3px solid rgb(151,179,206);
+            border-top: 3px solid rgb(151, 179, 206);
           }
         }
+
         .add_weekly_wrapper {
           height: 100px;
           display: flex;
           align-items: center;
           justify-content: center;
+
           .add_weekly {
             display: flex;
             font-size: 16px;
             align-items: center;
             padding: 10px;
-            background-color: rgb(250,194,0);
+            background-color: rgb(250, 194, 0);
             color: #FFFFFF;
             cursor: pointer;
+
             i {
               font-size: 20px;
               margin-right: 5px;
             }
           }
+
           .add_weekly:hover {
             background-color: rgb(250, 176, 33);
           }
         }
       }
+
       .mantle {
         position: absolute;
         left: 0;
@@ -1163,12 +1317,14 @@
         bottom: 1px;
         z-index: 100;
       }
+
       .cover {
         position: absolute;
         background-color: #FFFFFF;
-        border: 1px solid rgb(212,212,212);
+        border: 1px solid rgb(212, 212, 212);
         z-index: 999999;
       }
+
       .cover_left {
         bottom: 1px;
         left: -20px;
@@ -1177,6 +1333,7 @@
         border-left: none;
         box-shadow: rgba(0, 0, 0, .15) 10px 0px 6px 0px;
       }
+
       .cover_right {
         bottom: 1px;
         right: -20px;
@@ -1188,36 +1345,45 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+
         .c_r_header {
           display: flex;
           justify-content: space-between;
           align-items: center;
+
           .c_r_h_left {
             display: flex;
             align-items: center;
+
             .mine {
               font-size: 18px;
-              color: rgb(16,16,16);
+              color: rgb(16, 16, 16);
               margin-right: 20px;
             }
+
             .time {
               font-size: 13px;
-              color: rgb(130,130,130);
+              color: rgb(130, 130, 130);
             }
           }
+
           .c_r_h_right {
             display: flex;
             align-items: center;
+
             span {
               font-size: 14px;
               margin-right: 10px;
             }
           }
+
           margin-bottom: 20px;
         }
+
         .c_r_main {
 
         }
+
         .c_r_footer {
         }
       }
