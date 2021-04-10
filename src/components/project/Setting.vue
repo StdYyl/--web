@@ -36,24 +36,26 @@
         <div>
           <el-form :rules="systemFormRules" :model="systemForm" ref="systemForm">
             <el-form-item prop="name" label="项目名称" label-width="125px">
-              <el-input v-model="systemForm.name" size="small" style="width: 300px"></el-input>
+              <el-input v-model="systemForm.name" size="small" style="width: 300px"
+                :disabled="systemForm.createuser.id!=userId"></el-input>
             </el-form-item>
             <el-form-item prop="basePath" label="接口基本路径" label-width="125px">
-              <el-input v-model="systemForm.basePath" size="small" style="width: 300px"></el-input>
+              <el-input v-model="systemForm.basepath" size="small" style="width: 300px"
+                        :disabled="systemForm.createuser.id!=userId"></el-input>
             </el-form-item>
             <el-form-item prop="introduction" label="项目简介" label-width="125px" class="crtUser">
               <el-input type="textarea" :row="0" v-model="systemForm.introduction" size="small"
-                        style="width: 300px"></el-input>
+                        style="width: 300px" :disabled="systemForm.createuser.id!=userId"></el-input>
             </el-form-item>
             <el-form-item label="创建人" label-width="125px" class="crtUser">
-              {{systemForm.createUser}}
+              {{systemForm.createuser.name}}
             </el-form-item>
             <el-form-item label="创建时间" label-width="125px" class="crtUser">
-              {{systemForm.createTime}}
+              {{new Date(systemForm.createtime).getFullYear()}}-{{new Date(systemForm.createtime).getMonth()+1}}--{{new Date(systemForm.createtime).getDate()}}
             </el-form-item>
             <el-form-item label-width="125px">
               <div style="margin: 10px 15px 0 0;">
-                <el-button size="small" type="primary" style="width: 110px">保存</el-button>
+                <el-button size="small" type="primary" style="width: 110px" @click="saveProject">保存</el-button>
               </div>
             </el-form-item>
           </el-form>
@@ -79,16 +81,40 @@
           </div>
           <div style="text-align: left;margin-bottom: 5px">
             项目时间轴
-            <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime">修改</el-button>
+            <el-button type="primary" size="small" class="modifyBtn" @click="modifyCycleNode">修改</el-button>
           </div>
           <el-timeline >
-            <el-timeline-item v-for="item in moduleProject" :key="item.id" :timestamp="item.createTime" placement="top">
+            <el-timeline-item v-for="item in moduleProject" :key="item.id"
+              :timestamp="item.createtime" placement="top">
               <el-card>
                 <h4 style="display: flex;align-items: center;justify-content: center">
-                  <img :src="item.head" style="width: 20px;margin-right: 5px">{{item.name}}
+                  <img :src="item.user.head" style="width: 20px;margin-right: 5px">{{item.user.name}}
                 </h4>
-                <p>完成模块：{{item.moduleName}}</p>
-                <p>进度：{{item.progress}}%</p>
+<!--                <p>-->
+<!--                  <span style="margin-right: 20px;">完成模块：{{item.moduleName}}</span>-->
+<!--                  <span>进度：{{item.progress}}%</span>-->
+<!--                </p>-->
+                <div style="display: flex;align-items: center;justify-content: center">
+                  <el-table
+                    :data="item.modules"
+                    style="width: 100%">
+                    <el-table-column
+                      prop="module"
+                      label="完成模块"
+                      min-width="1"
+                      align="center">
+                    </el-table-column>
+                    <el-table-column
+                      prop="progress"
+                      label="进度"
+                      min-width="1"
+                      align="center">
+                      <template slot-scope="scope">
+                        {{scope.row.progress}}%
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
               </el-card>
             </el-timeline-item>
           </el-timeline>
@@ -100,7 +126,7 @@
         <div style="text-align: left;margin-top: 15px">
           <el-form label-position="top">
             <el-form-item label="分类名称">
-              <el-select v-model="searchModule" filterable placeholder="请选择" size="small">
+              <el-select v-model="searchModule" filterable placeholder="请选择" size="small" @change="changeModule">
                 <el-option
                   v-for="item in moduleList"
                   :key="item.value"
@@ -118,17 +144,17 @@
                   closable
                   :disable-transitions="false"
                   @close="handleRemoveUser(tag)">
-                  <div>
+                  <div v-if="tag">
                     <div style="display: flex;align-items: center;height: 20px">
-                      <el-image style="width: 20px; height: 20px;" :src="tag.head" fit="cover"></el-image>
-                      <span style="margin-left: 10px">{{tag.name}}</span>
+                      <el-image style="width: 20px; height: 20px;" :src="tag.user.head" fit="cover"></el-image>
+                      <span style="margin-left: 10px">{{tag.user.name}}</span>
                     </div>
-                    <span>{{tag.joinTime}}</span>
+                    <span>{{tag.jointime}}</span>
                   </div>
                 </el-tag>
               </div>
               <el-button type="text" class="el-icon-circle-plus-outline" size="small"
-                         style="font-size: 14px" @click="isInvitationUser = true">人员
+                         style="font-size: 14px" @click="isInvitationUser = true" v-if="searchModule"> 人员
               </el-button>
             </el-form-item>
           </el-form>
@@ -309,9 +335,9 @@
           <div class="title">项目操作</div>
           <div class="note">您可以执行以下操作</div>
           <div class="operations">
-            <el-button @click="archive">归档项目</el-button>
-            <el-button @click="exit">退出</el-button>
-            <el-button type="danger" @click="remove">移至回收站</el-button>
+            <el-button @click="archive" v-if="systemForm.createuser.id==userId">归档项目</el-button>
+            <el-button @click="exit" v-if="systemForm.createuser.id!=userId">退出</el-button>
+            <el-button type="danger" @click="remove" v-if="systemForm.createuser.id==userId">移至回收站</el-button>
           </div>
         </div>
       </el-tab-pane>
@@ -320,16 +346,54 @@
 </template>
 
 <script>
+    import {getProjectByPid, updateProject, exit} from "../../api/project";
+    import {confirmMessage, notice} from "../../utils/elementUtils";
+    import {listCycleNode, addCycleNode} from "../../api/cycle";
+    import {queryModuleListByPid, queryModuleUserListByMid} from "../../api/directory";
+
     export default {
         name: "setting",
         data() {
             return {
+                userId: null,
                 //项目周期，时间轴内容
                 moduleProject:[
-                    {id: 1, name: '张三', head: '/static/img/head.b818068.png',
-                        createTime: '2021-3-24',moduleName:'用户管理',progress:10},
-                    {id: 1, name: '李四', head: '/static/img/head.b818068.png',
-                        createTime: '2021-3-25',moduleName:'项目管理',progress:20},
+                  {
+                    id: 1,
+                    user: {
+                      name: '张三',
+                      head: '/static/img/head.b818068.png',
+                    },
+                    createtime: '2021-3-24',
+                    modules: [
+                      {
+                        name: '用户管理',
+                        progress: 10
+                      },
+                      {
+                        name: '项目管理',
+                        progress: 20
+                      }
+                    ]
+                  },
+                  {
+                    id: 2,
+                    user: {
+                      name: '李四',
+                      head: '/static/img/head.b818068.png',
+                    },
+                    createtime: '2021-3-24',
+                    modules: [
+                      {
+                        name: '用户管理',
+                        progress: 10
+                      },
+                      {
+                        name: '项目管理',
+                        progress: 20
+                      }
+                    ]
+                  }
                 ],
                 endMouth:'',
                 endDay:'',
@@ -342,26 +406,21 @@
                 systemForm: {
                     name: 'zx',
                     introduction: '第一个项目',
-                    basePath: 'http://www.baidu.com',
-                    createUser: 'ls',
-                    createTime: '2021-3-20'
+                    basepath: 'http://www.baidu.com',
+                    createuser: {
+                      name: 'XXX',
+                    },
+                    createtime: '2021-3-20'
                 },
                 //功能模块
-                moduleList: [
-                    {value: 1, label: '用户管理'},
-                    {value: 2, label: '日志管理'},
-                    {value: 3, label: '接口管理'},
-                ],
-                searchModule: '',
+                moduleList: [],
+                searchModule: null,
                 //功能模块 邀请成员窗口
                 isInvitationUser: false,
                 //功能模块 邀请成员邮箱
                 InvitationUserEmail: '',
                 //功能模块的开发人员
-                moduleUser: [
-                  {id: 1, name: '张三', head: '/static/img/head.b818068.png', joinTime: '2021-3-24'},
-                  {id: 1, name: '李四', head: '/static/img/head.b818068.png', joinTime: '2021-3-27'},
-                ],
+                moduleUser: [],
                 techDialogVisible: false,
                 //新增技术窗口
                 technology: {
@@ -378,7 +437,53 @@
             },
             //修改预计完成时间
             modifyOrderTime(){
+              if(this.systemForm.id) {
+                confirmMessage(this, '确定修改项目完成时间吗？').then(async () => {
+                  this.systemForm.endmonth = this.endMouth;
+                  this.systemForm.endday = this.endDay;
+                  let res = await updateProject(this.systemForm);
+                  console.log(res);
+                  if(res.data.code === 200) {
+                    notice(this, '修改成功');
+                  } else {
+                    notice(this, '修改失败', 'error');
+                  }
+                }).catch(() => {
+                  notice(this, '已取消更改', 'info');
+                })
+              }
+            },
+            //修改项目周期节点
+            async modifyCycleNode() {
+              let date = new Date();
+              this.moduleProject.push(
+                {
+                  id: this.moduleProject.length+1,
+                  user: {
+                    name: '王五',
+                    head: '/static/img/head.b818068.png',
+                  },
+                  createTime: date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate(),
+                  modules: [
+                    {
+                      module: '用户管理',
+                      progress: 10
+                    },
+                    {
+                      module: '项目管理',
+                      progress: 20
+                    }
+                  ]
+                }
+              );
+              let res = await addCycleNode({
+                pid: this.systemForm.id,
+                uid: this.userId,
+              });
+              console.log(res);
+              if(res.data.code === 200) {
 
+              }
             },
             //添加模块开发人员
             addModuleUser(){
@@ -433,58 +538,135 @@
             },
             archive() {
               //项目归档
-              this.$confirm('此操作将归档全部已完成接口，是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '归档成功!'
+              if(this.systemForm.id) {
+                let tempProject = this.systemForm;
+                confirmMessage(this, '此操作将归档全部已完成接口，是否继续?').then(async () => {
+                  this.systemForm.status=2;
+                  let res = await updateProject(this.systemForm);
+                  console.log(res);
+                  if(res.data.code === 200) {
+                    notice(this, '归档成功');
+                  } else {
+                    notice(this, '归档失败', 'error');
+                    this.systemForm = tempProject;
+                  }
+                }).catch(async () => {
+                  notice(this, '已取消归档', 'info');
                 });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消归档'
-                });
-              });
+              }
             },
             exit() {
               //退出项目
-              this.$confirm('是否确认退出该项目?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '退出成功!'
+              if(this.systemForm.id) {
+                confirmMessage(this, '是否确认退出该项目?').then(async () => {
+                  let res = await exit({
+                    pid: this.systemForm.id,
+                    uid: localStorage.getItem('id'),
+                  });
+                  console.log(res);
+                  if(res.data.code === 200) {
+                    notice(this, '退出成功');
+                    this.$router.push('/home');
+                  } else {
+                    notice(this, '退出失败', 'error');
+                  }
+                }).catch(async () => {
+                  notice(this, '已取消退出', 'info');
                 });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消退出'
-                });
-              });
+              }
             },
             remove() {
               //移至回收站
-              this.$confirm('此操作奖项目移至回收站，稍后可在回收站恢复，是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '移除成功!'
+              if(this.systemForm.id) {
+                let tempProject = this.systemForm;
+                confirmMessage(this, '此操作奖项目移至回收站，稍后可在回收站恢复，是否继续?').then(async () => {
+                  this.systemForm.isremove=2;
+                  let res = await updateProject(this.systemForm);
+                  console.log(res);
+                  if(res.data.code === 200) {
+                    notice(this, '移除成功');
+                    this.$router.push('/home');
+                  } else {
+                    notice(this, '移除失败', 'error');
+                    this.systemForm = tempProject;
+                  }
+                }).catch(async () => {
+                  notice(this, '已取消移除', 'info');
                 });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消移除'
-                });
-              });
+              }
             },
+            async saveProject() {
+              if(this.systemForm.id) {
+                confirmMessage(this, '是否确定更新项目信息?').then(async () => {
+                  let res = await updateProject(this.systemForm);
+                  console.log(res);
+                  if(res.data.code === 200) {
+                    notice(this, '更新成功');
+                  } else {
+                    notice(this, '更新失败', 'error');
+                  }
+                }).catch(() => {
+                  notice(this, '已取消更新', 'info');
+                });
+              }
+            },
+            async changeModule() {
+              this.moduleUser = [];
+              console.log(this.searchModule);
+              let res = await queryModuleUserListByMid({
+                mid: this.searchModule,
+              });
+              console.log(res);
+              if(res.data.code === 200) {
+                this.moduleUser = res.data.data.list;
+                if(res.data.data.total > 0) {
+                  this.moduleUser.forEach((item) => {
+                    let date = new Date(item.jointime);
+                    item.jointime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate();
+                  })
+                }
+              }
+            },
+        },
+        async mounted() {
+          this.userId = localStorage.getItem('id');
+          let res = await getProjectByPid({
+            pid: this.$route.params.id,
+          });
+          console.log(res);
+          if(res.data.code === 200) {
+            this.systemForm = res.data.data.body;
+            this.endMouth = res.data.data.body.endmonth;
+            this.endDay = res.data.data.body.endday;
+          }
+          res = await listCycleNode({
+            pid: this.$route.params.id,
+          });
+          console.log(res);
+          if(res.data.code === 200) {
+            this.moduleProject = res.data.data.list;
+            this.moduleProject.forEach((item) => {
+              let date = new Date(item.createtime);
+              item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate();
+              let modules = JSON.parse(item.dirandprog);
+              console.log(modules);
+              item.modules = modules;
+            })
+          }
+          res = await queryModuleListByPid({
+            pid: this.$route.params.id,
+          });
+          console.log(res);
+          if(res.data.code === 200) {
+            if(res.data.data.total>0) {
+              res.data.data.list.forEach((item) => {
+                this.moduleList.push({
+                  value: item.id,
+                  label: item.name,
+                });
+              })
+            }
+          }
         }
     }
 </script>
@@ -504,14 +686,14 @@
   .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
     text-align: center;
   }
   .avatar {
-    width: 178px;
-    height: 178px;
+    width: 120px;
+    height: 120px;
     display: block;
   }
 
@@ -638,7 +820,7 @@
       display: flex;
       span {
         flex: 3;
-        font-size: 22px;
+        font-size: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -652,9 +834,9 @@
     }
     .main {
       .title {
-        padding: 20px;
+        padding: 10px 0 0 0;
         .tech_name,.tech_version {
-          font-size: 24px;
+          font-size: 18px;
         }
       }
       .tech_item {
@@ -664,7 +846,7 @@
             color: rgb(24,144,255);
           }
           .tech,.version {
-            font-size: 18px;
+            font-size: 16px;
           }
           .link {
             font-size: 20px;

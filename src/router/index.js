@@ -91,13 +91,13 @@ export default new Router({
               component: ProList,
               meta: {model: '项目列表'},
             },
-            {
-              path: 'information',
-              name: 'information',
-              component: information,
-              meta: {model: '个人信息'},
-            },
           ]
+        },
+        {
+          path: 'information',
+          name: 'information',
+          component: information,
+          meta: {model: '个人信息'},
         },
         {
           path: 'member',

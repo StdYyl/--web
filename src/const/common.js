@@ -36,10 +36,10 @@ export const COMMON = {
     {name: "Object", value: "Object"},
   ],
   methodList: [
-    {id: 1, name: 'GET'},
-    {id: 2, name: 'POST'},
-    {id: 3, name: 'PUT'},
-    {id: 4, name: 'DELETE'},
+    {id: "1", name: 'GET'},
+    {id: "2", name: 'POST'},
+    {id: "3", name: 'PUT'},
+    {id: "4", name: 'DELETE'},
   ],
 };
 
