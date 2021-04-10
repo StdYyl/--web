@@ -1,4 +1,5 @@
 import requested from "./axios";
+import {fetch, post} from "./http";
 
 //创建项目
 export function addProject(data) {
@@ -19,5 +20,17 @@ export function getProEnvironmentList(id) {
 //修改项目
 export function putEnvironmentMes(data) {
   return requested(`api/imp/environment/putEnvironmentMes`,"put",data)
+}
+//根据项目id查询项目
+export function getProjectByPid(data) {
+  return fetch('api/imp/project/find', data);
+}
+//更新项目信息
+export function updateProject(data) {
+  return post('api/imp/project/update', data);
+}
+//退出项目
+export function exit(data) {
+  return fetch('api/imp/project/exit', data);
 }
 

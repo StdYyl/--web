@@ -1,4 +1,5 @@
 import requested from "./axios";
+import {fetch} from "./http";
 
 //添加目录
 export function addDir(data) {
@@ -20,3 +21,12 @@ export function queryModuleListSecond(id) {
 export function getModuleByProId(id) {
   return requested(`api/imp/directory/getModuleByProId?id=${id}`)
 }
+//根据项目id查找接口模块列表
+export function queryModuleListByPid(data) {
+  return fetch('api/imp/directory/queryModuleListByPid', data);
+}
+//根据模块id查找模块用户列表
+export function queryModuleUserListByMid(data) {
+  return fetch('api/imp/directory/queryModuleUserListByMid', data);
+}
+
