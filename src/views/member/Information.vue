@@ -406,7 +406,8 @@
   }
 
   .main {
-    margin: 20px;
+    width: 1200px;
+    margin: 20px auto;
     background: white;
     height: 570px;
     padding: 20px 0;

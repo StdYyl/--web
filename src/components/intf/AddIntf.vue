@@ -17,19 +17,24 @@
           <el-option :key="item.id" v-for="item in moduleList" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="状态" prop="status">
+      <el-form-item label="状态">
         <el-select v-model="from.status" size="small">
           <el-option label="未完成" value="1"></el-option>
           <el-option label="已完成" value="2"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="路径" prop="directoryID" style="margin-right: 20px;width: 200px">
+      <el-form-item label="路径" style="margin-right: 20px;width: 160px">
         <el-select v-model="from.type" size="small">
           <el-option :key="item.id" v-for="item in methodList" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="路径" prop="directoryID">
-        <el-input v-model="from.path" placeholder="接口路径" style="width: 450px" size="small"></el-input>
+      <el-form-item label="环境" style="margin-right: 20px;width: 160px">
+        <el-select v-model="from.environmentid" size="small">
+          <el-option :key="item.id" v-for="item in environmentList" :label="item.name" :value="item.id"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="路径" prop="path">
+        <el-input v-model="from.path" placeholder="接口路径" style="width: 400px" size="small"></el-input>
       </el-form-item>
     </el-form>
 
@@ -39,15 +44,17 @@
         <span class="el-icon-info" style="color:#1890FF;"></span>
       </h4>
       <div>
-        <el-button type="primary" size="mini" style="margin-right: 10px;font-size: 12px;padding: 7px 15px">保存
+        <el-button type="primary" size="mini"
+                   style="margin-right: 10px;font-size: 12px;padding: 7px 15px" @click="saveIntf">保存
         </el-button>
         <el-button type="primary" size="mini" style="margin-right: 20px;font-size: 12px;padding: 7px 15px">运行
         </el-button>
       </div>
     </div>
+
     <el-tabs v-model="paramTab" type="card" closable @tab-remove="removeTab" :before-leave="beforeLeave">
       <el-tab-pane v-for="(item, index) in paramList" :key="item.name" :label="item.title" :name="item.name">
-        <el-form :model="from" :rules="rules" ref="from" label-position="top">
+        <el-form :model="from" label-position="top">
           <el-collapse v-model="activeNames">
             <!--header-->
             <el-collapse-item title="Header" name="1">
@@ -114,9 +121,9 @@
                 </div>
               </div>
 
-
             </el-collapse-item>
 
+            <!--result-->
             <el-collapse-item title="result" name="3">
               <template slot="title">
                 <i class="header-icon el-icon-info" style="color:#1890FF;margin-right: 5px"></i>Result
@@ -174,23 +181,27 @@
 
 <script>
     import {COMMON} from '@/const/common'
-    import notice from '@/utils/elementUtils'
+    import {notice} from '@/utils/elementUtils'
+    import {addNewInterface} from "../../api/interface";
+    import {getModuleByProId} from "../../api/directory";
+    import {getProEnvironmentList} from "../../api/project";
 
     export default {
         name: "index",
         data() {
             return {
+                //环境列表
+                environmentList:[],
                 activeNames: ['1', '2', '3'],
-                moduleList: [
-                    {id: 1, name: '用户管理'},
-                    {id: 2, name: '接口管理'},
-                ],
+                //模块列表
+                moduleList: [],
                 resultTypeList: COMMON.paramType,
                 methodList: COMMON.methodList,
                 module: '',
                 //接口基本信息
                 from: {
-                    name: '', introduction: '', directoryID: '', status: '', type: 'GET', path: ''
+                    name: '', introduction: '', directoryID: '', status: '1', type: "1", path: '',environmentid:'',
+                    createId:localStorage.getItem("id"), projectId:this.$route.params.id
                 },
                 //接口参数列表
                 paramTab: '1',
@@ -239,11 +250,23 @@
             }
         },
         methods: {
+            //添加接口(保存)
+            saveIntf() {
+                this.$refs.from.validate(async err => {
+                    if (!err) return;
+                    let param = {
+                        msg:this.from,
+                        param:this.paramList
+                    }
+
+                    let rs = await addNewInterface(param)
+                })
+            },
             //请求头
             headerMes(q, c) {
                 c(COMMON.HEADER)
             },
-            //
+            //切换header
             headerContent(val, q, c) {
                 if (val.reqHeader == 'Content-Type') {
                     c(COMMON.ContentType)
@@ -305,9 +328,9 @@
             },
             //添加tab
             addTab() {
-                let newTabIndex = this.paramList.length+1;
+                let newTabIndex = this.paramList.length + 1;
                 this.paramList.push({
-                    title: `列表${newTabIndex}`, name: newTabIndex+'', content: {
+                    title: `列表${newTabIndex}`, name: newTabIndex + '', content: {
                         header: [
                             {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
                         ],
@@ -325,7 +348,7 @@
                 });
             },
             /* 活动标签切换时触发 */
-            beforeLeave(currentName,oldName) {
+            beforeLeave(currentName, oldName) {
                 let self = this;
                 //重点，如果name是add，则什么都不触发
                 if (currentName == "add") {
@@ -337,7 +360,7 @@
             removeTab(targetName) {
                 let tabs = this.paramList;
                 let index = this.paramList.findIndex(d => d.name == targetName)
-                if(tabs.length <= 1){
+                if (tabs.length <= 1) {
                     this.$message.error('删除失败，至少有存在一个参数列表');
                     return;
                 }
@@ -345,13 +368,36 @@
                 //更改后面tab的name
                 tabs.forEach((tab, num) => {
                     if (num >= index) {
-                        tab.title = '列表'+num
-                        tab.name = num+''
+                        tab.title = '列表' + num
+                        tab.name = num + ''
                     }
                 });
                 this.paramList.splice(index, 1)
             },
+        },
+        async mounted() {
+            //获取环境列表
+            let environment = await getProEnvironmentList(this.$route.params.id);
+            if (environment.data.data) {
+                this.environmentList.splice(0,this.environmentList.length)
+                let param = environment.data.data;
+                param.forEach(msg =>{
+                    this.environmentList.push({id:msg.id, name:msg.name})
+                })
+                console.log(this.environmentList)
+
+            }
+            //模块列表
+            let rs = await getModuleByProId(this.$route.params.id);
+            if(!rs.data.data){
+                notice(this,"请先去添加模块！","info")
+                return
+            }
+            this.moduleList.splice(0,this.moduleList.length)
+            this.moduleList.push(...rs.data.data)
+            console.log(this.moduleList)
         }
+
     }
 </script>
 
@@ -359,10 +405,12 @@
 
   /deep/ #tab-add {
     float: right;
-    .el-icon-close{
+
+    .el-icon-close {
       display: none;
     }
-    &:hover{
+
+    &:hover {
       padding: 0 20px !important;
     }
   }

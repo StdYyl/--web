@@ -39,7 +39,7 @@
         label="接口状态"
         width="139">
         <template slot-scope="props">
-          <span :class="props.row.status == 1 ? 'el-icon-circle-close' : 'el-icon-circle-check'"></span>
+          <span :class="props.row.status == '1' ? 'el-icon-circle-close' : 'el-icon-circle-check'"></span>
           <span>{{props.row.statusName}}</span>
         </template>
       </el-table-column>
@@ -55,6 +55,8 @@
 </template>
 
 <script>
+    import {getInterfaceList} from "../../api/interface";
+
     export default {
         name: "index",
         data() {
@@ -63,18 +65,7 @@
                 pageSize: 9,
                 //总条数（正常）
                 totalCount: 10,
-                intfList: [
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "已完成", status: 2},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "已归档", status: 3},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                    {id: 1, name: "查询客户列表", path: '/customer/list', module: "用户中心", statusName: "未完成", status: 1},
-                ]
+                intfList: []
             }
         },
         methods:{
@@ -83,6 +74,27 @@
                 let {id,moduleId} = this.$route.params
                 this.$router.push(`/home/intfIndex/${id}/intf/${moduleId}/detail/${e}`)
             }
+        },
+        async mounted() {
+            //获取接口列表
+            let rs = await getInterfaceList("all")
+            if(rs.data.data){
+                let param = rs.data.data;
+                param.records.forEach(msg=>{
+                    msg.module = msg.directoryid
+                    if(msg.status == "1"){
+                        msg.statusName = "未完成"
+                    }else if(msg.status == "2"){
+                        msg.statusName = "已完成"
+                    }else{
+                        msg.statusName = "已归档"
+                    }
+                })
+                this.totalCount = param.total
+                this.intfList.splice(0,this.intfList.length)
+                this.intfList.push(...param.records)
+            }
+            console.log(this.intfList)
         }
     }
 </script>

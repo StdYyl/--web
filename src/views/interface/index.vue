@@ -5,7 +5,7 @@
         <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item>{{projectName}}</el-breadcrumb-item>
       </el-breadcrumb>
-      <el-tabs v-model="activeName">
+      <el-tabs v-model="activeName" @tab-click="chooseTabs">
         <!--接口管理-->
         <el-tab-pane label="接口管理" name="interface">
           <div style="display: flex">
@@ -480,7 +480,109 @@
         </el-tab-pane>
 
         <!--环境设置-->
-        <el-tab-pane label="环境设置" name="environment">环境设置</el-tab-pane>
+        <el-tab-pane label="环境设置" name="environment">
+          <div style="display: flex">
+            <div class="environment">
+              <div class="environment_hd">项目环境列表</div>
+              <el-menu
+                id="menu"
+                @select="selectEnvironment"
+                :default-active="activeIndex"
+                class="el-menu-vertical-demo">
+                <el-menu-item :index="item.id" v-for="item in environmentList" :key="item.id">
+                  <i class="el-icon-place"></i>
+                  <span slot="title">{{item.name}}</span>
+                </el-menu-item>
+              </el-menu>
+              <el-button type="text" class="addEnvir" @click="isAddEnvironment = true">新增环境</el-button>
+            </div>
+
+            <div class="environment_rh">
+              <div v-if="isAddEnvironment">
+                <div class="rh_head">
+                  <h4 style="margin: 9px 0 0 15px;color: #1890FF">添加环境
+                    <span class="el-icon-info" style="color:#1890FF;"></span>
+                  </h4>
+                </div>
+
+                <el-form :model="environmentMrs" :rules="rules" ref="environmentMrs">
+                  <el-form-item label="名称:" style="width: 500px">
+                    <el-input v-model="environmentMrs.name" placeholder="环境名称"></el-input>
+                  </el-form-item>
+                  <el-form-item label="域名地址:" style="width: 500px">
+                    <el-input v-model="environmentMrs.baseurl" placeholder="项目的域名地址BaseUrl"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Cookies:" style="width: 500px">
+                    <el-input v-model="environmentMrs.environmentcookies" placeholder="项目Cookie"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Header:">
+                    <div v-for="(headMes,num) in environmentMrs.header" style="display: flex;margin-bottom: 10px">
+                      <el-form-item style="margin-right: 45px">
+                        <el-autocomplete class="inline-input" v-model="headMes.reqHeader"
+                                         :fetch-suggestions="headerMes" placeholder="请填写Header">
+                        </el-autocomplete>
+                      </el-form-item>
+                      <el-form-item style="margin-right: 10px;">
+                        <el-autocomplete style="width: 250px" class="inline-input"
+                                         v-model="headMes.reqHeaderMethod"
+                                         :fetch-suggestions="((a,b)=>{headerContent(headMes,a,b)})"
+                                         placeholder="请填写Header"></el-autocomplete>
+                      </el-form-item>
+                      <el-button type="text" class="el-icon-plus addBtn" @click="addHeader('add')"></el-button>
+                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader('add',num)"></el-button>
+                    </div>
+                  </el-form-item>
+                  <div style="text-align: center;width: 450px">
+                    <el-button size="small" style="margin-right: 15px">取消</el-button>
+                    <el-button size="small" type="primary" @click="addEnvironment('add')">确定</el-button>
+                  </div>
+                </el-form>
+              </div>
+
+              <div v-if="!isAddEnvironment">
+                <div class="rh_head">
+                  <h4 style="margin: 9px 0 0 15px;color: #1890FF">{{environmentTitle}}
+                    <span class="el-icon-info" style="color:#1890FF;"></span>
+                  </h4>
+                </div>
+
+                <el-form :model="environmentMsg" :rules="rules" ref="environmentMsg">
+                  <el-form-item label="名称:" style="width: 500px">
+                    <el-input v-model="environmentMsg.name" placeholder="环境名称"></el-input>
+                  </el-form-item>
+                  <el-form-item label="域名地址:" style="width: 500px">
+                    <el-input v-model="environmentMsg.baseurl" placeholder="项目的域名地址BaseUrl"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Cookies:" style="width: 500px">
+                    <el-input v-model="environmentMsg.environmentcookies" placeholder="项目Cookie"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Header:">
+                    <div v-for="(headMes,num) in environmentMsg.header" style="display: flex;margin-bottom: 10px">
+                      <el-form-item style="margin-right: 45px">
+                        <el-autocomplete class="inline-input" v-model="headMes.reqHeader"
+                                         :fetch-suggestions="headerMes" placeholder="请填写Header">
+                        </el-autocomplete>
+                      </el-form-item>
+                      <el-form-item style="margin-right: 10px;">
+                        <el-autocomplete style="width: 250px" class="inline-input"
+                                         v-model="headMes.reqHeaderMethod"
+                                         :fetch-suggestions="((a,b)=>{headerContent(headMes,a,b)})"
+                                         placeholder="请填写Header"></el-autocomplete>
+                      </el-form-item>
+                      <el-button type="text" class="el-icon-plus addBtn" @click="addHeader()"></el-button>
+                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader(num)"></el-button>
+                    </div>
+                  </el-form-item>
+                  <div style="text-align: center;width: 450px">
+                    <el-button size="small" style="margin-right: 15px">取消</el-button>
+                    <el-button size="small" type="primary" @click="addEnvironment">确定</el-button>
+                  </div>
+                </el-form>
+              </div>
+
+            </div>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -490,6 +592,9 @@
     import {MarkdownPreview, MarkdownPro} from 'vue-meditor'
     import {addDir, getDirOneList, queryModuleListSecond} from "../../api/directory";
     import {notice} from "../../utils/elementUtils";
+    import {COMMON} from "../../const/common";
+    import {addProEnvironment, getProEnvironmentList, putEnvironmentMes} from "../../api/project";
+    import {getInterfaceList} from "../../api/interface";
     // 引入基本模板
     let echarts = require('echarts/lib/echarts')
     // 引入柱状图组件
@@ -501,6 +606,22 @@
         name: "index",
         data() {
             return {
+                //查询环境时
+                environmentTitle:'',
+                activeIndex: "",
+                environmentMsg: {},
+                isAddEnvironment: false,
+                //新增环境时
+                environmentMrs: {
+                    name: '',
+                    baseurl: '',
+                    environmentcookies: '',
+                    header: [
+                        {reqHeader: '', reqHeaderMethod: '',}
+                    ]
+                },
+                //环境列表
+                environmentList: [],
                 folderList: [],
                 parentId: -1,
                 activeName: 'interface',
@@ -580,6 +701,10 @@
                 left_drawer: false,
                 isRealTimePreview: false,
                 weeklyText: '周报填写',
+                rules: {
+                    name: {required: true, message: "请输入环境名称", trigger: 'blur'},
+                    baseUrl: {required: true, message: "请输入域名地址", trigger: 'blur'},
+                }
             }
         },
         components: {
@@ -587,9 +712,116 @@
             MarkdownPro
         },
         methods: {
+            //切换tabs
+            async chooseTabs() {
+                if (this.activeName == 'environment') {
+                    let rs = await getProEnvironmentList(this.$route.params.id);
+                    if (rs.data.data) {
+                        this.environmentList.splice(0, this.environmentList.length)
+                        let param = rs.data.data
+                        param.forEach(arr => {
+                            if(arr.header)
+                              arr.header = JSON.parse(arr.header)
+                        })
+                        this.environmentList.push(...param)
+                        //设置默认值
+                        this.activeIndex = JSON.parse(JSON.stringify(param[0].id))
+                        this.environmentMsg = JSON.parse(JSON.stringify(param[0]))
+                        this.environmentTitle = JSON.parse(JSON.stringify(param[0].name))
+                    }
+                }
+            },
+            //添加addEnvironment
+            async addEnvironment(e) {
+                //新增环境  environmentMrs
+                if (e == 'add') {
+                    let param = JSON.parse(JSON.stringify(this.environmentMrs))
+                    param.header = JSON.stringify(this.environmentMrs.header)
+                    param.createuser = localStorage.getItem("id")
+                    param.updateuser = localStorage.getItem("id")
+                    param.projectid = this.$route.params.id
+                    let rs = await addProEnvironment(param)
+                    if (rs.data.code == 200) {
+                        notice(this, "添加成功!")
+                    }
+                    let params = {
+                        name: '', baseurl: '', environmentcookies: '',
+                        header: [{reqHeader: '', reqHeaderMethod: '',}]
+                    }
+                    this.environmentMrs = params;
+                    // 修改环境  environmentMsg
+                } else {
+                    let param = JSON.parse(JSON.stringify(this.environmentMsg))
+                    param.header = JSON.stringify(this.environmentMsg.header)
+                    param.updateuser = localStorage.getItem("id")
+                    param.projectid = this.$route.params.id
+                    let rs = await putEnvironmentMes(param)
+                    if(rs.data.code == 200) {
+                        notice(this,"修改成功")
+                    }else{
+                        notice(this,"修改失败","error")
+                    }
+                }
+                //重新查询接口
+                this.chooseTabs();
+                this.isAddEnvironment = false
+
+            },
+            //切换header
+            headerContent(val, q, c) {
+                if (val.reqHeader == 'Content-Type') {
+                    c(COMMON.ContentType)
+                    return;
+                }
+                if (val.reqHeader == 'Accept') {
+                    c(COMMON.Accept)
+                    return;
+                }
+                c([])
+            },
+            //请求头
+            headerMes(q, c) {
+                c(COMMON.HEADER)
+            },
+            //添加header
+            addHeader(e) {
+                if (e == 'add') {
+                    this.environmentMrs.header.push({reqHeader: '', reqHeaderMethod: ''});
+                } else {
+                    this.environmentMsg.header.push({reqHeader: '', reqHeaderMethod: ''});
+                }
+            },
+            //删除header
+            removeHeader(e, num) {
+                if (e == 'add') {
+                    if (this.environmentMrs.header.length <= 1) {
+                        this.$message.error('删除失败，至少有存在一个Header');
+                        return;
+                    }
+                    this.environmentMrs.header.splice(num, 1)
+                } else {
+                    if (this.environmentMsg.header.length <= 1) {
+                        this.$message.error('删除失败，至少有存在一个Header');
+                        return;
+                    }
+                    this.environmentMsg.header.splice(num, 1)
+                }
+
+            },
+            //切换项目环境
+            selectEnvironment(e) {
+                let param = {
+                    name: '', baseurl: '', environmentcookies: '',
+                    header: [{reqHeader: '', reqHeaderMethod: '',}]
+                }
+                let index = this.environmentList.findIndex(param => param.id == e);
+                this.environmentMrs = param;
+                this.isAddEnvironment = false
+                this.environmentMsg = JSON.parse(JSON.stringify(this.environmentList[index]))
+            },
             //更换路由
             changeRouter(e) {
-                let {id,moduleId} = this.$route.params
+                let {id, moduleId} = this.$route.params
                 if (moduleId == e.id || (moduleId == 'all' && e.id === 0)) return;
                 if (e.id == 0) {
                     this.$router.push(`/home/intfIndex/${id}/intf/all`)
@@ -803,10 +1035,10 @@
             async getModuleList() {
                 let app = this
                 let id = this.$route.params.id
+                app.intfData.splice(0, this.intfData.length)
+                app.intfData.push({id: 0, label: '我的接口'})
                 let rs = await getDirOneList(localStorage.getItem("id"), 1, id);
                 if (rs.data.data) {
-                    app.intfData.splice(0, this.intfData.length)
-                    app.intfData.push({id: 0, label: '我的接口'})
                     let arr = rs.data.data;
                     for (let i = 0; i < arr.length; i++) {
                         this.intfData.push({id: arr[i].id, label: arr[i].name, children: []})
@@ -818,6 +1050,7 @@
         },
         async mounted() {
             let app = this
+            //模块列表
             await this.getModuleList();
             this.$nextTick(function () {
                 let id = this.$route.params.moduleId
@@ -840,6 +1073,62 @@
 </style>
 
 <style lang="less" scoped>
+
+  /deep/ .addEnvir span {
+    text-decoration: underline;
+  }
+
+  /deep/ .el-form-item__content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .addBtn, .rmBtn {
+    font-size: 18px;
+  }
+
+  .rmBtn {
+    color: red;
+  }
+
+  .environment_rh {
+    min-height: 530px;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    border: 1px solid #bbbbbb;
+    background-color: white;
+    border-radius: 8px;
+    width: 870px;
+    margin-left: 30px;
+    padding: 15px;
+    text-align: left;
+
+    /deep/ .el-form {
+      margin: 20px 0 0 30px;
+
+      .el-form-item__label {
+        width: 100px;
+        text-align: right;
+      }
+    }
+
+    .rh_head {
+      border-bottom: 1px solid #c3c3c3;
+      padding-bottom: 10px;
+      margin-bottom: 0;
+    }
+  }
+
+  #menu /deep/ {
+    .is-active {
+      background-color: #66B1FF;
+      color: white;
+    }
+
+    .el-menu-item {
+      text-align: left;
+      width: 101%;
+    }
+  }
 
   /deep/ .el-tree-node__loading-icon {
     display: none;
@@ -935,7 +1224,7 @@
     }
   }
 
-  #a /deep/ .el-tabs {
+  #a /deep/ .el-tabs, .environment {
     min-height: 530px;
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
     border: 1px solid #bbbbbb;
@@ -945,6 +1234,14 @@
     margin-left: 20px;
     box-sizing: inherit;
     overflow: hidden;
+
+    .environment_hd {
+      height: 90px;
+      background-color: #F0F0F0;
+      line-height: 90px;
+      letter-spacing: 2px;
+      font-weight: bold
+    }
 
     .el-tabs__header {
       background-color: white;

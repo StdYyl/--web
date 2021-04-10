@@ -15,6 +15,8 @@ export function queryDirListLevSecond(dirId, userId) {
 //查询模块二级目录
 export function queryModuleListSecond(id) {
   return requested(`api/imp/directory/queryModuleListSecond?id=${id}`)
-
 }
-
+//查询项目的所有模块
+export function getModuleByProId(id) {
+  return requested(`api/imp/directory/getModuleByProId?id=${id}`)
+}
