@@ -311,7 +311,7 @@
                 <div v-else style="text-align: left">
                   <el-form-item style="margin-right: 10px;width: 350px">
                     <el-input type="textarea" placeholder="输入参数"
-                              v-model="item.content.paramBody"></el-input>
+                              v-model="item.content.resultBody"></el-input>
                   </el-form-item>
                 </div>
               </div>
@@ -370,18 +370,18 @@
                             reqType: '1',
                             paramBody: '',
                             param: [
-                                {name: '', value: '', isRequired: '', note: ''}
+                                {name: '', value: '', isRequired: false, note: ''}
                             ],
                             resultType: '1',
                             resultBody: '',
                             result: [
-                                {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                                {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
                             ],
                             reqQuery: [
-                                {name: '', value: '', isRequired: '', note: ''}
+                                {name: '', value: '', isRequired: false, note: ''}
                             ],
                             reqBodyJson: [
-                                {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                                {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
                             ]
                         }
                     },
@@ -457,7 +457,7 @@
             //添加query
             addQuery(e) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
-                this.paramList[index].content.reqQuery.push({name: '', value: '', isRequired: '', note: ''});
+                this.paramList[index].content.reqQuery.push({name: '', value: '', isRequired: false, note: ''});
             },
             //删除query
             removeQuery(e, num) {
@@ -469,7 +469,7 @@
             //添加param
             addParam(e) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
-                this.paramList[index].content.param.push({name: '', value: '', isRequired: '', note: ''});
+                this.paramList[index].content.param.push({name: '', value: '', isRequired: false, note: ''});
                 console.log(this.paramList[index].content)
             },
             //删除param
@@ -485,7 +485,7 @@
                 if (!e.command || e.command == 'b') {
                     let data = e.node.parent.data
                     let level = data.children ? data.children[0].level : data[0].level
-                    let node = {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level,}
+                    let node = {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level,}
                     if (data.children) {
                         data.children.push(node)
                     } else {
@@ -494,7 +494,7 @@
 
                 } else {
                     let data = e.node
-                    let newChild = {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: data.level + 1};
+                    let newChild = {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: data.level + 1};
                     if (!data.children) {
                         this.$set(data, 'children', []);
                     }
@@ -532,18 +532,18 @@
                         reqType: '1',
                         paramBody: '',
                         param: [
-                            {name: '', value: '', isRequired: '', note: ''}
+                            {name: '', value: '', isRequired: false, note: ''}
                         ],
                         resultType: '1',
                         resultBody: '',
                         result: [
-                            {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                            {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
                         ],
                         reqQuery: [
-                            {name: '', value: '', isRequired: '', note: ''}
+                            {name: '', value: '', isRequired: false, note: ''}
                         ],
                         reqBodyJson: [
-                            {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                            {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
                         ]
 
                     }

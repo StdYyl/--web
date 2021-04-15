@@ -717,8 +717,6 @@
         methods: {
             //更换页码
             async changeIndex(index){
-                console.log(this.activeName == 'all')
-                console.log(this.activeName)
                 //所有
                 if(this.activeName == 'all'){
                     let rs = await this.getProListFc(0,index)

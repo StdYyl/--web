@@ -11,7 +11,7 @@
     <h3 style="text-align: left;border-left: 3px solid #1890FF;padding:3px 5px;margin-left: 15px">基本信息</h3>
     <div id="base">
       <el-form :model="from" ref="from">
-        <el-form-item label="接口名称" style="color: #586069">:
+        <el-form-item label="接口名称" style="color: #586069">：
           {{from.name}}
         </el-form-item>
         <el-form-item label="创建人">：
@@ -28,8 +28,8 @@
         <el-form-item label="接口路径">：
           <div>
           <span
-            style="font-weight: bold;margin-right: 5px;color: #1890FF;font-size: 15px">{{from.type.toUpperCase()}}</span>
-            {{from.updateTime}}
+            style="font-weight: bold;margin-right: 5px;color: #1890FF;font-size: 15px">{{from.typeName}}</span>
+            {{from.path}}
           </div>
         </el-form-item>
         <el-form-item label="简介">：
@@ -43,12 +43,12 @@
     <el-tabs v-model="paramTab" type="border-card" id="tab">
       <el-tab-pane v-for="(item, index) in paramList" :key="item.name" :label="item.title" :name="item.name">
         <el-form :model="from" ref="from" label-position="top">
-          <div v-if="item.content.header.length > 0">
+
+          <!--header-->
+          <div v-if="item.content.header.length > 0 && item.content.header.empty">
             <div style="text-align: left">
               <i class="header-icon el-icon-info" style="color:#1890FF;margin:0 5px 10px 0"></i>Header
             </div>
-            <!--header-->
-            <!--raw-->
             <el-table :data="item.content.header" border>
               <el-table-column
                 prop="reqHeader"
@@ -58,7 +58,7 @@
               <el-table-column
                 prop="reqHeaderMethod"
                 label="参数值"
-                width="230">
+                width="220">
               </el-table-column>
               <el-table-column
                 prop="paramNote"
@@ -68,18 +68,18 @@
           </div>
 
           <!--body-->
-          <div v-if="item.content.param.length > 0">
+          <div v-if="from.type != 'GET'">
             <div style="text-align: left">
               <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Body
             </div>
 
-            <!--json格式-->
+            <!--from格式-->
             <div v-if="item.content.reqType == '1'">
               <el-table :data="item.content.param" border>
                 <el-table-column
                   prop="name"
                   label="参数名称"
-                  width="200">
+                  width="230">
                 </el-table-column>
                 <el-table-column
                   prop="value"
@@ -90,6 +90,44 @@
                   prop="isRequired"
                   label="是否必填"
                   width="80">
+                  <template slot-scope="scope">
+                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  prop="note"
+                  label="备注">
+                </el-table-column>
+              </el-table>
+            </div>
+
+            <!--Json格式-->
+            <div v-else-if="item.content.reqType == '2'">
+              <el-table :data="item.content.reqBodyJson" border
+                        row-key="name"
+                        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                <el-table-column
+                  prop="name"
+                  label="参数名称"
+                  width="230">
+                </el-table-column>
+                <el-table-column
+                  prop="type"
+                  label="格式"
+                  width="110">
+                </el-table-column>
+                <el-table-column
+                  prop="isRequired"
+                  label="是否必填"
+                  width="110">
+                  <template slot-scope="scope">
+                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  prop="value"
+                  label="返回值"
+                  width="160">
                 </el-table-column>
                 <el-table-column
                   prop="note"
@@ -105,12 +143,42 @@
             </div>
           </div>
 
+          <!--Query-->
+          <div v-if="item.content.reqQuery.length > 0 && item.content.reqQuery.empty">
+            <div style="text-align: left;line-height: 41px">
+              <i class="header-icon el-icon-info" style="color:#1890FF;margin:0 5px 10px 0"></i>Query
+            </div>
+            <el-table :data="item.content.reqQuery" border>
+              <el-table-column
+                prop="name"
+                label="参数名称"
+                width="230">
+              </el-table-column>
+              <el-table-column
+                prop="value"
+                label="参数值"
+                width="230">
+              </el-table-column>
+              <el-table-column
+                prop="isRequired"
+                label="是否必填"
+                width="80">
+                <template slot-scope="scope">
+                  <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="note"
+                label="备注">
+              </el-table-column>
+            </el-table>
+          </div>
+
+          <!--result-->
           <div style="text-align: left">
             <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Result
           </div>
-
           <div>
-            <!--添加多个result-->
             <!--json格式-->
             <div v-if="item.content.resultType == '1'">
               <el-table :data="item.content.result" border
@@ -130,6 +198,9 @@
                   prop="isRequired"
                   label="是否必填"
                   width="80">
+                  <template slot-scope="scope">
+                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                  </template>
                 </el-table-column>
                 <el-table-column
                   prop="value"
@@ -158,6 +229,8 @@
 </template>
 
 <script>
+    import {getIntfMesById} from "../../api/interface";
+
     export default {
         name: "Preview",
         data() {
@@ -168,52 +241,87 @@
                 },
                 paramTab: '1',
                 paramList: [
-                    {
-                        title: '列表1', name: '1', content: {
-                            header: [
-                                {reqHeader: 'Content-Type', reqHeaderMethod: 'application/json', paramNote: '类型'}
-                            ],
-                            reqType: '1',
-                            paramBody: '',
-                            param: [
-                                {name: 'name', value: '张三', isRequired: '是', note: '用户名'}
-                            ],
-                            resultType: '1',
-                            resultBody: '',
-                            result: [
-                                {name: 'code', value: '200', isRequired: '是', note: '状态码', type: 'String',
-                                children:[
-                                    {name: 'codes', value: '200', isRequired: '是', note: '状态码', type: 'String',}
-                                ]}
-                            ]
-                        }
-                    },
-                    {
-                        title: '列表2', name: '2', content: {
-                            header: [],
-                            reqType: '2',
-                            paramBody: `{
-                            "paramKey":"Accept",
-                            "paramVal":"*",
-                            "paramNote":"请求头类型"
-                        },`,
-                            param: [
-                                {name: 'name', value: '张三', isRequired: '是', note: '用户名'}
-                            ],
-                            resultType: '1',
-                            resultBody: '',
-                            result: [
-                                {name: 'code', value: '200', isRequired: '是', note: '状态码', type: 'String',
-                                    children:[
-                                        {name: 'codes', value: '200', isRequired: '是', note: '状态码', type: 'String',}
-                                    ]}
-                            ]
-                        }
-                    }
+                    // {
+                    //     title: '列表1', name: '1', content: {
+                    //         header: [
+                    //             {reqHeader: 'Content-Type', reqHeaderMethod: 'application/json', paramNote: '类型'}
+                    //         ],
+                    //         reqType: '1',
+                    //         paramBody: '',
+                    //         param: [
+                    //             {name: 'name', value: '张三', isRequired: '是', note: '用户名'}
+                    //         ],
+                    //         resultType: '1',
+                    //         resultBody: '',
+                    //         result: [
+                    //             {name: 'code', value: '200', isRequired: '是', note: '状态码', type: 'String',
+                    //             children:[
+                    //                 {name: 'codes', value: '200', isRequired: '是', note: '状态码', type: 'String',}
+                    //             ]}
+                    //         ]
+                    //     }
+                    // },
+                    // {
+                    //     title: '列表2', name: '2', content: {
+                    //         header: [],
+                    //         reqType: '2',
+                    //         paramBody: `{
+                    //         "paramKey":"Accept",
+                    //         "paramVal":"*",
+                    //         "paramNote":"请求头类型"
+                    //     },`,
+                    //         param: [
+                    //             {name: 'name', value: '张三', isRequired: '是', note: '用户名'}
+                    //         ],
+                    //         resultType: '1',
+                    //         resultBody: '',
+                    //         result: [
+                    //             {name: 'code', value: '200', isRequired: '是', note: '状态码', type: 'String',
+                    //                 children:[
+                    //                     {name: 'codes', value: '200', isRequired: '是', note: '状态码', type: 'String',}
+                    //                 ]}
+                    //         ]
+                    //     }
+                    // }
                 ],
             }
         },
-        methods: {}
+        methods: {},
+        async mounted() {
+            let intfId = this.$route.params.intfId
+            let rs = await getIntfMesById(intfId);
+            if (rs.data.data) {
+                let data = rs.data.data
+                this.from = data.baseMsg
+                data.paramMsg.forEach(msg=>{
+                    msg.content.reqQuery = JSON.parse(msg.content.reqQuery)
+                    //判断Query是否为空
+                    msg.content.reqQuery.forEach(query=>{
+                        if(query.paramNote != '' || query.reqHeader != '' ||  query.reqHeaderMethod != ''){
+                            msg.content.reqQuery.empty = true
+                        }
+                    })
+                    msg.content.header = JSON.parse(msg.content.header)
+                    //判断header是否为空
+                    msg.content.header.forEach(head=>{
+                        if(head.paramNote != '' || head.reqHeader != '' ||  head.reqHeaderMethod != ''){
+                            msg.content.header.empty = true
+                        }
+                    })
+                    if(msg.content.result){
+                        msg.content.result = JSON.parse(msg.content.result)
+                    }
+                    if(msg.content.reqBodyJson){
+                        msg.content.reqBodyJson = JSON.parse(msg.content.reqBodyJson)
+                    }
+                    if(msg.content.param){
+                        msg.content.param = JSON.parse(msg.content.param)
+                    }
+                })
+                this.paramList.push(...data.paramMsg)
+                console.log( data.paramMsg)
+            }
+        }
     }
 </script>
 
