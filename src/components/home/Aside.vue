@@ -156,10 +156,11 @@
 
             },
             async showAddDirList(){
+                console.log(this.folderList)
                 this.folderList.splice(0, this.folderList.length)
                 this.folderList.push({id:-1,label:"无"})
                 let rs = await getDirOneList(localStorage.getItem("id"))
-                if (rs.data.code == 200) {
+                if (rs.data.data == 200) {
                     let arr = rs.data.data;
                     for (let i = 0; i < arr.length; i++) {
                         this.folderList.push({id: arr[i].id, label: arr[i].name, children:[]})
@@ -227,8 +228,8 @@
             //查询目录列表
             async getDirList() {
                 let rs = await getDirOneList(localStorage.getItem("id"))
-                if (rs.data.code == 200) {
-                    this.folderData = [{id:-1, label:"项目列表",}]
+                this.folderData = [{id:-1, label:"项目列表",}]
+                if (rs.data.data) {
                     this.folderData.push()
                     let arr = rs.data.data;
                     for (let i = 0; i < arr.length; i++) {

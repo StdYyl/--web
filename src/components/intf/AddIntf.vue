@@ -23,12 +23,12 @@
           <el-option label="已完成" value="2"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="路径" style="margin-right: 20px;width: 160px">
+      <el-form-item label="请求方式" style="margin-right: 20px;width: 160px">
         <el-select v-model="from.type" size="small">
           <el-option :key="item.id" v-for="item in methodList" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="环境" style="margin-right: 20px;width: 160px">
+      <el-form-item label="环境"  prop="environmentid" style="margin-right: 20px;width: 160px">
         <el-select v-model="from.environmentid" size="small">
           <el-option :key="item.id" v-for="item in environmentList" :label="item.name" :value="item.id"></el-option>
         </el-select>
@@ -78,25 +78,137 @@
                   <el-input v-model="headMes.paramNote" placeholder="请填写备注" size="small"
                             style="width: 230px"></el-input>
                 </el-form-item>
-                <el-button type="text" class="el-icon-close" @click="removeHeader(item,num)"></el-button>
+                <el-button v-if="item.content.header.length > 1" type="text" class="el-icon-close"
+                           @click="removeHeader(item,num)"></el-button>
                 <el-button type="text" class="el-icon-plus" @click="addHeader(item)"></el-button>
               </div>
             </el-collapse-item>
 
             <!--body-->
-            <el-collapse-item title="Body" name="2">
+            <el-collapse-item title="Body" name="2" v-if="from.type != 1">
               <template slot="title">
                 <i class="header-icon el-icon-info" style="color:#1890FF;margin-right: 5px"></i>Body
               </template>
               <div style="text-align: left;margin:5px 20px">
-                <el-radio v-model="item.content.reqType" label="1">Json</el-radio>
-                <el-radio v-model="item.content.reqType" label="2">Raw</el-radio>
+                <el-radio v-model="item.content.reqType" label="1">From</el-radio>
+                <el-radio v-model="item.content.reqType" label="2">Json</el-radio>
+                <el-radio v-model="item.content.reqType" label="3">Raw</el-radio>
               </div>
 
               <div>
                 <!--添加多个body-->
+                <!--From-->
+                <div v-if="item.content.reqType == 1">
+                  <div v-for="(headMes,num) in item.content.param">
+                    <el-form-item style="margin-right: 10px">
+                      <el-input v-model="headMes.name" placeholder="参数名称" size="small"
+                                style="width: 190px"></el-input>
+                    </el-form-item>
+                    <el-form-item style="margin-right: 10px;">
+                      <el-input v-model="headMes.value" placeholder="参数值" size="small"
+                                style="width: 180px"></el-input>
+                    </el-form-item>
+                    <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>
+                    <el-form-item style="margin-right: 15px;">
+                      <el-input v-model="headMes.note" placeholder="请填写备注" size="small"
+                                style="width: 230px"></el-input>
+                    </el-form-item>
+                    <el-button v-if="item.content.param.length > 1" type="text" class="el-icon-close"
+                               @click="removeParam(item,num)"></el-button>
+                    <el-button type="text" class="el-icon-plus" @click="addParam(item)"></el-button>
+                  </div>
+                </div>
                 <!--Json-->
-                <div v-if="item.content.reqType == 1" v-for="(headMes,num) in item.content.param">
+                <div v-else-if="item.content.reqType == 2">
+                  <!--                  <div v-for="(headMes,num) in item.content.reqBodyJson" :key="num">-->
+                  <!--                    <el-form-item style="margin-right: 10px">-->
+                  <!--                      <el-input v-model="headMes.name" placeholder="参数名称" size="small"-->
+                  <!--                                style="width: 170px"></el-input>-->
+                  <!--                    </el-form-item>-->
+                  <!--                    <el-form-item style="margin-right: 10px;width: 120px">-->
+                  <!--                      <el-select v-model="headMes.type" size="small">-->
+                  <!--                        <el-option :key="item.id" v-for="item in resultTypeList" :label="item.name"-->
+                  <!--                                   :value="item.value"></el-option>-->
+                  <!--                      </el-select>-->
+                  <!--                    </el-form-item>-->
+                  <!--                    <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
+                  <!--                    <el-form-item style="margin-right: 10px;">-->
+                  <!--                      <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
+                  <!--                                style="width: 160px"></el-input>-->
+                  <!--                    </el-form-item>-->
+                  <!--                    <el-form-item style="margin-right: 15px;">-->
+                  <!--                      <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
+                  <!--                                style="width: 130px"></el-input>-->
+                  <!--                    </el-form-item>-->
+                  <!--                    <el-button v-if="item.content.reqBodyJson.length > 1" type="text" class="el-icon-close"-->
+                  <!--                               @click="removeBodyJson(item,num)"></el-button>-->
+                  <!--                    <el-button type="text" class="el-icon-plus" @click="addBodyJson(item)"></el-button>-->
+                  <!--                  </div>-->
+                  <el-tree :data="item.content.reqBodyJson" :props="defaultProps"
+                           :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
+                    <span class="custom-tree-node" slot-scope="{ node, data }">
+<!--                      <span @click="openNode(data)">-->
+<!--                        <i-->
+<!--                          :class="data.type != 'Array' && data.type != 'Object' ? 'el-icon-caret-right none_iocn' :'el-icon-caret-right'"></i>-->
+<!--                      </span>-->
+                      <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                      </el-form-item>
+                      <el-form-item style="margin-right: 10px;width: 120px">
+                        <el-select v-model="data.type" size="small" @change="changeType(node,data)">
+                          <el-option :key="item.name" v-for="item in resultTypeLists" :label="item.name"
+                                     :value="item.value"></el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-checkbox v-model="data.isRequired" style="margin-right: 15px">必填</el-checkbox>
+                      <el-form-item style="margin-right: 10px;">
+                        <el-input v-model="data.value" placeholder="Mock值" size="small"
+                                  style="width: 160px" :disabled="data.type=='Object' || data.type=='Array'"></el-input>
+                      </el-form-item>
+                      <el-form-item style="max-resolution: res;gin-right: 15px;">
+                        <el-input v-model="data.note" placeholder="请填写备注" size="small"
+                                  style="width: 130px"></el-input>
+                      </el-form-item>
+                      <el-button v-if="item.content.reqBodyJson.length > 1 || data.level > 1" type="text"
+                                 class="el-icon-close"
+                                 @click="removeBodyJson(node,data)" style="padding: 0"></el-button>
+                      <!--添加兄弟节点-->
+                      <el-button v-if="data.type != 'Array' && data.type != 'Object'" type="text" class="el-icon-plus"
+                                 @click="addBodyJson({node,data})" style="padding: 0;margin-left: 0"></el-button>
+                      <!--仅当格式为Array或Object时可以创建子节点。-->
+                      <el-form-item v-else style="margin-bottom: 0">
+                          <el-dropdown @command="addBodyJson">
+                            <el-button type="text" class="el-icon-plus" style="padding: 0;float: none"></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                              <el-dropdown-item :command="beforeHandleCommand(data,item,'a')">子节点</el-dropdown-item>
+                              <el-dropdown-item :command="beforeHandleCommand(node,item,'b')">兄弟节点</el-dropdown-item>
+                            </el-dropdown-menu>
+                          </el-dropdown>
+                      </el-form-item>
+
+                    </span>
+                  </el-tree>
+
+                </div>
+                <!--Raw-->
+                <div v-else style="text-align: left;margin-top: 12px">
+                  <el-form-item style="margin-right: 10px;width: 350px">
+                    <el-input type="textarea" placeholder="输入参数"
+                              v-model="item.content.paramBody"></el-input>
+                  </el-form-item>
+                </div>
+              </div>
+
+            </el-collapse-item>
+
+            <!--query-->
+            <el-collapse-item title="Query" name="3">
+              <template slot="title">
+                <i class="header-icon el-icon-info" style="color:#1890FF;margin-right: 5px"></i>Query
+              </template>
+              <!--添加多个header-->
+              <div>
+                <div v-for="(headMes,num) in item.content.reqQuery">
                   <el-form-item style="margin-right: 10px">
                     <el-input v-model="headMes.name" placeholder="参数名称" size="small"
                               style="width: 190px"></el-input>
@@ -110,21 +222,15 @@
                     <el-input v-model="headMes.note" placeholder="请填写备注" size="small"
                               style="width: 230px"></el-input>
                   </el-form-item>
-                  <el-button type="text" class="el-icon-close" @click="removeParam(item,num)"></el-button>
-                  <el-button type="text" class="el-icon-plus" @click="addParam(item)"></el-button>
-                </div>
-                <div v-else style="text-align: left">
-                  <el-form-item style="margin-right: 10px;width: 350px">
-                    <el-input type="textarea" placeholder="输入参数"
-                              v-model="item.content.paramBody"></el-input>
-                  </el-form-item>
+                  <el-button v-if="item.content.reqQuery.length > 1" type="text" class="el-icon-close"
+                             @click="removeQuery(item,num)"></el-button>
+                  <el-button type="text" class="el-icon-plus" @click="addQuery(item)"></el-button>
                 </div>
               </div>
-
             </el-collapse-item>
 
             <!--result-->
-            <el-collapse-item title="result" name="3">
+            <el-collapse-item title="result" name="4">
               <template slot="title">
                 <i class="header-icon el-icon-info" style="color:#1890FF;margin-right: 5px"></i>Result
               </template>
@@ -136,28 +242,71 @@
               <div>
                 <!--添加多个result-->
                 <!--Json-->
-                <div v-if="item.content.resultType == 1" v-for="(headMes,num) in item.content.result">
-                  <el-form-item style="margin-right: 10px">
-                    <el-input v-model="headMes.name" placeholder="名称" size="small"
-                              style="width: 170px"></el-input>
-                  </el-form-item>
-                  <el-form-item style="margin-right: 10px;width: 120px">
-                    <el-select v-model="headMes.type" size="small">
-                      <el-option :key="item.id" v-for="item in resultTypeList" :label="item.name"
-                                 :value="item.value"></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>
-                  <el-form-item style="margin-right: 10px;">
-                    <el-input v-model="headMes.value" placeholder="返回值" size="small"
-                              style="width: 160px"></el-input>
-                  </el-form-item>
-                  <el-form-item style="margin-right: 15px;">
-                    <el-input v-model="headMes.note" placeholder="请填写备注" size="small"
-                              style="width: 130px"></el-input>
-                  </el-form-item>
-                  <el-button type="text" class="el-icon-close" @click="removeResult(item,num)"></el-button>
-                  <el-button type="text" class="el-icon-plus" @click="addResult(item)"></el-button>
+                <div v-if="item.content.resultType == 1">
+<!--                  <el-form-item style="margin-right: 10px">-->
+<!--                    <el-input v-model="headMes.name" placeholder="名称" size="small"-->
+<!--                              style="width: 170px"></el-input>-->
+<!--                  </el-form-item>-->
+<!--                  <el-form-item style="margin-right: 10px;width: 120px">-->
+<!--                    <el-select v-model="headMes.type" size="small">-->
+<!--                      <el-option :key="item.name" v-for="item in resultTypeList" :label="item.name"-->
+<!--                                 :value="item.value"></el-option>-->
+<!--                    </el-select>-->
+<!--                  </el-form-item>-->
+<!--                  <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
+<!--                  <el-form-item style="margin-right: 10px;">-->
+<!--                    <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
+<!--                              style="width: 160px"></el-input>-->
+<!--                  </el-form-item>-->
+<!--                  <el-form-item style="margin-right: 15px;">-->
+<!--                    <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
+<!--                              style="width: 130px"></el-input>-->
+<!--                  </el-form-item>-->
+<!--                  <el-button v-if="item.content.result.length > 1" type="text" class="el-icon-close"-->
+<!--                             @click="removeResult(item,num)"></el-button>-->
+<!--                  <el-button type="text" class="el-icon-plus" @click="addResult(item)"></el-button>-->
+
+                  <el-tree :data="item.content.result" :props="defaultProps"
+                           :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
+                    <span class="custom-tree-node" slot-scope="{ node, data }">
+                      <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                      </el-form-item>
+                      <el-form-item style="margin-right: 10px;width: 120px">
+                        <el-select v-model="data.type" size="small" @change="changeType(node,data)">
+                          <el-option :key="item.name" v-for="item in resultTypeList" :label="item.name"
+                                     :value="item.value"></el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-checkbox v-model="data.isRequired" style="margin-right: 15px">必填</el-checkbox>
+                      <el-form-item style="margin-right: 10px;">
+                        <el-input v-model="data.value" placeholder="返回值" size="small"
+                                  style="width: 160px" :disabled="data.type=='Object' || data.type=='Array'"></el-input>
+                      </el-form-item>
+                      <el-form-item style="max-resolution: res;gin-right: 15px;">
+                        <el-input v-model="data.note" placeholder="请填写备注" size="small"
+                                  style="width: 130px"></el-input>
+                      </el-form-item>
+                      <el-button v-if="item.content.result.length > 1 || data.level > 1" type="text"
+                                 class="el-icon-close"
+                                 @click="removeBodyJson(node,data)" style="padding: 0"></el-button>
+                      <!--添加兄弟节点-->
+                      <el-button v-if="data.type != 'Array' && data.type != 'Object'" type="text" class="el-icon-plus"
+                                 @click="addBodyJson({node,data})" style="padding: 0;margin-left: 0"></el-button>
+                      <!--仅当格式为Array或Object时可以创建子节点。-->
+                      <el-form-item v-else style="margin-bottom: 0">
+                          <el-dropdown @command="addBodyJson">
+                            <el-button type="text" class="el-icon-plus" style="padding: 0;float: none"></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                              <el-dropdown-item :command="beforeHandleCommand(data,item,'a')">子节点</el-dropdown-item>
+                              <el-dropdown-item :command="beforeHandleCommand(node,item,'b')">兄弟节点</el-dropdown-item>
+                            </el-dropdown-menu>
+                          </el-dropdown>
+                      </el-form-item>
+
+                    </span>
+                  </el-tree>
+
                 </div>
                 <div v-else style="text-align: left">
                   <el-form-item style="margin-right: 10px;width: 350px">
@@ -167,6 +316,7 @@
                 </div>
               </div>
             </el-collapse-item>
+
           </el-collapse>
         </el-form>
       </el-tab-pane>
@@ -185,23 +335,29 @@
     import {addNewInterface} from "../../api/interface";
     import {getModuleByProId} from "../../api/directory";
     import {getProEnvironmentList} from "../../api/project";
+    import {uuid} from "../../utils/utils";
 
     export default {
         name: "index",
         data() {
             return {
+                defaultProps: {
+                    children: 'children',
+                    label: 'label'
+                },
                 //环境列表
-                environmentList:[],
-                activeNames: ['1', '2', '3'],
+                environmentList: [],
+                activeNames: ['1', '2', '3', '4'],
                 //模块列表
                 moduleList: [],
                 resultTypeList: COMMON.paramType,
+                resultTypeLists: COMMON.paramType,
                 methodList: COMMON.methodList,
                 module: '',
                 //接口基本信息
                 from: {
-                    name: '', introduction: '', directoryID: '', status: '1', type: "1", path: '',environmentid:'',
-                    createId:localStorage.getItem("id"), projectId:this.$route.params.id
+                    name: '', introduction: '', directoryID: '', status: '1', type: "1", path: '', environmentid: '',
+                    createId: localStorage.getItem("id"), projectId: this.$route.params.id
                 },
                 //接口参数列表
                 paramTab: '1',
@@ -219,47 +375,55 @@
                             resultType: '1',
                             resultBody: '',
                             result: [
-                                {name: '', value: '', isRequired: '', note: '', type: ''}
+                                {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                            ],
+                            reqQuery: [
+                                {name: '', value: '', isRequired: '', note: ''}
+                            ],
+                            reqBodyJson: [
+                                {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
                             ]
                         }
                     },
-                    // {
-                    //     title: '列表2', name: '2', content: {
-                    //         header: [
-                    //             {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
-                    //         ],
-                    //         reqType: '1',
-                    //         paramBody: '',
-                    //         param: [
-                    //             {name: '', value: '', isRequired: '', note: ''}
-                    //         ],
-                    //         resultType: '1',
-                    //         resultBody: '',
-                    //         result: [
-                    //             {name: '', value: '', isRequired: '', note: '', type: ''}
-                    //         ]
-                    //     }
-                    // }
                 ],
                 rules: {
                     name: {required: true, message: "请输入接口名称", trigger: 'blur'},
                     introduction: {required: true, message: "请输入接口简介", trigger: 'blur'},
                     directoryID: {required: true, message: "请选择分组", trigger: 'blur'},
                     path: {required: true, message: "请输入接口路径", trigger: 'blur'},
+                    environmentid: {required: true, message: "请输请选择接口环境", trigger: 'blur'},
                 }
             }
         },
         methods: {
+            // openNode(data){
+            //     this.$nextTick(function () {
+            //         this.$refs.BodyJson.setCurrentKey(data.id);
+            //     })
+            //     this.$refs['BodyJson'].store.nodesMap[data.id].expanded = true;
+            // },
+            //更换类型时，删除子节点
+            changeType(node,data) {
+                console.log(node)
+                node.data.value=''
+                let msg = node.data
+                if(msg.children)
+                msg.children.splice(0,msg.children.length)
+            },
+            beforeHandleCommand(data, item, command) {
+                return {'node': data, 'item': item, 'command': command}
+            },
             //添加接口(保存)
             saveIntf() {
                 this.$refs.from.validate(async err => {
                     if (!err) return;
                     let param = {
-                        msg:this.from,
-                        param:this.paramList
+                        msg: this.from,
+                        param: this.paramList
                     }
-
+                    console.log(param)
                     let rs = await addNewInterface(param)
+                    console.log(rs)
                 })
             },
             //请求头
@@ -286,46 +450,77 @@
             //删除header
             removeHeader(e, num) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
-                if (this.paramList[index].content.header.length <= 1) {
-                    this.$message.error('删除失败，至少有存在一个Header');
-                    return;
-                }
                 if (index !== -1) {
                     this.paramList[index].content.header.splice(num, 1)
+                }
+            },
+            //添加query
+            addQuery(e) {
+                let index = this.paramList.findIndex(d => d.name == e.name)
+                this.paramList[index].content.reqQuery.push({name: '', value: '', isRequired: '', note: ''});
+            },
+            //删除query
+            removeQuery(e, num) {
+                let index = this.paramList.findIndex(d => d.name == e.name)
+                if (index !== -1) {
+                    this.paramList[index].content.reqQuery.splice(num, 1)
                 }
             },
             //添加param
             addParam(e) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
                 this.paramList[index].content.param.push({name: '', value: '', isRequired: '', note: ''});
+                console.log(this.paramList[index].content)
             },
             //删除param
             removeParam(e, num) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
-                if (this.paramList[index].content.param.length <= 1) {
-                    this.$message.error('删除失败，至少有存在一个param');
-                    return;
-                }
                 if (index !== -1) {
                     this.paramList[index].content.param.splice(num, 1)
                 }
             },
+            //添加reqBodyJson
+            addBodyJson(e) {
+                //添加兄弟节点
+                if (!e.command || e.command == 'b') {
+                    let data = e.node.parent.data
+                    let level = data.children ? data.children[0].level : data[0].level
+                    let node = {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level,}
+                    if (data.children) {
+                        data.children.push(node)
+                    } else {
+                        data.push(node)
+                    }
+
+                } else {
+                    let data = e.node
+                    let newChild = {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: data.level + 1};
+                    if (!data.children) {
+                        this.$set(data, 'children', []);
+                    }
+                    data.children.push(newChild);
+                }
+            },
+            //删除reqBodyJson
+            removeBodyJson(node, data) {
+                let parent = node.parent
+                let children = parent.data.children || parent.data
+                let index = children.findIndex(d => d.id === data.id)
+                console.log(index)
+                children.splice(index, 1)
+            },
             //添加result
-            addResult(e) {
-                let index = this.paramList.findIndex(d => d.name == e.name)
-                this.paramList[index].content.result.push({name: '', value: '', isRequired: '', note: ''});
-            },
-            //删除param
-            removeResult(e, num) {
-                let index = this.paramList.findIndex(d => d.name == e.name)
-                if (this.paramList[index].content.result.length <= 1) {
-                    this.$message.error('删除失败，至少有存在一个Result');
-                    return;
-                }
-                if (index !== -1) {
-                    this.paramList[index].content.result.splice(num, 1)
-                }
-            },
+            // addResult(e) {
+            //     let index = this.paramList.findIndex(d => d.name == e.name)
+            //     this.paramList[index].content.result.push({name: '', value: '', isRequired: '', note: '', type: ''});
+            // },
+            //删除result
+            // removeResult(e, num) {
+            //     let index = this.paramList.findIndex(d => d.name == e.name)
+            //     if (index !== -1) {
+            //         this.paramList[index].content.result.splice(num, 1)
+            //     }
+            // },
             //添加tab
             addTab() {
                 let newTabIndex = this.paramList.length + 1;
@@ -342,8 +537,15 @@
                         resultType: '1',
                         resultBody: '',
                         result: [
-                            {name: '', value: '', isRequired: '', note: '', type: ''}
+                            {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
+                        ],
+                        reqQuery: [
+                            {name: '', value: '', isRequired: '', note: ''}
+                        ],
+                        reqBodyJson: [
+                            {id:uuid(), name: '', value: '', isRequired: '', note: '', type: 'Object', level: 1,}
                         ]
+
                     }
                 });
             },
@@ -379,29 +581,67 @@
             //获取环境列表
             let environment = await getProEnvironmentList(this.$route.params.id);
             if (environment.data.data) {
-                this.environmentList.splice(0,this.environmentList.length)
+                this.environmentList.splice(0, this.environmentList.length)
                 let param = environment.data.data;
-                param.forEach(msg =>{
-                    this.environmentList.push({id:msg.id, name:msg.name})
+                param.forEach(msg => {
+                    this.environmentList.push({id: msg.id, name: msg.name})
                 })
-                console.log(this.environmentList)
-
             }
             //模块列表
             let rs = await getModuleByProId(this.$route.params.id);
-            if(!rs.data.data){
-                notice(this,"请先去添加模块！","info")
+            if (!rs.data.data) {
+                notice(this, "请先去添加模块！", "info")
                 return
             }
-            this.moduleList.splice(0,this.moduleList.length)
+            this.moduleList.splice(0, this.moduleList.length)
             this.moduleList.push(...rs.data.data)
-            console.log(this.moduleList)
         }
 
     }
 </script>
 
 <style lang="less" scoped>
+
+  .none_iocn {
+    color: white !important;
+  }
+
+  /*/deep/ .el-tree-node__expand-icon {*/
+  /*  display: none;*/
+  /*}*/
+
+  /deep/ .el-icon-caret-right {
+    color: #0d1b3ea6;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  /deep/ .custom-tree-node > div {
+    width: auto;
+  }
+
+  /deep/ .el-tree-node {
+
+    margin-bottom: 5px;
+  }
+
+  /deep/ .el-tree-node__content {
+    display: block;
+    height: 45px;
+  }
+
+  /*去除tree的高亮*/
+  /deep/ .el-tree-node:focus > .el-tree-node__content {
+    background-color: white !important;
+  }
+
+  /deep/ .el-tree-node__content:hover {
+    background-color: white;
+  }
+
+  /deep/ .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    background-color: white;
+  }
 
   /deep/ #tab-add {
     float: right;
@@ -417,6 +657,7 @@
 
   /deep/ .el-collapse-item__content {
     padding-bottom: 0;
+    text-align: left;
   }
 
   /deep/ .el-collapse {
