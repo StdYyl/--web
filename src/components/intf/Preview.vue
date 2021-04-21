@@ -4,7 +4,7 @@
       <h4 style="margin: 0px 0 0 15px;color: #1890FF">接口预览
         <span class="el-icon-info" style="color:#1890FF;"></span>
       </h4>
-      <el-button type="primary" size="mini" @click="$router.push('./AddIntf')"
+      <el-button type="primary" size="mini" @click="toEditPage" v-if="from.status != 3"
                  style="margin-right: 20px;font-size: 12px;padding: 7px 15px">编辑
       </el-button>
     </div>
@@ -68,7 +68,7 @@
           </div>
 
           <!--body-->
-          <div v-if="from.type != 'GET'">
+          <div v-if="from.type != 'GET' && item.content.param">
             <div style="text-align: left">
               <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Body
             </div>
@@ -91,7 +91,7 @@
                   label="是否必填"
                   width="80">
                   <template slot-scope="scope">
-                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                    <span>{{ scope.row.isRequired?'是':'否' }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -121,7 +121,7 @@
                   label="是否必填"
                   width="110">
                   <template slot-scope="scope">
-                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                    <span>{{ scope.row.isRequired?'是':'否' }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -144,7 +144,7 @@
           </div>
 
           <!--Query-->
-          <div v-if="item.content.reqQuery.length > 0 && item.content.reqQuery.empty">
+          <div v-if="item.content.reqQuery && item.content.reqQuery.empty">
             <div style="text-align: left;line-height: 41px">
               <i class="header-icon el-icon-info" style="color:#1890FF;margin:0 5px 10px 0"></i>Query
             </div>
@@ -164,7 +164,7 @@
                 label="是否必填"
                 width="80">
                 <template slot-scope="scope">
-                  <span >{{ scope.row.isRequired?'是':'否' }}</span>
+                  <span>{{ scope.row.isRequired?'是':'否' }}</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -175,49 +175,51 @@
           </div>
 
           <!--result-->
-          <div style="text-align: left">
-            <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Result
-          </div>
-          <div>
-            <!--json格式-->
-            <div v-if="item.content.resultType == '1'">
-              <el-table :data="item.content.result" border
-                        row-key="name"
-                        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-                <el-table-column
-                  prop="name"
-                  label="参数名称"
-                  width="200">
-                </el-table-column>
-                <el-table-column
-                  prop="type"
-                  label="格式"
-                  width="100">
-                </el-table-column>
-                <el-table-column
-                  prop="isRequired"
-                  label="是否必填"
-                  width="80">
-                  <template slot-scope="scope">
-                    <span >{{ scope.row.isRequired?'是':'否' }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  prop="value"
-                  label="返回值"
-                  width="200">
-                </el-table-column>
-                <el-table-column
-                  prop="note"
-                  label="备注">
-                </el-table-column>
-              </el-table>
+          <div v-if="item.content.result">
+            <div style="text-align: left">
+              <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Result
             </div>
+            <div>
+              <!--json格式-->
+              <div v-if="item.content.resultType == '1'">
+                <el-table :data="item.content.result" border
+                          row-key="name"
+                          :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                  <el-table-column
+                    prop="name"
+                    label="参数名称"
+                    width="200">
+                  </el-table-column>
+                  <el-table-column
+                    prop="type"
+                    label="格式"
+                    width="100">
+                  </el-table-column>
+                  <el-table-column
+                    prop="isRequired"
+                    label="是否必填"
+                    width="80">
+                    <template slot-scope="scope">
+                      <span>{{ scope.row.isRequired?'是':'否' }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="value"
+                    label="返回值"
+                    width="200">
+                  </el-table-column>
+                  <el-table-column
+                    prop="note"
+                    label="备注">
+                  </el-table-column>
+                </el-table>
+              </div>
 
-            <div v-else>
-              <el-card class="box-card">
-                {{item.content.resultBody}}
-              </el-card>
+              <div v-else>
+                <el-card class="box-card">
+                  {{item.content.resultBody}}
+                </el-card>
+              </div>
             </div>
           </div>
         </el-form>
@@ -286,40 +288,47 @@
                 ],
             }
         },
-        methods: {},
+        methods: {
+            toEditPage() {
+                let {id, moduleId, intfId} = this.$route.params
+                this.$router.push(`/home/intfIndex/${id}/intf/${moduleId}/modify/${intfId}`)
+            }
+        },
         async mounted() {
             let intfId = this.$route.params.intfId
             let rs = await getIntfMesById(intfId);
             if (rs.data.data) {
                 let data = rs.data.data
                 this.from = data.baseMsg
-                data.paramMsg.forEach(msg=>{
-                    msg.content.reqQuery = JSON.parse(msg.content.reqQuery)
-                    //判断Query是否为空
-                    msg.content.reqQuery.forEach(query=>{
-                        if(query.paramNote != '' || query.reqHeader != '' ||  query.reqHeaderMethod != ''){
-                            msg.content.reqQuery.empty = true
-                        }
-                    })
+                data.paramMsg.forEach(msg => {
+                    if (msg.content.reqQuery) {
+                        msg.content.reqQuery = JSON.parse(msg.content.reqQuery)
+                        //判断Query是否为空
+                        msg.content.reqQuery.forEach(query => {
+                            if (query.paramNote != '' || query.reqHeader != '' || query.reqHeaderMethod != '') {
+                                msg.content.reqQuery.empty = true
+                            }
+                        })
+                    }
                     msg.content.header = JSON.parse(msg.content.header)
                     //判断header是否为空
-                    msg.content.header.forEach(head=>{
-                        if(head.paramNote != '' || head.reqHeader != '' ||  head.reqHeaderMethod != ''){
+                    msg.content.header.forEach(head => {
+                        if (head.paramNote != '' || head.reqHeader != '' || head.reqHeaderMethod != '') {
                             msg.content.header.empty = true
                         }
                     })
-                    if(msg.content.result){
+                    if (msg.content.result) {
                         msg.content.result = JSON.parse(msg.content.result)
                     }
-                    if(msg.content.reqBodyJson){
+                    if (msg.content.reqBodyJson) {
                         msg.content.reqBodyJson = JSON.parse(msg.content.reqBodyJson)
                     }
-                    if(msg.content.param){
+                    if (msg.content.param) {
                         msg.content.param = JSON.parse(msg.content.param)
                     }
                 })
                 this.paramList.push(...data.paramMsg)
-                console.log( data.paramMsg)
+                console.log(this.from)
             }
         }
     }
