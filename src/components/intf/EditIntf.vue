@@ -1,9 +1,12 @@
 <template>
   <div class="intf_rhs">
     <div class="rh_head">
-      <h4 style="margin: 5px 0 0 15px;color: #1890FF">我的接口
+      <h4 style="margin: 5px 0 0 15px;color: #1890FF">编辑接口
         <span class="el-icon-info" style="color:#1890FF;"></span>
       </h4>
+      <el-button type="primary" size="mini" @click="$router.go(-1)"
+                 style="margin-right: 20px;font-size: 12px;padding: 7px 15px">返回
+      </el-button>
     </div>
     <el-form :model="from" :rules="rules" ref="from" label-position="top">
       <el-form-item label="名称" prop="name" style="margin-right: 50px">
@@ -12,8 +15,8 @@
       <el-form-item label="简介" prop="introduction">
         <el-input v-model="from.introduction" placeholder="接口简介" style="width: 350px" size="small"></el-input>
       </el-form-item>
-      <el-form-item label="分组" prop="directoryID" style="margin-right: 50px">
-        <el-select v-model="from.directoryID" size="small">
+      <el-form-item label="分组" prop="directoryid" style="margin-right: 50px">
+        <el-select v-model="from.directoryid" size="small">
           <el-option :key="item.id" v-for="item in moduleList" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
@@ -47,7 +50,7 @@
         <el-button type="primary" size="mini"
                    style="margin-right: 10px;font-size: 12px;padding: 7px 15px" @click="saveIntf">保存
         </el-button>
-        <el-button type="primary" size="mini" style="margin-right: 20px;font-size: 12px;padding: 7px 15px">运行
+        <el-button type="primary" size="mini" style="margin-right: 20px;font-size: 12px;padding: 7px 15px" @click="runIntf">运行
         </el-button>
       </div>
     </div>
@@ -120,39 +123,11 @@
                 </div>
                 <!--Json-->
                 <div v-else-if="item.content.reqType == 2">
-                  <!--                  <div v-for="(headMes,num) in item.content.reqBodyJson" :key="num">-->
-                  <!--                    <el-form-item style="margin-right: 10px">-->
-                  <!--                      <el-input v-model="headMes.name" placeholder="参数名称" size="small"-->
-                  <!--                                style="width: 170px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-form-item style="margin-right: 10px;width: 120px">-->
-                  <!--                      <el-select v-model="headMes.type" size="small">-->
-                  <!--                        <el-option :key="item.id" v-for="item in resultTypeList" :label="item.name"-->
-                  <!--                                   :value="item.value"></el-option>-->
-                  <!--                      </el-select>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
-                  <!--                    <el-form-item style="margin-right: 10px;">-->
-                  <!--                      <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
-                  <!--                                style="width: 160px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-form-item style="margin-right: 15px;">-->
-                  <!--                      <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
-                  <!--                                style="width: 130px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-button v-if="item.content.reqBodyJson.length > 1" type="text" class="el-icon-close"-->
-                  <!--                               @click="removeBodyJson(item,num)"></el-button>-->
-                  <!--                    <el-button type="text" class="el-icon-plus" @click="addBodyJson(item)"></el-button>-->
-                  <!--                  </div>-->
                   <el-tree :data="item.content.reqBodyJson" :props="defaultProps"
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
-<!--                      <span @click="openNode(data)">-->
-                      <!--                        <i-->
-                      <!--                          :class="data.type != 'Array' && data.type != 'Object' ? 'el-icon-caret-right none_iocn' :'el-icon-caret-right'"></i>-->
-                      <!--                      </span>-->
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -243,29 +218,6 @@
                 <!--添加多个result-->
                 <!--Json-->
                 <div v-if="item.content.resultType == 1">
-                  <!--                  <el-form-item style="margin-right: 10px">-->
-                  <!--                    <el-input v-model="headMes.name" placeholder="名称" size="small"-->
-                  <!--                              style="width: 170px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-form-item style="margin-right: 10px;width: 120px">-->
-                  <!--                    <el-select v-model="headMes.type" size="small">-->
-                  <!--                      <el-option :key="item.name" v-for="item in resultTypeList" :label="item.name"-->
-                  <!--                                 :value="item.value"></el-option>-->
-                  <!--                    </el-select>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
-                  <!--                  <el-form-item style="margin-right: 10px;">-->
-                  <!--                    <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
-                  <!--                              style="width: 160px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-form-item style="margin-right: 15px;">-->
-                  <!--                    <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
-                  <!--                              style="width: 130px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-button v-if="item.content.result.length > 1" type="text" class="el-icon-close"-->
-                  <!--                             @click="removeResult(item,num)"></el-button>-->
-                  <!--                  <el-button type="text" class="el-icon-plus" @click="addResult(item)"></el-button>-->
-
                   <el-tree :data="item.content.result" :props="defaultProps"
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -326,21 +278,68 @@
 		    </span>
       </el-tab-pane>
     </el-tabs>
+
+    <!--运行结果-->
+    <el-drawer
+      :with-header="false"
+      :visible.sync="drawer"
+      direction="ltr"
+      size="32%"
+      >
+      <div>
+        <el-collapse v-model="deBugIntf" id="result">
+          <el-collapse-item title="请求头Header" name="1">
+            <codemirror  ref="myCm"  v-model="debugIntfResult"  :options="cmOptions" class="code"></codemirror>
+          </el-collapse-item>
+          <el-collapse-item title="相应Body" name="2">
+            <codemirror  ref="myCm"  v-model="debugIntfBody"  :options="cmOptions" class="code"></codemirror>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script>
     import {COMMON} from '@/const/common'
     import {notice} from '@/utils/elementUtils'
-    import {addNewInterface} from "../../api/interface";
+    import {addNewInterface, getIntfMesById, modifyIntfMes} from "../../api/interface";
     import {getModuleByProId} from "../../api/directory";
     import {getProEnvironmentList} from "../../api/project";
-    import {uuid} from "../../utils/utils";
+    import {parseChildJson, uuid} from "../../utils/utils";
+
+    import { codemirror } from 'vue-codemirror'
+    import  'codemirror/theme/cobalt.css'
+    require("codemirror/mode/python/python.js")
+    require('codemirror/addon/fold/foldcode.js')
+    require('codemirror/addon/fold/foldgutter.js')
+    require('codemirror/addon/fold/brace-fold.js')
+    require('codemirror/addon/fold/xml-fold.js')
+    require('codemirror/addon/fold/indent-fold.js')
+    require('codemirror/addon/fold/markdown-fold.js')
+    require('codemirror/addon/fold/comment-fold.js')
+
 
     export default {
-        name: "index",
+        name: "EditIntf",
+        components:{
+            codemirror
+        },
         data() {
             return {
+                //请求结果
+                debugIntfResult:'',
+                debugIntfBody:'',
+                //调试窗口
+                drawer:false,
+                deBugIntf:["1","2"],
+                cmOptions:{
+                    mode:'application/json',
+                    lineNumbers:true,
+                    theme:'cobalt',
+                    scrollbarStyle:null,
+                    readOnly:'nocursor'
+                },
                 defaultProps: {
                     children: 'children',
                     label: 'label'
@@ -356,71 +355,109 @@
                 module: '',
                 //接口基本信息
                 from: {
-                    name: '', introduction: '', directoryID: '', status: '1', type: "1", path: '', environmentid: '',
-                    createId: localStorage.getItem("id"), projectId: this.$route.params.id
+                    name: '', introduction: '', directoryid: '', status: '1', type: "1", path: '', environmentid: '',
+                    projectId: this.$route.params.id
                 },
                 //接口参数列表
                 paramTab: '1',
                 paramList: [
-                    {
-                        title: '列表1', name: '1', content: {
-                            header: [
-                                {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
-                            ],
-                            reqType: '1',
-                            paramBody: '',
-                            param: [
-                                {name: '', value: '', isRequired: false, note: ''}
-                            ],
-                            resultType: '1',
-                            resultBody: '',
-                            result: [
-                                {
-                                    id: uuid(),
-                                    name: '',
-                                    value: '',
-                                    isRequired: false,
-                                    note: '',
-                                    type: 'Object',
-                                    level: 1,
-                                }
-                            ],
-                            reqQuery: [
-                                {name: '', value: '', isRequired: false, note: ''}
-                            ],
-                            reqBodyJson: [
-                                {
-                                    id: uuid(),
-                                    name: '',
-                                    value: '',
-                                    isRequired: false,
-                                    note: '',
-                                    type: 'Object',
-                                    level: 1,
-                                }
-                            ]
-                        }
-                    },
+                    // {
+                    //     title: '列表1', name: '1', content: {
+                    //         header: [
+                    //             {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
+                    //         ],
+                    //         reqType: '1',
+                    //         paramBody: '',
+                    //         param: [
+                    //             {name: '', value: '', isRequired: false, note: ''}
+                    //         ],
+                    //         resultType: '1',
+                    //         resultBody: '',
+                    //         result: [
+                    //             {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
+                    //         ],
+                    //         reqQuery: [
+                    //             {name: '', value: '', isRequired: false, note: ''}
+                    //         ],
+                    //         reqBodyJson: [
+                    //             {id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
+                    //         ]
+                    //     }
+                    // },
                 ],
                 rules: {
                     name: {required: true, message: "请输入接口名称", trigger: 'blur'},
                     introduction: {required: true, message: "请输入接口简介", trigger: 'blur'},
-                    directoryID: {required: true, message: "请选择分组", trigger: 'blur'},
+                    directoryid: {required: true, message: "请选择分组", trigger: 'blur'},
                     path: {required: true, message: "请输入接口路径", trigger: 'blur'},
                     environmentid: {required: true, message: "请输请选择接口环境", trigger: 'blur'},
                 }
             }
         },
         methods: {
-            // openNode(data){
-            //     this.$nextTick(function () {
-            //         this.$refs.BodyJson.setCurrentKey(data.id);
-            //     })
-            //     this.$refs['BodyJson'].store.nodesMap[data.id].expanded = true;
-            // },
+            //运行接口
+            runIntf(){
+                let app = this
+                let config = {}
+                config.isCheck = false
+                //url
+                let url = ''
+                this.environmentList.forEach(env => {
+                    if(env.id == app.from.environmentid) url = env.baseurl + app.from.path
+                })
+                config.url = url
+                //method
+                let index = this.methodList.findIndex(md => md.id == app.from.type)
+                config.method =  this.methodList[index].name
+                //headers
+                let headIndex = this.paramList.findIndex(md => md.name == app.paramTab)
+                let content = this.paramList[headIndex].content
+                let reqHeader = {}
+                let header = content.header.forEach(head =>{
+                    if(head.reqHeader != '') reqHeader[head.reqHeader] = head.reqHeaderMethod
+                })
+                config.headers = reqHeader;
+                //data params
+                let param = {}
+                content.reqQuery.forEach(query =>{
+                    if(query.name != '') param[query.name] = query.value
+                })
+                config.params = param;
+                // data data
+                let data = {}
+                if("1" == content.reqType){
+                    //From
+                    content.param.forEach(param =>{
+                        if(param.name != '') data[param.name] = param.value
+                    })
+                }else if("2" == content.reqType){
+                    data = parseChildJson(content.reqBodyJson)
+                }else{
+                    try {
+                        data = JSON.parse(content.paramBody)
+                    } catch (e) {
+                        notice(app, "数据格式有误，请检查数据后重试", "error")
+                        return;
+                    }
+                }
+                config.data = data
+                config.withCredentials = false
+                try {
+                    this.$axios.request(config).then(res=>{
+                        app.debugIntfResult = JSON.stringify(res.config.headers,null,4)
+                        app.debugIntfBody = JSON.stringify(res.data,null,4)
+                        app.drawer = true
+                    });
+                } catch (e) {
+                    notice(app, "调用失败，请检查参数", "error")
+                    return;
+                }
+
+                // console.log(config)
+                // let url =
+            },
             //更换类型时，删除子节点
             changeType(node, data) {
-                console.log(node)
                 node.data.value = ''
                 let msg = node.data
                 if (msg.children)
@@ -432,17 +469,17 @@
             //添加接口(保存)
             saveIntf() {
                 this.$refs.from.validate(async err => {
-                    if (!err) return;
-                    let param = {
-                        msg: this.from,
-                        param: this.paramList
+                        if (!err) return;
+                        let param = {
+                            msg: this.from,
+                            param: this.paramList
+                        }
+                        let rs = await modifyIntfMes(param)
+                        if (rs.data.code == 200) {
+                            notice(this, "保存成功!")
+                        }
                     }
-                    let rs = await addNewInterface(param)
-                    if (rs.data.code == 200) {
-                        notice(this, "添加成功!")
-                        this.$router.push(`/home/intfIndex/${this.$route.params.id}/intf/all`)
-                    }
-                })
+                )
             },
             //请求头
             headerMes(q, c) {
@@ -488,7 +525,6 @@
             addParam(e) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
                 this.paramList[index].content.param.push({name: '', value: '', isRequired: false, note: ''});
-                console.log(this.paramList[index].content)
             },
             //删除param
             removeParam(e, num) {
@@ -503,7 +539,8 @@
                 if (!e.command || e.command == 'b') {
                     let data = e.node.parent.data
                     let level = data.children ? data.children[0].level : data[0].level
-                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level,}
+                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object',
+                        level, parentIsArray:data.type == 'Array'}
                     if (data.children) {
                         data.children.push(node)
                     } else {
@@ -512,6 +549,7 @@
 
                 } else {
                     let data = e.node
+                    console.log(data)
                     let newChild = {
                         id: uuid(),
                         name: '',
@@ -519,6 +557,7 @@
                         isRequired: false,
                         note: '',
                         type: 'Object',
+                        parentIsArray:data.type == 'Array',
                         level: data.level + 1
                     };
                     if (!data.children) {
@@ -532,21 +571,8 @@
                 let parent = node.parent
                 let children = parent.data.children || parent.data
                 let index = children.findIndex(d => d.id === data.id)
-                console.log(index)
                 children.splice(index, 1)
             },
-            //添加result
-            // addResult(e) {
-            //     let index = this.paramList.findIndex(d => d.name == e.name)
-            //     this.paramList[index].content.result.push({name: '', value: '', isRequired: '', note: '', type: ''});
-            // },
-            //删除result
-            // removeResult(e, num) {
-            //     let index = this.paramList.findIndex(d => d.name == e.name)
-            //     if (index !== -1) {
-            //         this.paramList[index].content.result.splice(num, 1)
-            //     }
-            // },
             //添加tab
             addTab() {
                 let newTabIndex = this.paramList.length + 1;
@@ -604,29 +630,66 @@
             },
         },
         async mounted() {
-            //获取环境列表
+            // 获取环境列表
             let environment = await getProEnvironmentList(this.$route.params.id);
             if (environment.data.data) {
                 this.environmentList.splice(0, this.environmentList.length)
                 let param = environment.data.data;
-                param.forEach(msg => {
-                    this.environmentList.push({id: msg.id, name: msg.name})
-                })
+                this.environmentList.push(...param)
+                // param.forEach(msg => {
+                //     this.environmentList.push({id: msg.id, name: msg.name})
+                // })
             }
-            //模块列表
-            let rs = await getModuleByProId(this.$route.params.id);
-            if (!rs.data.data) {
+            // //模块列表
+            let module = await getModuleByProId(this.$route.params.id);
+            if (!module.data.data) {
                 notice(this, "请先去添加模块！", "info")
                 return
             }
             this.moduleList.splice(0, this.moduleList.length)
-            this.moduleList.push(...rs.data.data)
+            this.moduleList.push(...module.data.data)
+
+            //查询接口信息
+            let intfId = this.$route.params.intfId
+            let rs = await getIntfMesById(intfId);
+            if (rs.data.data) {
+                let data = rs.data.data
+                this.from = data.baseMsg
+                data.paramMsg.forEach(msg => {
+                        msg.content.reqQuery = msg.content.reqQuery ?  JSON.parse(msg.content.reqQuery)
+                            : [{name: '', value: '', isRequired: false, note: ''}]
+                        //判断Query是否为空
+                        msg.content.reqQuery.forEach(query => {
+                            if (query.paramNote != '' || query.reqHeader != '' || query.reqHeaderMethod != '') {
+                                msg.content.reqQuery.empty = true
+                            }
+                        })
+                    msg.content.header = JSON.parse(msg.content.header)
+                    //判断header是否为空
+                    msg.content.header.forEach(head => {
+                        if (head.paramNote != '' || head.reqHeader != '' || head.reqHeaderMethod != '') {
+                            msg.content.header.empty = true
+                        }
+                    })
+                    msg.content.result = msg.content.result ?  JSON.parse(msg.content.result) :
+                        [{id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
+                    msg.content.reqBodyJson = msg.content.reqBodyJson ? JSON.parse(msg.content.reqBodyJson) :
+                        [{id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
+                    msg.content.param = msg.content.param ? JSON.parse(msg.content.param) : [{name: '', value: '', isRequired: false, note: ''}]
+
+                })
+                this.paramList.push(...data.paramMsg)
+            }
         }
 
     }
 </script>
 
 <style lang="less" scoped>
+
+  /deep/ #result .el-collapse-item__header{
+      padding-left: 15px;
+  }
 
   .none_iocn {
     color: white !important;

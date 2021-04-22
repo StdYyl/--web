@@ -36,8 +36,7 @@
       </el-table-column>
       <el-table-column
         :show-overflow-tooltip="true"
-        label="接口状态"
-        width="139">
+        label="接口状态">
         <template slot-scope="props">
           <span :class="props.row.status == '1' ? 'el-icon-circle-close' : 'el-icon-circle-check'"></span>
           <span>{{props.row.statusName}}</span>
@@ -47,6 +46,7 @@
     <!--分页，每页最多3条数据-->
     <el-pagination
       background
+      @current-change="changeIndex"
       layout="prev, pager, next"
       :page-size="pageSize"
       :total="totalCount">
@@ -69,32 +69,46 @@
             }
         },
         methods:{
+            async changeIndex(index){
+                let {id,moduleId} = this.$route.params
+                await this.getIntfList(id, moduleId, index)
+            },
             //点击项目
             changeRouter(e){
                 let {id,moduleId} = this.$route.params
                 this.$router.push(`/home/intfIndex/${id}/intf/${moduleId}/detail/${e}`)
+            },
+            //查询接口列表
+            async getIntfList(id,moduleId, index=1){
+                let rs = await getInterfaceList(id,moduleId,this.pageSize,index)
+                let param = rs.data.data;
+                this.totalCount = param.total
+                this.intfList.splice(0,this.intfList.length)
+                if(param.total > 0){
+                    param.records.forEach(msg=>{
+                        msg.module = msg.directoryid
+                        if(msg.status == "1"){
+                            msg.statusName = "未完成"
+                        }else if(msg.status == "2"){
+                            msg.statusName = "已完成"
+                        }else{
+                            msg.statusName = "已归档"
+                        }
+                    })
+                    this.intfList.push(...param.records)
+                }
+            },
+        },
+        watch: {
+            async $route() {
+                let {id,moduleId} = this.$route.params
+                await this.getIntfList(id,moduleId)
             }
         },
         async mounted() {
             //获取接口列表
-            let rs = await getInterfaceList("all")
-            if(rs.data.data){
-                let param = rs.data.data;
-                param.records.forEach(msg=>{
-                    msg.module = msg.directoryid
-                    if(msg.status == "1"){
-                        msg.statusName = "未完成"
-                    }else if(msg.status == "2"){
-                        msg.statusName = "已完成"
-                    }else{
-                        msg.statusName = "已归档"
-                    }
-                })
-                this.totalCount = param.total
-                this.intfList.splice(0,this.intfList.length)
-                this.intfList.push(...param.records)
-            }
-            console.log(this.intfList)
+            let {id,moduleId} = this.$route.params
+            await this.getIntfList(id,moduleId)
         }
     }
 </script>

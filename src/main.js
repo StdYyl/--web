@@ -17,12 +17,20 @@ import './styles/icon/iconfont.css'
 
 //导入animate动画库
 import 'animate.css'
+import axios from "axios";
+
+//导入codemirror
+import { codemirror } from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
+
 
 Vue.config.productionTip = false
 Vue.prototype.$echarts = echarts
+Vue.prototype.$axios = axios
 
 Vue.use(ElementUI)
 Vue.use(AFTableColumn)
+Vue.use(codemirror)
 
 /* eslint-disable no-new */
 new Vue({

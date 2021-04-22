@@ -25,6 +25,7 @@ import intfAll from '../components/intf/index'
 import ExportIntf from '../components/intf/ExportIntf'
 import AddIntf from '../components/intf/AddIntf'
 import PreviewIntf from '../components/intf/Preview'
+import EditIntf from '../components/intf/EditIntf'
 
 
 import Accept from '../views/member/accept'
@@ -132,6 +133,12 @@ export default new Router({
               name: 'PreviewIntf',
               component: PreviewIntf,
               meta: {model: '预览接口'},
+            },
+            {
+              path: 'intf/:moduleId/modify/:intfId',
+              name: 'EditIntf',
+              component: EditIntf,
+              meta: {model: '修改接口'},
             },
             {
               path: 'AddIntf',

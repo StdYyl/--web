@@ -142,7 +142,7 @@
             <div class="dialog_head">
               <div>
                 <i class="el-icon-warning-outline"></i>
-                <span class="title-text">接口导出{{showDialog[0]}}</span>
+                <span class="title-text">接口导出</span>
               </div>
               <div class="button-right">
                 <span class="title-close" @click="showDelete = false"></span>
@@ -494,6 +494,9 @@
     import {writeWeeklyCon, getWeeklyCon, listWeeklyCon} from "../../api/weeklycon";
     import {satisfyInterface} from "../../api/intfsituation";
     import {removeComment, addComment} from "../../api/comment";
+    import {addProEnvironment, getProEnvironmentList, putEnvironmentMes} from "../../api/project";
+    import {archiveIntf, exportIntfList, getInterfaceList} from "../../api/interface";
+    import {exportWord, parseChildJson} from "../../utils/utils";
     // 引入基本模板
     let echarts = require('echarts/lib/echarts')
     // 引入柱状图组件
@@ -508,7 +511,7 @@
                 //对应项目
                 project: {},
                 //查询环境时
-                environmentTitle:'',
+                environmentTitle: '',
                 activeIndex: "",
                 environmentMsg: {},
                 isAddEnvironment: false,
@@ -632,14 +635,19 @@
                         this.environmentList.splice(0, this.environmentList.length)
                         let param = rs.data.data
                         param.forEach(arr => {
-                            if(arr.header)
-                              arr.header = JSON.parse(arr.header)
+                            if (arr.header)
+                                arr.header = JSON.parse(arr.header)
                         })
                         this.environmentList.push(...param)
                         //设置默认值
                         this.activeIndex = JSON.parse(JSON.stringify(param[0].id))
                         this.environmentMsg = JSON.parse(JSON.stringify(param[0]))
                         this.environmentTitle = JSON.parse(JSON.stringify(param[0].name))
+                    }
+                } else if (this.activeName == 'interface') {
+                    if (this.$route.path.indexOf("/intf/all") == -1) {
+                        console.log(this.$route.path.indexOf("/intf/all"))
+                        this.$router.push(`/home/intfIndex/${this.$route.params.id}/intf/all`)
                     }
                 }
             },
@@ -668,10 +676,10 @@
                     param.updateuser = localStorage.getItem("id")
                     param.projectid = this.$route.params.id
                     let rs = await putEnvironmentMes(param)
-                    if(rs.data.code == 200) {
-                        notice(this,"修改成功")
-                    }else{
-                        notice(this,"修改失败","error")
+                    if (rs.data.code == 200) {
+                        notice(this, "修改成功")
+                    } else {
+                        notice(this, "修改失败", "error")
                     }
                 }
                 //重新查询接口
@@ -756,7 +764,6 @@
                     updateby: localStorage.getItem("id"),
                 }
                 let rs = await addDir(param);
-                console.log(rs)
                 if (rs.data.code != 200) {
                     notice(this, rs.data.msg, 'error')
                     return;
@@ -782,7 +789,6 @@
                 this.showDialog.push()
             },
             async nodeClick(node, resolve) {
-
                 //查询子目录
                 let rs = await queryModuleListSecond(node.data.id)
                 if (rs.data.data) {
@@ -795,29 +801,97 @@
                 }
             },
             //导出接口
-            exportIntf() {
-                console.log(this.moduleMes)
+            async exportIntf() {
+                let {id, moduleId} = this.$route.params;
+                let rs = await exportIntfList(id, moduleId)
+                console.log(rs)
+                if (rs.data.code == -9999) {
+                    notice(this, rs.data.msg, "error")
+                    return;
+                } else {
+                    let data = rs.data.data
+                    data.forEach( (dataItem,index) => {
+                        dataItem['index'] = index+1
+                        dataItem.paramMsg.forEach(msg => {
+                            //header
+                            if (msg.reqheader) {
+                                msg.reqheader = JSON.parse(msg.reqheader)
+                                //判断header是否为空
+                                msg.reqheader.forEach(head=>{
+                                    if(head.reqHeader != '' && head.reqHeaderMethod != '' && head.paramNote != ''){
+                                        msg['headEmpty'] = 1
+                                    }
+                                })
+                            }
+                            //Prarm
+                            let param = {}
+                            if (msg.reqtype == '1') {
+                                msg.reqBody = JSON.parse(msg.reqbody)
+                                msg.reqBody.forEach(msg => {
+                                    param[msg.name] = msg.value
+                                })
+                            }
+                            if (msg.reqtype == '2') {
+                                param = parseChildJson(JSON.parse(msg.reqBodyJson))
+                            }
+                            if (msg.reqtype == '3') {
+                                param = JSON.parse(msg.reqBody)
+                            }
+                            console.log(param)
+                            if(JSON.stringify(param) != "{}") msg['paramStr'] = JSON.stringify(param)
+                            //Query
+                            if (msg.reqQuery) {
+                                msg.reqQuery = JSON.parse(msg.reqQuery)
+                                let query = {}
+                                msg.reqQuery.forEach(msg => {
+                                    if(msg.name != '') query[msg.name] = msg.value
+                                })
+                                if(JSON.stringify(query) != "{}") msg['queryStr'] = JSON.stringify(query)
+                            }
+                            //Result
+                            let result = {}
+                            if (msg.restype == "1") {
+                                result = parseChildJson(JSON.parse(msg.resbody))
+                            }
+                            if (msg.restype == "1") {
+                                result = JSON.parse(msg.resbody)
+                            }
+                            if(JSON.stringify(result) != "{}") msg['resultStr'] = JSON.stringify(result)
+                        })
+                    })
+                    let intf = []
+                    intf.push(...data)
+                    exportWord(intf)
+                    console.log(intf)
+                }
             },
             //删除接口
             removeIntf() {
                 console.log(this.moduleMes)
             },
             //接口归档
-            endIntf() {
-                console.log(this.moduleMes)
+            async endIntf() {
+                let {id, moduleId} = this.$route.params;
+                let rs = await archiveIntf(localStorage.getItem("id"), moduleId, id)
+                if (rs.data.code == 200) {
+                    notice(this, rs.data.msg)
+                } else {
+                    notice(this, rs.data.msg, "error")
+                }
+                this.showDialog[3] = false
+                this.showDialog.push()
             },
             //点击模块右侧menu
             async ShowView(command) {
-                console.log(command)
-
+                let route = this.$route
                 //添加接口
-                if (command.index == 'one') {
-                    this.$router.push("./AddIntf")
+                if (command.index == 'one' && route.path.indexOf("/AddIntf") == -1) {
+                    this.$router.push(`/home/intfIndex/${route.params.id}/AddIntf`)
                     return;
                 }
                 //导出接口
-                if (command.index == 'some') {
-                    this.$router.push("./ExportIntf")
+                if (command.index == 'some' && route.path.indexOf("/ExportIntf") == -1) {
+                    this.$router.push(`/home/intfIndex/${route.params.id}/ExportIntf`)
                     return;
                 }
                 //新增分类
@@ -1281,7 +1355,8 @@
             await this.getModuleList();
             this.$nextTick(function () {
                 let id = this.$route.params.moduleId
-                this.$refs.intfTree.setCurrentKey(id == 'all' ? 0 : id);
+                console.log(id)
+                this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
             })
             await this.dealWithWeeklyDate(this.$route.params.id);
             await this.getWeeklyConList(this.current, this.size);

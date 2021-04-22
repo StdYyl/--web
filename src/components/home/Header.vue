@@ -99,7 +99,7 @@
                 const app = this
                 //个人中心
                 if (e == 'user') {
-                    this.$router.push('/home/project/information')
+                    this.$router.push('/home/information')
                 }
                 //退出登陆
                 if (e == 'exit') {
