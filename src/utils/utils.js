@@ -4,6 +4,7 @@ import docxtemplater from 'docxtemplater'
 import JSZipUtils from 'jszip-utils'
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
+// import TurndownService from 'turndown'
 //判断接口返回状态
 export function checkResponse(app, res, show_msg = false) {
   const code = res.code;
@@ -86,6 +87,12 @@ export function exportWord(data) {
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     })
     // 将目标文件对象保存为目标类型的文件，并命名
-    saveAs(out, 'aaa.docx')
+    saveAs(out, '接口文档.docx')
   })
 }
+//
+// //导出markdown
+// export function exportMD(data){
+//   let turndownService = new TurndownService(data)
+//   console.log(turndownService)
+// }

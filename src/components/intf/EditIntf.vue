@@ -222,7 +222,7 @@
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">

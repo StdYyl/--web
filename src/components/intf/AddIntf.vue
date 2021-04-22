@@ -120,39 +120,11 @@
                 </div>
                 <!--Json-->
                 <div v-else-if="item.content.reqType == 2">
-                  <!--                  <div v-for="(headMes,num) in item.content.reqBodyJson" :key="num">-->
-                  <!--                    <el-form-item style="margin-right: 10px">-->
-                  <!--                      <el-input v-model="headMes.name" placeholder="参数名称" size="small"-->
-                  <!--                                style="width: 170px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-form-item style="margin-right: 10px;width: 120px">-->
-                  <!--                      <el-select v-model="headMes.type" size="small">-->
-                  <!--                        <el-option :key="item.id" v-for="item in resultTypeList" :label="item.name"-->
-                  <!--                                   :value="item.value"></el-option>-->
-                  <!--                      </el-select>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
-                  <!--                    <el-form-item style="margin-right: 10px;">-->
-                  <!--                      <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
-                  <!--                                style="width: 160px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-form-item style="margin-right: 15px;">-->
-                  <!--                      <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
-                  <!--                                style="width: 130px"></el-input>-->
-                  <!--                    </el-form-item>-->
-                  <!--                    <el-button v-if="item.content.reqBodyJson.length > 1" type="text" class="el-icon-close"-->
-                  <!--                               @click="removeBodyJson(item,num)"></el-button>-->
-                  <!--                    <el-button type="text" class="el-icon-plus" @click="addBodyJson(item)"></el-button>-->
-                  <!--                  </div>-->
                   <el-tree :data="item.content.reqBodyJson" :props="defaultProps"
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
-<!--                      <span @click="openNode(data)">-->
-                      <!--                        <i-->
-                      <!--                          :class="data.type != 'Array' && data.type != 'Object' ? 'el-icon-caret-right none_iocn' :'el-icon-caret-right'"></i>-->
-                      <!--                      </span>-->
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -243,34 +215,11 @@
                 <!--添加多个result-->
                 <!--Json-->
                 <div v-if="item.content.resultType == 1">
-                  <!--                  <el-form-item style="margin-right: 10px">-->
-                  <!--                    <el-input v-model="headMes.name" placeholder="名称" size="small"-->
-                  <!--                              style="width: 170px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-form-item style="margin-right: 10px;width: 120px">-->
-                  <!--                    <el-select v-model="headMes.type" size="small">-->
-                  <!--                      <el-option :key="item.name" v-for="item in resultTypeList" :label="item.name"-->
-                  <!--                                 :value="item.value"></el-option>-->
-                  <!--                    </el-select>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-checkbox v-model="headMes.isRequired" style="margin-right: 15px">必填</el-checkbox>-->
-                  <!--                  <el-form-item style="margin-right: 10px;">-->
-                  <!--                    <el-input v-model="headMes.value" placeholder="返回值" size="small"-->
-                  <!--                              style="width: 160px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-form-item style="margin-right: 15px;">-->
-                  <!--                    <el-input v-model="headMes.note" placeholder="请填写备注" size="small"-->
-                  <!--                              style="width: 130px"></el-input>-->
-                  <!--                  </el-form-item>-->
-                  <!--                  <el-button v-if="item.content.result.length > 1" type="text" class="el-icon-close"-->
-                  <!--                             @click="removeResult(item,num)"></el-button>-->
-                  <!--                  <el-button type="text" class="el-icon-plus" @click="addResult(item)"></el-button>-->
-
                   <el-tree :data="item.content.result" :props="defaultProps"
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -503,13 +452,12 @@
                 if (!e.command || e.command == 'b') {
                     let data = e.node.parent.data
                     let level = data.children ? data.children[0].level : data[0].level
-                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level,}
+                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level, parentIsArray:data.type == 'Array'}
                     if (data.children) {
                         data.children.push(node)
                     } else {
                         data.push(node)
                     }
-
                 } else {
                     let data = e.node
                     let newChild = {
@@ -519,6 +467,7 @@
                         isRequired: false,
                         note: '',
                         type: 'Object',
+                        parentIsArray:data.type == 'Array',
                         level: data.level + 1
                     };
                     if (!data.children) {
