@@ -36,8 +36,9 @@
             <div style="width: 100%;text-align: left;margin-bottom: 15px">头像</div>
             <el-image :src="baseMes.head" style="width: 100px;margin-bottom: 10px"></el-image>
             <el-upload
-              action="#"
+              action="http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/file/upload/"
               :before-upload="beforeAvatarUpload"
+              :on-success="handleAvatarSuccess"
             >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
@@ -276,18 +277,25 @@
                 if (!isPhoto) {
                     this.$message.error("上传文件的后缀 只能是 jpg/jpeg/png/gif");
                     return false;
-                } else if (!isLt5M) {
+                }
+                if (!isLt5M) {
                     this.$message.error("上传文件大小不能超过 5MB!");
                     return false;
-                } else {
-                    // this.baseMes.head =URL.createObjectURL(file)
-                    let param = new FormData(); //创建form对象
-                    param.append("file", file);
-                    let rs = await sendImage(param);
-                    if (rs.data.data.code == 200)
-                        this.baseMes.head = rs.data.data.path
                 }
+                if(isLt5M && isPhoto) return true;
+                else return false;
                 return false;
+            },
+            //上传图片成功触发
+            handleAvatarSuccess(res, file) {
+              if(res.code === 200) {
+                if(res.data.status === 'OK') {
+                  this.baseMes.head = 'http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/upload/'+res.data.filename;
+                  notice(this, '上传图片成功', 'success');
+                  return;
+                }
+              }
+              notice(this, '上传图片失败', 'error');
             },
             changeBar(i) {
                 this.selector = [false, false, false];

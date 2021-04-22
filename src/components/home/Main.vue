@@ -47,7 +47,7 @@
               <template slot-scope="props">
                 <div>进度</div>
                 <div class="props_value" @click="progressManagement(props.row.id, 0)">
-                  <el-progress :percentage="props.row.progress"></el-progress>
+                  <el-progress :percentage="parseFloat(props.row.progress)"></el-progress>
                 </div>
               </template>
             </el-table-column>
@@ -75,7 +75,7 @@
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                    <div @click="removeToCycle">
+                    <div @click="removeToCycle(scope.row.id)">
                       <el-icon class="iconfont icon-huishouzhan"></el-icon>
                     </div>
                   </el-tooltip>
@@ -112,11 +112,11 @@
                 </el-select>
               </el-form-item>
               <el-form-item style="margin-bottom: 5px;display: flex;align-items: center">
-                <i class="iconfont icon-download" style="font-size: 24px;margin-right: 5px;"></i>
-                <span>导出项目文档为html文档</span>
+                <i class="iconfont icon-download" style="font-size: 24px;margin-right: 5px;cursor: auto"></i>
+                <span>导出项目文档为{{interface.format}}文档</span>
               </el-form-item>
               <el-form-item style="margin-left: 30px;display: flex;align-items: center">
-                <el-button type="primary" @click="exportDialogVisible = false"
+                <el-button type="primary" @click="assureExport"
                            style="padding: 10px 40px;">导 出</el-button>
               </el-form-item>
             </el-form>
@@ -169,7 +169,7 @@
               <template slot-scope="props">
                 <div>进度</div>
                 <div class="props_value">
-                  <el-progress :percentage="props.row.progress"></el-progress>
+                  <el-progress :percentage="parseFloat(props.row.progress)"></el-progress>
                 </div>
               </template>
             </el-table-column>
@@ -177,27 +177,29 @@
               prop="id"
               :show-overflow-tooltip="true"
               width="150">
-              <div style="height: 70px;display: flex;align-items: center">
-                <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
-                  <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
-                  <el-icon class="iconfont icon-xitongshezhi"></el-icon>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
-                  <div @click="interfaceExport">
-                    <el-icon class="iconfont icon-wenjian"></el-icon>
-                  </div>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                  <div @click="removeToCycle">
-                    <el-icon class="iconfont icon-huishouzhan"></el-icon>
-                  </div>
-                </el-tooltip>
-              </div>
+              <template slot-scope="scope">
+                <div style="height: 70px;display: flex;align-items: center">
+                  <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
+                    <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
+                    <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
+                    <div @click="interfaceExport">
+                      <el-icon class="iconfont icon-wenjian"></el-icon>
+                    </div>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
+                    <div @click="removeToCycle(scope.row.id)">
+                      <el-icon class="iconfont icon-huishouzhan"></el-icon>
+                    </div>
+                  </el-tooltip>
+                </div>
+              </template>
             </el-table-column>
           </el-table>
           <!--分页，每页最多8条数据-->
@@ -255,7 +257,7 @@
               <template slot-scope="props">
                 <div>进度</div>
                 <div class="props_value">
-                  <el-progress :percentage="props.row.progress"></el-progress>
+                  <el-progress :percentage="parseFloat(props.row.progress)"></el-progress>
                 </div>
               </template>
             </el-table-column>
@@ -263,27 +265,29 @@
               prop="id"
               :show-overflow-tooltip="true"
               width="150">
-              <div style="height: 70px;display: flex;align-items: center">
-                <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
-                  <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
-                  <el-icon class="iconfont icon-xitongshezhi"></el-icon>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
-                  <div @click="interfaceExport">
-                    <el-icon class="iconfont icon-wenjian"></el-icon>
-                  </div>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                  <div @click="removeToCycle">
-                    <el-icon class="iconfont icon-huishouzhan"></el-icon>
-                  </div>
-                </el-tooltip>
-              </div>
+              <template slot-scope="scope">
+                <div style="height: 70px;display: flex;align-items: center">
+                  <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
+                    <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
+                    <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
+                    <div @click="interfaceExport">
+                      <el-icon class="iconfont icon-wenjian"></el-icon>
+                    </div>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
+                    <div @click="removeToCycle(scope.row.id)">
+                      <el-icon class="iconfont icon-huishouzhan"></el-icon>
+                    </div>
+                  </el-tooltip>
+                </div>
+              </template>
             </el-table-column>
           </el-table>
           <!--分页，每页最多8条数据-->
@@ -341,7 +345,7 @@
               <template slot-scope="props">
                 <div>进度</div>
                 <div class="props_value">
-                  <el-progress :percentage="props.row.progress"></el-progress>
+                  <el-progress :percentage="parseFloat(props.row.progress)"></el-progress>
                 </div>
               </template>
             </el-table-column>
@@ -349,15 +353,21 @@
               prop="id"
               :show-overflow-tooltip="true"
               width="150">
-              <div style="height: 70px;display: flex;align-items: center;justify-content: center;">
-                <el-tooltip class="item" effect="dark" content="恢复项目" placement="top">
-                  <el-icon class="iconfont icon-yihuifu-xiugai" style="font-size: 20px"></el-icon>
-                </el-tooltip>
-                <el-icon class="el-icon-minus icon_y"></el-icon>
-                <el-tooltip class="item" effect="dark" content="彻底删除项目" placement="top">
-                  <el-icon class="iconfont icon-weihuifu-xiugai" style="font-size: 20px"></el-icon>
-                </el-tooltip>
-              </div>
+              <template slot-scope="scope">
+                <div style="height: 70px;display: flex;align-items: center;justify-content: center;">
+                  <el-tooltip class="item" effect="dark" content="恢复项目" placement="top">
+                    <div @click="recoveryProject(scope.row.id)">
+                      <el-icon class="iconfont icon-yihuifu-xiugai" style="font-size: 20px"></el-icon>
+                    </div>
+                  </el-tooltip>
+                  <el-icon class="el-icon-minus icon_y"></el-icon>
+                  <el-tooltip class="item" effect="dark" content="彻底删除项目" placement="top">
+                    <div @click="removeProject(scope.row.id)">
+                      <el-icon class="iconfont icon-weihuifu-xiugai" style="font-size: 20px"></el-icon>
+                    </div>
+                  </el-tooltip>
+                </div>
+              </template>
             </el-table-column>
           </el-table>
           <!--分页，每页最多8条数据-->
@@ -463,7 +473,7 @@
             <div>账号邀请</div>
             <el-link :underline="false" type="primary" @click="InviteMembers">通过链接邀请</el-link>
           </div>
-          <el-input placeholder="输入昵称或邮箱查找" v-model="selectMember" prefix-icon="el-icon-search"></el-input>
+          <el-input placeholder="输入昵称或邮箱查找" v-model="selectMember" prefix-icon="el-icon-search" @change="searchMember(projectID)"></el-input>
           <el-table
             :data="memberList"
             :show-header="false"
@@ -491,7 +501,7 @@
               align="center"
               width="110">
               <template slot-scope="props">
-                <div v-if="props.row.isJoin == 1">
+                <div v-if="!props.row.isJoin">
                   <el-button icon="iconfont icon-tianjiayonghu" size="mini"
                              style="font-size: 14px;border-style: dashed" @click="InviteMember(props.row)">邀请
                   </el-button>
@@ -612,9 +622,11 @@
 </template>
 
 <script>
-    import {notice} from '@/utils/elementUtils'
+    import {notice, confirmMessage} from '@/utils/elementUtils'
     import Clipboard from 'clipboard'
-    import {addProject, getProjectListById} from "../../api/project";
+    import {addProject, getProjectListById, getProjectByPid, updateProject, inviteUserByClick, inviteUserByLink} from "../../api/project";
+    import {listUser, listAllUserExcludeCreate} from "../../api/user";
+    import {findUserListByPid} from "../../api/projectanduser";
 
     export default {
         name: "aside",
@@ -633,7 +645,7 @@
                 //链接邀请窗口
                 isInvitationLink: false,
                 //邀请链接
-                invitationLink: 'http://www.baidu.com',
+                invitationLink: '',
                 //链接有效时间
                 linkEndTime: '2021年3月23日 18:11',
                 //选择的项目
@@ -658,13 +670,7 @@
                     {id: 1, name: '张三', head: '/static/img/head.b818068.png', joinTime: '2021-3-24'},
                 ],
                 //成员列表 (isJoin:1未加入，2已加入)
-                memberList: [
-                    {id: 1, name: '张三', head: '/static/img/head.b818068.png', email: '528243772@qq.com', isJoin: 1},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                    {id: 2, name: '李思', head: '/static/img/head.b818068.png', email: '321302997@qq.com', isJoin: 2},
-                ],
+                memberList: [],
                 //项目设置 基本信息form
                 // systemForm: {
                 //     name: 'zx',
@@ -758,26 +764,77 @@
                 })
             },
             //生成邀请链接
-            InviteMembers() {
+            async InviteMembers() {
                 //调用生成邀请链接的接口，（出参：结束时间、链接）
-                this.isInvitationLink = true
+                let res = await inviteUserByLink({
+                  uid: localStorage.getItem('id'),
+                  pid: this.projectID,
+                });
+                console.log(res);
+                if(res.data.code === 200) {
+                  this.invitationLink = 'http://localhost:8080/#/home/member/accept?code='+res.data.data;
+                  this.isInvitationLink = true;
+                }
             },
             //邀请单个成员
-            InviteMember(e) {
-                console.log(e.id)
-                console.log(this.projectID)
+            async InviteMember(e) {
+              let res = await inviteUserByClick({
+                uid: localStorage.getItem('id'),
+                toid: e.id,
+                pid: this.projectID,
+              });
+              console.log(res);
+              if(res.data.code === 200) {
+                notice(this, '邀请成功，提醒他注意查收', 'success');
+              } else if(res.data.code === 101) {
+                notice(this, res.data.data, "error");
+              } else {
+                notice(this, res.data.data?res.data.data:res.data.msg, "warning");
+              }
             },
             //添加项目成员
-            addProjectMember(e, index) {
+            async addProjectMember(e, index) {
                 this.projectID = e;
-
-                if (index == 1) this.inviteMember = true
-                else if (index == 2) this.$router.push('/home/setting/1')
+                if (index == 1) {
+                  await this.searchMember(e);
+                  this.inviteMember = true;
+                }
+                else if (index == 2) this.$router.push('/home/setting/'+e)
                 else if (index == 3) ;
+            },
+            //搜索member
+            async searchMember(pid) {
+              let res = await findUserListByPid({
+                pid: pid,
+              });
+              let projectMember = [];
+              if(res.data.code === 200) {
+                projectMember = res.data.data.list;
+              }
+              res = await listUser({
+                search: this.selectMember,
+              });
+              if(res.data.code === 200) {
+                if(res.data.data.total>0) {
+                  this.memberList = res.data.data.list.filter((item) => {
+                    return item.id != localStorage.getItem('id');
+                  });
+                  this.memberList.forEach((item) => {
+                    if(projectMember.find((element) => {
+                      return element.id == item.id;
+                    })) {
+                      item.isJoin = true;
+                    } else {
+                      item.isJoin = false;
+                    }
+                  });
+                }
+              }
+              console.log(this.memberList);
             },
             //进度管理
             progressManagement(id, index) {
-                if (index == 0) this.$router.push('/home/progress/1')
+                if (index == 0) this.$router.push('/home/progress/'+id)
             },
             //查询项目列表
             async getProListFc(type,index=1){
@@ -896,26 +953,81 @@
                 })
             },
             //移入回收站
-            removeToCycle() {
+            removeToCycle(pid) {
+                // confirmMessage(this, '将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', '放入回收站', '考虑一下', 'warning').then(() => {
+                //
+                // }).catch(() => {
+                //
+                // });
                 this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
                     type: 'warning',
                     confirmButtonText: '放入回收站',
                     cancelButtonText: '考虑一下',
                     confirmButtonClass: 'btnClass',
-                }).then(() => {
-                    this.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
+                }).then(async() => {
+                  console.log(pid);
+                  let res = await getProjectByPid({
+                    pid: pid,
+                  });
+                  if(res.data.code === 200) {
+                    let project = res.data.data.body;
+                    project.isremove = 2;
+                    let rs = await updateProject(project);
+                    if(rs.data.code === 200) {
+                      console.log(rs);
+                      this.allProject.splice(project, 1);
+                      this.recycleProject.push(project);
+                      notice(this, '移入回收站成功', 'success');
+                    }
+                  }
                 }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
+                  notice(this, '已取消移入回收站', 'info');
                 });
             },
+            //打开导出dialog对话框
             interfaceExport() {
                 this.exportDialogVisible = true;
+            },
+            //导出按钮事件
+            assureExport() {
+              if(this.interface.format==='html') {
+                console.log('导出为html格式');
+
+              } else if (this.interface.format === 'word') {
+
+              } else if (this.interface.format === 'pdf') {
+
+              } else {
+
+              }
+            },
+            //导出文件操作
+            export(data, format, filename) {
+              if(data) {
+                let blob = new Blob([data],{
+                  type: `application/${format}`
+                });
+                let suffix = '';
+                if(format === 'html') {
+                  suffix = '.html';
+                } else if (format === 'word' ) {
+                  suffix = '.word';
+                } else if(format === 'pdf') {
+                  suffix = '.pdf';
+                } else {
+                  suffix = '.markdown';
+                }
+                let Url = URL.createObjectURL(blob);
+                let link = document.createElement('a');
+                // let downloadName = `个人简历.doc`;
+                let downloadName = filename.concat(suffix);
+                link.href = Url;
+                link.setAttribute('download',downloadName);
+                document.body.appendChild(link);
+                link.click();
+              } else {
+                notice(this, '文件导出失败', 'error');
+              }
             },
             //获取项目列表
             //type 1:全部  2:已加入  3:已创建  4：回收站
@@ -931,6 +1043,52 @@
                 }
                 let rs = await getProjectListById(param);
                 return rs;
+            },
+            //回收站恢复项目
+            async recoveryProject(pid) {
+              let res = await getProjectByPid({
+                pid: pid,
+              });
+              if(res.data.code === 200) {
+                let project = res.data.data.body;
+                confirmMessage(this, '确定恢复项目吗？').then(async () => {
+                  project.isremove = 1;
+                  let rs = await updateProject(project);
+                  if(rs.data.code === 200) {
+                    this.recycleProject.splice(res.data.data.body, 1);
+                    notice(this, '恢复成功', 'success');
+                  } else {
+                    notice(this, '恢复失败', 'error');
+                  }
+                }).catch(() => {
+                  notice(this, '已取消恢复', 'info');
+                });
+              } else {
+                notice(this, '恢复失败', 'error');
+              }
+            },
+            //回收站彻底删除项目
+            async removeProject(pid) {
+              let res = await getProjectByPid({
+                pid: pid,
+              });
+              if(res.data.code === 200) {
+                let project = res.data.data.body;
+                confirmMessage(this, '确定彻底删除项目吗？').then(async () => {
+                  project.isremove = 3;
+                  let rs = await updateProject(project);
+                  if(rs.data.code === 200) {
+                    this.recycleProject.splice(res.data.data.body, 1);
+                    notice(this, '彻底删除成功', 'success');
+                  } else {
+                    notice(this, '删除失败', 'error');
+                  }
+                }).catch(() => {
+                  notice(this, '已取消删除', 'info');
+                });
+              } else {
+                notice(this, '删除失败', 'error');
+              }
             }
         },
         async mounted() {

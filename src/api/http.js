@@ -14,6 +14,14 @@ axios.interceptors.request.use(
       'Content-Type': 'application/json;charset=utf-8',
       'token': localStorage.getItem("token"),
     }
+    // 根据请求路径处理content-type
+    if (config.url.includes('/export')) {
+      config.headers['responseType'] = 'blob'
+    }
+    // 根据请求路径处理content-type
+    if (config.url.includes('/upload')) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+    }
     return config;
   },
   err => {
@@ -24,10 +32,6 @@ axios.interceptors.request.use(
 //http response拦截器
 axios.interceptors.response.use(
   response => {
-    // if(response.data.code != 200) {
-      // this.$router.push({path: '/', query: {redirect:this.$router.currentRoute.fullPath}})
-      // Message.error('请求失败!');
-    // }
     if(response.status!=200) {
       Message.error('请求失败!');
     }
@@ -47,7 +51,7 @@ axios.interceptors.response.use(
 
 export function fetch(url, params={}) {
   return new Promise((resolve,reject) => {
-    axios.get(url, {
+      axios.get(url, {
       params: params,
     }).then(response => {
       resolve(response);
@@ -66,8 +70,8 @@ export function fetch(url, params={}) {
 
 export function post(url, data={}) {
   return new Promise((resolve, reject) => {
-    axios.post(url,data)
-      .then(response => {
+    axios.post(url,data).
+      then(response => {
         resolve(response);
       }).catch(err => {
         reject(err);

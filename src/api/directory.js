@@ -1,5 +1,5 @@
 import requested from "./axios";
-import {fetch} from "./http";
+import {fetch, post} from "./http";
 
 //添加目录
 export function addDir(data) {
@@ -28,5 +28,12 @@ export function queryModuleListByPid(data) {
 //根据模块id查找模块用户列表
 export function queryModuleUserListByMid(data) {
   return fetch('api/imp/directory/queryModuleUserListByMid', data);
+}
+//邀请开发人员加入模块
+export function inviteUser(data) {
+  return fetch('api/imp/directory/invite', data);
+}
+export function getDirectoryPageByPid(data) {
+  return post('api/imp/directory/pageListByPid', data);
 }
 

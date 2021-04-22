@@ -17,6 +17,7 @@
     "echarts": "^4.9.0",
     "element-ui": "^2.5.4",
     "js-md5": "^0.7.3",
+    "moment": "^2.29.1",
     "normalize.css": "^8.0.1",
     "prettier": "^1.12.1",
     "vue": "^2.5.2",
