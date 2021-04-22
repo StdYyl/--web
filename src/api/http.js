@@ -9,10 +9,19 @@ axios.defaults.baseURL = '';
 //http request拦截器
 axios.interceptors.request.use(
   config => {
+    if(!config.isCheck) return config;
     config.data = JSON.stringify(config.data);
     config.headers = {
       'Content-Type': 'application/json;charset=utf-8',
       'token': localStorage.getItem("token"),
+    }
+    // 根据请求路径处理content-type
+    if (config.url.includes('/export')) {
+      config.headers['responseType'] = 'blob'
+    }
+    // 根据请求路径处理content-type
+    if (config.url.includes('/upload')) {
+      config.headers['Content-Type'] = 'multipart/form-data'
     }
     return config;
   },

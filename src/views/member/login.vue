@@ -157,7 +157,7 @@
                             loginParams.captcha = this.formLogin.captcha
                             //登录
                             console.log(loginParams);
-                            registerOrLand(JSON.stringify(loginParams)).then(res => {
+                            registerOrLand(loginParams).then(res => {
                                 console.log(res)
                                 if (!checkResponse(this, res.data, true)) {
                                     return false;

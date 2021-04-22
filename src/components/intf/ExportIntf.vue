@@ -23,11 +23,11 @@
         <el-upload
           class="upload-demo"
           drag
-          action="https://jsonplaceholder.typicode.com/posts/"
+          action="#"
+          :before-upload="beforeAvatarUpload"
           multiple>
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
         </el-upload>
       </el-form-item>
     </el-form>
@@ -35,18 +35,61 @@
 </template>
 
 <script>
+    import {getModuleByProId} from "../../api/directory";
+    import {notice} from "../../utils/elementUtils";
+    import {getIntfDataByFile} from "../../api/interface";
+
     export default {
         name: "ExportIntf",
         data() {
             return {
                 dataType: 'json',
-                moduleList:[
-                    {id:1,name:'用户管理'},
-                    {id:2,name:'接口管理'},
-                ],
-                module:''
+                moduleList: [],
+                module: ''
             }
         },
+        methods: {
+            //上传图片
+            async beforeAvatarUpload(file) {
+                let fileName = file.name.substring(file.name.lastIndexOf('.') + 1)
+                const extension = fileName === 'json'
+                if (this.module == '') {
+                    this.$message({
+                        message: '请先选择上传的分组',
+                        type: 'warning'
+                    });
+                } else if (!extension) {
+                    this.$message({
+                        message: '上传文件只能是 json格式!',
+                        type: 'error'
+                    });
+                } else {
+                    let param = new FormData(); //创建form对象
+                    param.append("file", file);
+                    param.append("moduleId", this.module);
+                    param.append("userId", localStorage.getItem("id"));
+                    param.append("proId", this.$route.params.id);
+                    let rs = await getIntfDataByFile(param);
+                    if (rs.data.code == 200) {
+                        notice(this, rs.data.msg)
+                        this.$router.push(`/home/intfIndex/${id}/intf/all`)
+                    } else {
+                        notice(this, rs.data.msg,"error")
+                    }
+                }
+                return false;
+            },
+        },
+        async mounted() {
+            //模块列表
+            let rs = await getModuleByProId(this.$route.params.id);
+            if (!rs.data.data) {
+                notice(this, "请先去添加模块！", "info")
+                return
+            }
+            this.moduleList.splice(0, this.moduleList.length)
+            this.moduleList.push(...rs.data.data)
+        }
     }
 </script>
 
