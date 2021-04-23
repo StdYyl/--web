@@ -33,4 +33,16 @@ export function updateProject(data) {
 export function exit(data) {
   return fetch('api/imp/project/exit', data);
 }
+//通过点击邀请开发人员加入项目
+export function inviteUserByClick(data) {
+  return fetch('api/imp/project/invite/click', data);
+}
+//通过链接邀请开发人员加入项目
+export function inviteUserByLink(data) {
+  return fetch('api/imp/project/invite/link', data);
+}
+//激活链接，传入被邀请人信息
+export function activeLink(data) {
+  return fetch('api/imp/project/link/active', data);
+}
 

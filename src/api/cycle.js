@@ -4,7 +4,7 @@ import {fetch, post} from "./http";
 export function listCycleNode(data) {
   return fetch('api/imp/cycle/list', data);
 }
-
+//添加项目周期节点
 export function addCycleNode(data) {
   return fetch('api/imp/cycle/add', data);
 }

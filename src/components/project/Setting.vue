@@ -113,6 +113,16 @@
                         {{scope.row.progress}}%
                       </template>
                     </el-table-column>
+                    <el-table-column
+                      label="开发人员"
+                      min-width="1"
+                      align="center">
+                      <template slot-scope="scope">
+                        <span v-for="user in scope.row.chargers">
+                          {{user.name}}
+                        </span>
+                      </template>
+                    </el-table-column>
                   </el-table>
                 </div>
               </el-card>
@@ -154,7 +164,7 @@
                 </el-tag>
               </div>
               <el-button type="text" class="el-icon-circle-plus-outline" size="small"
-                         style="font-size: 14px" @click="isInvitationUser = true" v-if="searchModule"> 人员
+                         style="font-size: 14px" @click="openJoinedPanel" v-if="searchModule"> 人员
               </el-button>
             </el-form-item>
           </el-form>
@@ -171,11 +181,17 @@
           <span><i class="el-icon-warning-outline"></i></span>
           <span class="title-age">邀请成员</span>
         </div>
-        <el-input v-model="InvitationUserEmail" placeholder="项目中人员邮箱">
-          <template slot="append">
-            <el-button class="tag-read" @click="invateUser">邀请</el-button>
-          </template>
-        </el-input>
+        <div style="display: flex;">
+          <el-select v-model="joinedMember" placeholder="请选择" style="flex: 1;">
+            <el-option
+              v-for="item in joinedMemberList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+          <el-button class="tag-read" @click="joinUser" style="margin-left: 20px;" :disabled="joinedMember==null">确认加入</el-button>
+        </div>
       </el-dialog>
 
       <el-tab-pane label="所用技术">
@@ -187,11 +203,11 @@
             <div class="tech_img">
               <el-upload
                 class="avatar-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/file/upload/"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload">
-                <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                <img v-if="imageUrl" :src="'http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/upload/'+imageUrl" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
             </div>
@@ -213,79 +229,35 @@
                 </el-col>
               </el-row>
             </div>
-            <div class="tech_item">
-              <div class="data">
-                <el-row>
-                  <el-col :span="8">
-                    <div class="grid-content bg-purple tech">VUE</div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple-light link">
-                      <i class="el-icon-paperclip"></i>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple version">2.3.0</div>
-                  </el-col>
-                  <el-col :span="4">
-                    <div class="grid-content bg-purple-light remove" @click="removeTech">
-                      <i class="el-icon-close"></i>
-                    </div>
-                  </el-col>
-                </el-row>
+            <div v-for="item in technologyList" :key="item.name">
+              <div class="tech_item">
+                <div class="data">
+                  <el-row>
+                    <el-col :span="8">
+                      <div class="grid-content bg-purple tech">{{item.name}}</div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="grid-content bg-purple-light link">
+                        <i class="el-icon-paperclip"></i>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="grid-content bg-purple version">{{item.version}}</div>
+                    </el-col>
+                    <el-col :span="4">
+                      <div class="grid-content bg-purple-light remove" @click="removeTech(item)">
+                        <i class="el-icon-close"></i>
+                      </div>
+                    </el-col>
+                  </el-row>
+                </div>
               </div>
+              <div class="divider"></div>
             </div>
-            <div class="divider"></div>
-            <div class="tech_item">
-              <div class="data">
-                <el-row>
-                  <el-col :span="8">
-                    <div class="grid-content bg-purple tech">VUE</div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple-light link">
-                      <i class="el-icon-paperclip"></i>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple version">2.3.0</div>
-                  </el-col>
-                  <el-col :span="4">
-                    <div class="grid-content bg-purple-light remove" @click="removeTech">
-                      <i class="el-icon-close"></i>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-            </div>
-            <div class="divider"></div>
-            <div class="tech_item">
-              <div class="data">
-                <el-row>
-                  <el-col :span="8">
-                    <div class="grid-content bg-purple tech">VUE</div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple-light link">
-                      <i class="el-icon-paperclip"></i>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="grid-content bg-purple version">2.3.0</div>
-                  </el-col>
-                  <el-col :span="4">
-                    <div class="grid-content bg-purple-light remove" @click="removeTech">
-                      <i class="el-icon-close"></i>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-            </div>
-            <div class="divider"></div>
             <div class="add">
                 <el-row>
                   <el-col :span="8">
-                    <div class="bind" @click="addTech">
+                    <div class="bind" @click="openAddPanel">
                       <i class="el-icon-circle-plus-outline"></i>
                       <span>新增技术</span>
                     </div>
@@ -303,7 +275,7 @@
               </div>
           </div>
           <div class="footer">
-            <el-button type="primary">保存</el-button>
+            <el-button type="primary" @click="saveTechnology">保存</el-button>
           </div>
         </div>
       </el-tab-pane>
@@ -326,7 +298,7 @@
         </span>
         <span slot="footer">
           <el-button @click="techDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="techDialogVisible = false">确 定</el-button>
+          <el-button type="primary" @click="addTech">确 定</el-button>
         </span>
       </el-dialog>
       <el-tab-pane label="更多">
@@ -349,7 +321,9 @@
     import {getProjectByPid, updateProject, exit} from "../../api/project";
     import {confirmMessage, notice} from "../../utils/elementUtils";
     import {listCycleNode, addCycleNode} from "../../api/cycle";
-    import {queryModuleListByPid, queryModuleUserListByMid} from "../../api/directory";
+    import {queryModuleListByPid, queryModuleUserListByMid, inviteUser} from "../../api/directory";
+    import {removeUserFromModule, addUserToModule} from "../../api/moduleanduser";
+    import {findUserListByPid} from "../../api/projectanduser";
 
     export default {
         name: "setting",
@@ -410,25 +384,32 @@
                     createuser: {
                       name: 'XXX',
                     },
-                    createtime: '2021-3-20'
+                    createtime: '2021-3-20',
+                    technicalpicture: '',
                 },
                 //功能模块
                 moduleList: [],
                 searchModule: null,
-                //功能模块 邀请成员窗口
+                //功能模块 添加成员窗口
                 isInvitationUser: false,
-                //功能模块 邀请成员邮箱
-                InvitationUserEmail: '',
+                //选择加入的开发人员
+                joinedMember: null,
+                //功能模块 可加入的开发人员
+                joinedMemberList: [
+                  {id:1,name:'张三',},
+                  {id:2,name:'李四'}
+                ],
                 //功能模块的开发人员
                 moduleUser: [],
+                technologyList: [],
                 techDialogVisible: false,
                 //新增技术窗口
                 technology: {
                   name: 'Dubbo',
                   version: '2.3.0',
                 },
-                imageUrl: '',
                 //技术架构图
+                imageUrl: ''
             }
         },
         methods: {
@@ -455,54 +436,93 @@
             },
             //修改项目周期节点
             async modifyCycleNode() {
-              let date = new Date();
-              this.moduleProject.push(
-                {
-                  id: this.moduleProject.length+1,
-                  user: {
-                    name: '王五',
-                    head: '/static/img/head.b818068.png',
-                  },
-                  createTime: date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate(),
-                  modules: [
-                    {
-                      module: '用户管理',
-                      progress: 10
-                    },
-                    {
-                      module: '项目管理',
-                      progress: 20
-                    }
-                  ]
-                }
-              );
+              let moduleNode;
               let res = await addCycleNode({
                 pid: this.systemForm.id,
                 uid: this.userId,
               });
               console.log(res);
               if(res.data.code === 200) {
-
+                moduleNode = res.data.data.body;
+                moduleNode.modules = JSON.parse(moduleNode.dirandprog);
+                let date = new Date(moduleNode.createtime);
+                moduleNode.createtime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
+                +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                this.moduleProject.push(moduleNode);
+                notice(this, '节点已自动生成');
+              } else {
+                notice(this, res.data.data, 'error');
               }
             },
             //添加模块开发人员
             addModuleUser(){
-
+              console.log(this.moduleUser);
             },
             //删除成员
             handleRemoveUser(e) {
-                this.$confirm(`确定在该模块中移除成员${e.name}吗？`, '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
+                if(e.user.id == this.userId) {
+                  notice(this, '您是项目负责人，不可移除', 'warning');
+                  return;
+                }
+                confirmMessage(this,  `确定在该模块中移除成员${e.user.name}吗？`).then(async () => {
+                  let res = await removeUserFromModule({
+                    mauid: e.id,
+                    pid: this.$route.params.id,
+                  });
+                  if(res.data.code === 200) {
+                    notice(this, '移除成功', 'success');
                     this.moduleUser.splice(this.moduleUser.indexOf(e), 1);
-                }).then(() => {
+                  } else {
+                    notice(this, '移除失败', 'error');
+                  }
+                }).catch(() => {
+                  notice(this, '取消移除', 'info');
                 })
             },
-            //功能模块邀请成员
-            invateUser() {
-
+            //打开成员加入面板
+            async openJoinedPanel() {
+              let res = await findUserListByPid({
+                pid: this.$route.params.id,
+              });
+              if(res.data.code === 200) {
+                if(res.data.data.total>0) {
+                  if(this.moduleUser) {
+                    this.joinedMemberList = res.data.data.list.filter((item) => {
+                      let user = this.moduleUser.find((module) => {
+                        return module.userid == item.id;
+                      })
+                      if(user) return false;
+                      return true;
+                    });
+                  } else {
+                    this.joinedMemberList = res.data.data.list;
+                  }
+                }
+              }
+              this.isInvitationUser=true;
+            },
+            //功能模块成员加入
+            async joinUser() {
+              console.log(this.moduleUser);
+              let res = await addUserToModule({
+                uid: this.joinedMember,
+                mid: this.searchModule,
+              });
+              console.log(res);
+              if(res.data.code === 200) {
+                let moduleanduser = res.data.data.body;
+                let date = new Date(moduleanduser.jointime);
+                moduleanduser.jointime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate();
+                let temp = this.joinedMemberList.find((item) => {
+                  return item.id == this.joinedMember;
+                });
+                this.joinedMemberList.splice(temp, 1);
+                this.moduleUser.push(moduleanduser);
+                notice(this, '加入成功', 'success');
+                this.isInvitationUser = false;
+              } else {
+                notice(this, '加入失败', 'error');
+              }
             },
             //设置tabs的高度
             setHeight() {
@@ -510,31 +530,66 @@
                 return `height:${h}`
                 console.log(h)
             },
-            removeTech() {
-              this.$confirm('此操作将删除该技术, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '删除成功!'
-                });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消删除'
-                });
-              });
+            removeTech(item) {
+              this.technologyList.splice(item, 1);
             },
-            addTech() {
+            openAddPanel() {
               this.techDialogVisible = true
             },
-            beforeAvatarUpload() {
-              //上传之前触发函数
+            addTech() {
+              this.technologyList.push({
+                name: this.technology.name,
+                version: this.technology.version,
+              });
+              this.techDialogVisible = false;
+              this.technology.name='';
+              this.technology.version='';
             },
-            handleAvatarSuccess() {
+            saveTechnology() {
+              confirmMessage(this, '此操作将保存对技术的更改, 是否继续?').then(async () => {
+                let project = this.systemForm;
+                project.technical = JSON.stringify(this.technologyList);
+                console.log(project);
+                let res = await updateProject(project);
+                if(res.data.code === 200) {
+                  notice(this, '保存成功', 'success');
+                }
+              }).catch(() => {
+                notice(this, '已取消保存', 'info');
+              });
+            },
+            beforeAvatarUpload(file) {
+              //上传之前触发函数
+              const isJPG = file.type === 'image/jpeg';
+              const isLt2M = file.size / 1024 / 1024 < 2;
+
+              if (!isJPG) {
+                this.$message.error('上传头像图片只能是 JPG 格式!');
+                return;
+              }
+              if (!isLt2M) {
+                this.$message.error('上传头像图片大小不能超过 2MB!');
+                return;
+              }
+              if(isJPG && isLt2M) {
+
+                return true;
+              } else {
+                return false;
+              }
+            },
+            handleAvatarSuccess(res, file) {
               //上传完成触发函数
+              // this.imageUrl = URL.createObjectURL(file.raw);
+              if(res.code === 200) {
+                if(res.data.status === 'OK') {
+                  this.imageUrl = res.data.filename;
+                  this.systemForm.technicalpicture = this.imageUrl;
+                  notice(this, '上传图片成功', 'success');
+                  return;
+                }
+              }
+              notice(this, '上传图片失败', 'error');
             },
             archive() {
               //项目归档
@@ -633,11 +688,12 @@
           let res = await getProjectByPid({
             pid: this.$route.params.id,
           });
-          console.log(res);
           if(res.data.code === 200) {
             this.systemForm = res.data.data.body;
             this.endMouth = res.data.data.body.endmonth;
             this.endDay = res.data.data.body.endday;
+            this.technologyList = this.systemForm.technical?JSON.parse(this.systemForm.technical):[];
+            this.imageUrl = this.systemForm.technicalpicture;
           }
           res = await listCycleNode({
             pid: this.$route.params.id,
@@ -647,16 +703,15 @@
             this.moduleProject = res.data.data.list;
             this.moduleProject.forEach((item) => {
               let date = new Date(item.createtime);
-              item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate();
+              item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
+              +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
               let modules = JSON.parse(item.dirandprog);
-              console.log(modules);
               item.modules = modules;
             })
           }
           res = await queryModuleListByPid({
             pid: this.$route.params.id,
           });
-          console.log(res);
           if(res.data.code === 200) {
             if(res.data.data.total>0) {
               res.data.data.list.forEach((item) => {

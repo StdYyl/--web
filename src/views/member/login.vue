@@ -141,7 +141,18 @@
                               notice(this, res.data.msg);
                               localStorage.setItem("token", res.data.data.token);
                               localStorage.setItem("id", res.data.data.id);
-                              this.$router.push('/home');
+                              if(this.$route.query.redirect) {
+                                this.$router.push({
+                                  path: '/home/member/accept',
+                                  query: {
+                                    code: this.$route.query.code,
+                                  }
+                                });
+                              } else {
+                                this.$router.push({
+                                  path: '/home',
+                                });
+                              }
                             })
                         })
                     })
@@ -171,7 +182,18 @@
                                 }
                                 localStorage.setItem("token", res.data.data.token);
                                 localStorage.setItem("id", res.data.data.id);
-                                this.$router.push('/home');
+                                if(this.$route.query.redirect) {
+                                  this.$router.push({
+                                    path: '/home/member/accept',
+                                    query: {
+                                      code: this.$route.query.code,
+                                    }
+                                  });
+                                } else {
+                                  this.$router.push({
+                                    path: '/home',
+                                  });
+                                }
                             })
                         })
                     })

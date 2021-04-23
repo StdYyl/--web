@@ -35,7 +35,7 @@
                 @row-click="activeOne"
                 style="width: 100%;font-size: 13px">
                 <el-table-column
-                  prop="content"
+                  prop="content.content"
                   :show-overflow-tooltip="true"
                   width="174">
                 </el-table-column>
@@ -43,7 +43,7 @@
               <div class="all_notice" v-if="tableData.length>0" @click="allNotifications">查看全部</div>
             </div>
           </template>
-          <el-badge :value="noticeCount" :max="10" class="item" slot="reference">
+          <el-badge :value="noticeCount" :hidden="noticeCount<=0" :max="10" class="item" slot="reference">
             <el-icon class="iconfont icon-tongzhi"></el-icon>
           </el-badge>
         </el-popover>
@@ -69,6 +69,8 @@
 
     import {exitLogin, getUserMesByID} from '../../api/user'
     import {mapState} from "vuex"
+    import {listNotice, findNoticeById, updateNotice} from "../../api/notice";
+    import {notice} from "../../utils/elementUtils";
 
 
     export default {
@@ -85,13 +87,10 @@
                 // head:'',
                 //仅展示最多三条数据
                 tableData: [
-                    {id: 1, content: "张三邀请您加入项目接口管理平台项目", isCheck: false},
-                    {id: 2, content: "李四邀请您加入项目接口管理平台项目", isCheck: true},
-                    {id: 3, content: "王五邀请您加入项目接口管理平台项目", isCheck: false},
                     // {content: "李四邀请您"},
                 ],
                 activeIndex: "1",
-                noticeCount: 100
+                noticeCount: 0
             }
         },
         methods: {
@@ -135,10 +134,35 @@
                 }
                 return "read_mes_no"
             },
-            activeOne(row) {
+            async activeOne(row) {
                 row.isCheck = true;
+                let res = await findNoticeById({
+                  nid: row.id,
+                });
+                if(res.data.code === 200) {
+                  let notice = res.data.data.body;
+                  notice.isRead = '1';
+                  res = await updateNotice(notice);
+                  if(res.data.code === 200) {
+                    this.tableData.splice(notice, 1);
+                    this.noticeCount--;
+                  } else {
+                    notice(this, '查看失败', 'error');
+                    return;
+                  }
+                } else {
+                  notice(this, '查看失败', 'error');
+                  return;
+                }
                 //跳转页面，并调用接口修改该条通知已读
                 console.log("跳转至通知详情页面！")
+                console.log(row);
+                this.$router.push({
+                  path: '/home/member/accept',
+                  query: {
+                    nid: row.id,
+                  }
+                })
                 //修改为读消息数量
             },
             //查看全部通知
@@ -158,6 +182,20 @@
             if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
             if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
             if (this.$route.path.indexOf('/home/information') != -1) this.activeIndex = '3';
+            let res = await listNotice({
+              uid: localStorage.getItem('id'),
+            });
+            if(res.data.code === 200) {
+              this.tableData = [];
+              this.noticeCount = res.data.data.total;
+              if(this.noticeCount>0) {
+                res.data.data.list.forEach((item) => {
+                  let content = JSON.parse(item.content);
+                  item.content = content;
+                  this.tableData.push(item);
+                })
+              }
+            }
         },
         watch: {
             $route() {

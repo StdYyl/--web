@@ -15,29 +15,39 @@
               <div class="number">分类下接口数量</div>
               <div class="date">归档时间</div>
             </div>
-            <div class="data_item" v-for="item in interfaceList" :key="item.id">
+            <div class="data_item" v-for="item in moduleList" :key="item.id">
               <div class="classification">{{item.classification}}</div>
               <div class="level">{{item.level}}</div>
               <div class="number">{{item.number}}</div>
               <div class="date">{{item.date}}</div>
             </div>
+            <div style="padding-top: 20px;text-align: right;">
+              <el-pagination
+                background
+                @current-change="handleCurrentChange"
+                :current-page="currentPage"
+                :page-size="pageSize"
+                layout="prev, pager, next"
+                :total="total">
+              </el-pagination>
+            </div>
           </div>
           <div class="footer">
             <div class="total">
               一共有
-              <el-input-number v-model="interface.total_number" @change="handleChangeTotal" :min="1" :max="10" label="接口总数"
+              <el-input-number v-model="interface.total_number" :min="0" :max="1000" label="接口总数"
                                size="small" style="margin-left: 20px" disabled></el-input-number>
               接口
             </div>
             <div class="archived">
               已归档
-              <el-input-number v-model="interface.archived_number" @change="handleChangeArchived" :min="1" :max="10" label="已归档接口数"
+              <el-input-number v-model="interface.archived_number" :min="0" :max="1000" label="已归档接口数"
                                size="small" style="margin-left: 20px" disabled></el-input-number>
               接口
             </div>
             <div class="progress">
               <div>完成进度</div>
-              <el-progress :percentage="50" style="width: 300px"></el-progress>
+              <el-progress :percentage="interface.completed_percentage" style="width: 300px"></el-progress>
             </div>
           </div>
         </div>
@@ -49,13 +59,13 @@
           <div class="title">
             <div class="left">周报情况</div>
             <div class="right">
-              <el-select v-model="submitter.name" placeholder="请选择" size="small"
-                style="width: 150px; margin-right: 20px;color: rgb(154,164,176);">
+              <el-select v-model="submitter" placeholder="请选择" size="small"
+                style="width: 150px; margin-right: 20px;color: rgb(154,164,176);" @change="changeUser()">
                 <el-option
                   v-for="item in submitterList"
                   :key="item.id"
                   :label="item.name"
-                  :value="item.name">
+                  :value="item.id">
                 </el-option>
               </el-select>
               的周报
@@ -63,76 +73,38 @@
           </div>
           <div class="main">
             <el-timeline>
-              <el-timeline-item timestamp="2018-4-12" placement="top">
+              <el-timeline-item :timestamp="item.showTime" placement="top" v-for="item in weeklyconList" :key="item.id">
                 <el-card>
                   <div class="card">
                     <div class="info">
-                      <img src="../../assets/image/common/head.png" alt="">
-                      <span>yyl123</span>
+                      <img :src="item.user.head" alt="">
+                      <span>{{item.user.name}}</span>
                     </div>
                     <div class="module">
-                      当前模块：T1
+                      当前模块：
+                      <span style="margin: 0 5px;" v-for="m in item.moduleList">{{m}}</span>
                     </div>
                     <div class="progress">
-                      完成进度：10%
+                      完成进度：
+                      <span style="margin: 0 5px;" v-for="p in item.progressList">{{p}}</span>
                     </div>
                     <div class="desc">
                       <i class="icon iconfont icon-gongneng1"></i>
                       <div class="content">
                         <div class="title">本周任务完成情况</div>
-                        <div class="context">除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。</div>
-                      </div>
-                    </div>
-                  </div>
-                </el-card>
-              </el-timeline-item>
-              <el-timeline-item timestamp="2018-4-3" placement="top">
-                <el-card>
-                  <div class="card">
-                    <div class="info">
-                      <img src="../../assets/image/common/head.png" alt="">
-                      <span>yyl123</span>
-                    </div>
-                    <div class="module">
-                      当前模块：T1
-                    </div>
-                    <div class="progress">
-                      完成进度：10%
-                    </div>
-                    <div class="desc">
-                      <i class="icon iconfont icon-gongneng1"></i>
-                      <div class="content">
-                        <div class="title">本周任务完成情况</div>
-                        <div class="context">除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。</div>
-                      </div>
-                    </div>
-                  </div>
-                </el-card>
-              </el-timeline-item>
-              <el-timeline-item timestamp="2018-4-2" placement="top">
-                <el-card>
-                  <div class="card">
-                    <div class="info">
-                      <img src="../../assets/image/common/head.png" alt="">
-                      <span>yyl123</span>
-                    </div>
-                    <div class="module">
-                      当前模块：T1
-                    </div>
-                    <div class="progress">
-                      完成进度：10%
-                    </div>
-                    <div class="desc">
-                      <i class="icon iconfont icon-gongneng1"></i>
-                      <div class="content">
-                        <div class="title">本周任务完成情况</div>
-                        <div class="context">除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。除细节外，基本处理完成。</div>
+                        <div class="context">{{item.complete}}</div>
                       </div>
                     </div>
                   </div>
                 </el-card>
               </el-timeline-item>
             </el-timeline>
+            <div class="footer">
+              <div class="more" @click="getMore">
+                <i class="el-icon-refresh"></i>
+                点击加载更多
+              </div>
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -141,106 +113,204 @@
 </template>
 
 <script>
-    export default {
-        name: "setting",
-        data() {
-            return {
-                //接口
-                interface:{
-                  total_number: 5,
-                  archived_number: 5,
-                },
-                interfaceList: [
-                {
-                  id: 1,
-                  classification: '商户管理',
-                  level: '一级分类',
-                  number: 12,
-                  date: '2021-3-13'
-                },
-                {
-                  id: 2,
-                  classification: '商户管理',
-                  level: '二级分类',
-                  number: 12,
-                  date: '2021-3-13'
-                },
-                {
-                  id: 3,
-                  classification: '商户管理',
-                  level: '一级分类',
-                  number: 12,
-                  date: '2021-3-13'
-                },
-                {
-                  id: 4,
-                  classification: '商户管理',
-                  level: '二级分类',
-                  number: 12,
-                  date: '2021-3-13'
-                },
-                {
-                  id: 5,
-                  classification: '商户管理',
-                  level: '一级分类',
-                  number: 12,
-                  date: '2021-3-13'
-                }
-              ],
-                submitter: {
-                  name: 'yyl123',
-                },
-                submitterList: [
-                  {
-                    id: 1,
-                    name: 'yyl123',
-                  },
-                  {
-                    id: 2,
-                    name: 'yuluo1',
-                  },
-                  {
-                    id: 3,
-                    name: 'lalala',
-                  }
-                ]
-            }
-        },
-        methods: {
-            goBack() {
-              this.$router.go(-1)
-            },
-            //设置tabs的高度
-            setHeight() {
-                let h = document.getElementById("bg").style.height
-                return `height:${h}`
-                console.log(h)
-            },
-            handleChangeTotal() {
-              console.log(this.interface.total_number)
-            },
-            handleChangeArchived() {
+    import {getInterfaceListByExample} from "../../api/interface";
+    import {getDirectoryPageByPid} from "../../api/directory";
+    import {findUserListByPid} from "../../api/projectanduser";
+    import {listWeeklyCon} from "../../api/weeklycon";
+    import {notice} from "../../utils/elementUtils";
+    import moment from 'moment';
 
-            },
-            archive() {
-              //项目归档
-              this.$confirm('此操作将归档全部已完成接口，是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.$message({
-                  type: 'success',
-                  message: '归档成功!'
-                });
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消归档'
-                });
-              });
-            },
+    export default {
+      name: "setting",
+      data() {
+        return {
+          //项目id
+          projectId: null,
+          //接口
+          interface:{
+            total_number: null,
+            archived_number: null,
+            completed_percentage: 0,
+          },
+          moduleList: [],
+          //接口归档的分页参数
+          currentPage: 1,
+          pageSize: 5,
+          total: 0,
+          //周报汇报的参数
+          current: 1,
+          size: 3,
+          submitter: null,
+          submitterList: [
+            {
+              id: null,
+              name: '全部',
+            }
+          ],
+          //周报列表
+          weeklyconList: [],
         }
+      },
+      methods: {
+        goBack() {
+          this.$router.go(-1)
+        },
+        //设置tabs的高度
+        setHeight() {
+            let h = document.getElementById("bg").style.height
+            return `height:${h}`
+            console.log(h)
+        },
+        //当前页码改变时出发事件
+        handleCurrentChange() {
+          this.listDirectoryByPage();
+        },
+        //获取全部接口列表
+        async listTotalInterface() {
+          let project = {};
+          project.id = this.projectId;
+          let res = await getInterfaceListByExample(project);
+          if(res.data.code === 200) {
+            this.interface.total_number = res.data.data.total;
+          }
+        },
+        //获取已归档的接口列表
+        async listArchivedInterface() {
+          let project = {};
+          project.id = this.projectId;
+          project.status = 3;
+          let res = await getInterfaceListByExample(project);
+          if(res.data.code === 200) {
+            this.interface.archived_number = res.data.data.total;
+          }
+        },
+        //分页查询目录列表以及对应目录下的接口
+        async listDirectoryByPage() {
+          let res = await getDirectoryPageByPid({
+            current: this.currentPage,
+            size: this.pageSize,
+            pid: this.projectId,
+          });
+          if(res.data.code === 200) {
+            if(res.data.data.total>0) {
+              let module = {};
+              res.data.data.list.forEach((item) => {
+                module = item;
+                module.classification = item.name;
+                if(item.parentid==-1) {
+                  module.level = '一级目录';
+                } else {
+                  module.level = '二级目录';
+                }
+                module.number = item.interfaceList?item.interfaceList.length:0;
+                let date = new Date(item.updatetime);
+                module.date = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
+                  +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                this.moduleList.push(module);
+              })
+              this.total = res.data.data.total;
+            }
+          }
+        },
+        async listUsersByPid() {
+          this.submitterList = [{
+            id: null,
+            name: '全部',
+          }];
+          let res = await findUserListByPid({
+            pid: this.projectId,
+          });
+          if(res.data.code === 200) {
+            res.data.data.list.forEach((item) => {
+              this.submitterList.push({
+                id: item.id,
+                name: item.name,
+              });
+            });
+          }
+        },
+        changeUser() {
+          this.current=1;
+          console.log(this.submitter);
+          this.weeklyconList = [];
+          this.getWeeklyConList(this.current, this.size);
+        },
+        async getWeeklyConList(current, size) {
+          let res = await listWeeklyCon({
+            current: current,
+            size: size,
+            pid: this.$route.params.id,
+            uid: this.submitter,
+          });
+          if (res.data.code === 200) {
+            if (res.data.data.total > 0) {
+              res.data.data.list.forEach((item) => {
+                let weeklycon = item;
+                let showTime = item.updatetime ?
+                  moment(item.updatetime).format('YYYY年MM月DD日 HH:MM') : moment(item.addtiome).format('YYYY年MM月DD日 HH:MM');
+                weeklycon.showTime = showTime+'（第'+item.weekly.weeks+'周）';
+                let moduleList = [];
+                let progressList = [];
+                let completeStr = '';
+                if(item.body) {
+                  //处理字符串拿到当前模块
+                  let moduleStr = item.body.substring(item.body.indexOf('当前模块') + 6, item.body.indexOf('完成进度') - 5);
+                  let moduleStrList = moduleStr.split('\n');
+                  moduleStrList.forEach((item) => {
+                    if(item!='') {
+                      let module = item.substring(item.lastIndexOf(' ')+1);
+                      moduleList.push(module);
+                    }
+                  });
+                  //处理字符串拿到完成进度
+                  let progressStr = item.body.substring(item.body.indexOf('完成进度') + 6, item.body.indexOf('本周任务完成情况') - 5);
+                  let progressStrList = progressStr.split('\n');
+                  progressStrList.forEach((item) => {
+                    if(item!='') {
+                      let progress = item.substring(item.lastIndexOf(' ')+1);
+                      progressList.push(progress);
+                    }
+                  });
+                  //处理字符串拿到本周任务完成情况
+                  completeStr = item.body.substring(item.body.indexOf('本周任务完成情况') + 10, item.body.indexOf('需要支持') - 5);
+                  // let completeStrList = completeStr.split('\n');
+                  // let completeList = [];
+                  // completeStrList.forEach((item) => {
+                  //   if(item!='') {
+                  //     let complete = item.substring(item.lastIndexOf(' ')+1);
+                  //     completeList.push(complete);
+                  //   }
+                  // });
+                }
+                weeklycon.moduleList = moduleList;
+                weeklycon.progressList = progressList;
+                weeklycon.complete= completeStr;
+                this.weeklyconList.push(weeklycon);
+              })
+            } else {
+              notice(this, '已经没有更多数据了', 'info');
+            }
+          }
+          console.log(this.weeklyconList);
+        },
+        getMore() {
+          this.getWeeklyConList(++this.current, this.size);
+        },
+      },
+      mounted() {
+        let pid = this.$route.params.id;
+        if(pid) {
+          this.projectId = pid;
+        }
+        this.listTotalInterface();
+        this.listArchivedInterface();
+        this.listDirectoryByPage();
+        if(this.interface.total_number) {
+          this.interface.completed_percentage = parseFloat((100*this.interface.archived_number/this.interface.total_number).toFixed(2));
+        }
+        this.listUsersByPid();
+        this.getWeeklyConList(this.current, this.size);
+      }
     }
 </script>
 
@@ -384,6 +454,22 @@
             }
           }
         }
+      }
+    }
+    .footer {
+      padding: 20px 30px;
+      .more {
+        width: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 0;
+        background-color: rgb(252, 252, 252);
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .more:hover {
+        background-color: rgb(247, 247, 247);
       }
     }
   }

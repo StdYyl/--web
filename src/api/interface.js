@@ -1,4 +1,6 @@
 import requested from "./axios";
+import {post} from "./http";
+
 //新增接口
 export function addNewInterface(data) {
   return requested('api/imp/interface/addNewInterface','POST',data);
@@ -26,4 +28,8 @@ export function archiveIntf(userId, moduleId, projectId) {
 //接口导出时，查询接口信息(基本信息+参数信息)
 export function exportIntfList(projectId, directoryId) {
   return requested(`api/imp/interface/exportIntfList?projectId=${projectId}&directoryId=${directoryId}`);
+}
+//根据project实体类查找接口列表
+export function getInterfaceListByExample(data) {
+  return post('api/imp/interface/listByExample', data);
 }

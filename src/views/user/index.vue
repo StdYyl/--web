@@ -81,7 +81,10 @@
           :show-overflow-tooltip="true"
           min-width="1">
           <template slot-scope="props">
-            <div style="font-size: 16px;cursor: pointer">{{ props.row.createtime}}</div>
+            <div style="font-size: 16px;cursor: pointer">
+              {{new Date(props.row.createtime).getUTCFullYear()}}-{{new Date(props.row.createtime).getUTCMonth()}}-{{new Date(props.row.createtime).getUTCDate()}}
+              {{new Date(props.row.createtime).getHours()}}:{{new Date(props.row.createtime).getMinutes()}}:{{new Date(props.row.createtime).getSeconds()}}
+            </div>
           </template>
         </el-table-column>
       </el-table>

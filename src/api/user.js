@@ -78,3 +78,7 @@ export function listMember(data) {
 export function removeMember(data) {
   return fetch('api/imp/user/member/remove', data);
 }
+//查找除创建人外所有的用户
+export function listAllUserExcludeCreate(data) {
+  return fetch('api/imp/user/list/all', data);
+}

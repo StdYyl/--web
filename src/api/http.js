@@ -33,10 +33,6 @@ axios.interceptors.request.use(
 //http response拦截器
 axios.interceptors.response.use(
   response => {
-    // if(response.data.code != 200) {
-      // this.$router.push({path: '/', query: {redirect:this.$router.currentRoute.fullPath}})
-      // Message.error('请求失败!');
-    // }
     if(response.status!=200) {
       Message.error('请求失败!');
     }
@@ -56,7 +52,7 @@ axios.interceptors.response.use(
 
 export function fetch(url, params={}) {
   return new Promise((resolve,reject) => {
-    axios.get(url, {
+      axios.get(url, {
       params: params,
     }).then(response => {
       resolve(response);
@@ -75,8 +71,8 @@ export function fetch(url, params={}) {
 
 export function post(url, data={}) {
   return new Promise((resolve, reject) => {
-    axios.post(url,data)
-      .then(response => {
+    axios.post(url,data).
+      then(response => {
         resolve(response);
       }).catch(err => {
         reject(err);
