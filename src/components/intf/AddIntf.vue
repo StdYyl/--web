@@ -1,5 +1,5 @@
 <template>
-  <div class="intf_rhs">
+  <div class="intf_rhs" id="addIntf">
     <div class="rh_head">
       <h4 style="margin: 5px 0 0 15px;color: #1890FF">我的接口
         <span class="el-icon-info" style="color:#1890FF;"></span>
@@ -577,6 +577,10 @@
 
 <style lang="less" scoped>
 
+  #addIntf /deep/ .el-tabs__nav{
+    transform: translateX(0%) !important;
+  }
+
   .none_iocn {
     color: white !important;
   }
@@ -661,7 +665,7 @@
 
   .intf_rhs {
     min-height: 530px;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
     border: 1px solid #bbbbbb;
     background-color: white;
     border-radius: 8px;

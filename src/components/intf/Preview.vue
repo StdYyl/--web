@@ -338,7 +338,7 @@
 
   .intf_rh {
     min-height: 530px;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
     border: 1px solid #bbbbbb;
     background-color: white;
     border-radius: 8px;

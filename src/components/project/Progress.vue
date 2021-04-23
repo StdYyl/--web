@@ -415,7 +415,7 @@
     background-color: #FFFFFF;
     border-radius: 6px;
     border: 1px solid rgb(187, 187, 187);
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
 
 
     /deep/ .el-page-header {

@@ -5,13 +5,13 @@
         <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item>{{projectName}}</el-breadcrumb-item>
       </el-breadcrumb>
-      <el-tabs v-model="activeName" @tab-click="chooseTabs">
+      <el-tabs v-model="activeName" @tab-click="chooseTabs" id="intfTabs">
         <!--接口管理-->
         <el-tab-pane label="接口管理" name="interface">
           <div style="display: flex">
             <div class="intf_left" id="a">
-              <el-tabs type="border-card">
-                <el-tab-pane label="接口列表">
+              <el-tabs type="border-card" @tab-click="chooseIntf" v-model="activeIntf">
+                <el-tab-pane label="接口列表" name="intf">
                   <div class="intf_left_in">
                     <el-input v-model="searchIntfName" placeholder="接口名称" size="small"
                               style="width: 155px;margin-left: 15px"></el-input>
@@ -92,7 +92,7 @@
                 </el-tab-pane>
 
                 <!--历史记录-->
-                <el-tab-pane label="历史记录">
+                <el-tab-pane label="历史记录" name="history">
                   <div class="intf_left_in">
                     <el-input v-model="searchHistory" placeholder="接口名称" size="small"
                               style="width: 155px;margin-left: 15px"></el-input>
@@ -104,21 +104,16 @@
                   <el-tree
                     id="history"
                     :data="historyData"
-                    @node-click="nodeClick"
+                    @node-click="nodeClickHistory"
                     :props="defaultProps"
                     :filter-node-method="searchIntf"
                     :highlight-current='true'
                     accordion
+                    node-key="id"
+                    ref="intfTrees"
                     :expand-on-click-node="isShowMore">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
-                      <div v-if="data.isIntf">
-                         <span class='custom-tree-node'>
-                           <strong style='width:50px;text-align: left;font-size:12px;color:#66B1FF'>{{data.method.toUpperCase()}}</strong>
-                           <span class='folder_name'> {{node.label}} </span>
-                           <span class='el-icon-delete-solid' @click=deleteIntf(data)></span>
-                         </span>
-                      </div>
-                      <span v-else class='custom-tree-node'>
+                      <span class='custom-tree-node'>
                           <span class="el-icon-date"></span>
                           <span class='folder_name' style="padding-left: 6px"> {{node.label}} </span>
                       </span>
@@ -154,7 +149,7 @@
                 <el-option label="html" value="html"></el-option>
                 <el-option label="word" value="word"></el-option>
                 <el-option label="pdf" value="pdf"></el-option>
-<!--                <el-option label="markDown" value="markDown"></el-option>-->
+                <!--                <el-option label="markDown" value="markDown"></el-option>-->
               </el-select>
               <div style="margin: 15px 0 0 60px">
                 <span class="el-icon-download"></span>
@@ -816,6 +811,7 @@
         name: "index",
         data() {
             return {
+                activeIntf: 'intf',
                 from: {},
                 paramTab: '1',
                 //接口详情列表
@@ -845,18 +841,31 @@
                 historyData: [
                     {
                         id: 1,
-                        label: "2020年11月",
-                        children: [
-                            {id: 3, label: "用户名修改", isIntf: true, method: 'put'},
-                        ],
+                        label: "一天前",
+                    },
+                    {
+                        id: 2,
+                        label: "三天前",
                     },
                     {
                         id: 3,
-                        label: "2020年10月",
+                        label: "一周前",
                     },
                     {
                         id: 4,
-                        label: "2020年9月",
+                        label: "一个月前",
+                    },
+                    {
+                        id: 5,
+                        label: "三个月前",
+                    },
+                    {
+                        id: 6,
+                        label: "半年前",
+                    },
+                    {
+                        id: 7,
+                        label: "更早",
                     },
                 ],
                 //添加分类名称
@@ -926,6 +935,29 @@
             MarkdownPro
         },
         methods: {
+            nodeClickHistory(e) {
+                let {id, moduleId} = this.$route.params
+                if (moduleId == e.id || (moduleId == 'all' && e.id === 0)) return;
+                this.$router.push(`/home/intfIndex/${id}/history/${e.id}`)
+            },
+            //切换历史记录和接口列表
+            chooseIntf() {
+                let {id} = this.$route.params
+                let path = this.$route.path
+                if (this.activeIntf == 'intf') {
+                    console.log(path.indexOf("intf"))
+                    if (path.indexOf("/intf/") == -1) {
+                        this.$router.push(`/home/intfIndex/${id}/intf/all`)
+                        this.$refs.intfTrees.setCurrentKey(id);
+                    }
+                }
+                if (this.activeIntf == 'history') {
+                    if (path.indexOf("/history/") == -1) {
+                        this.$router.push(`/home/intfIndex/${id}/history/1`)
+                        this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
+                    }
+                }
+            },
             //切换tabs
             async chooseTabs() {
                 if (this.activeName == 'environment') {
@@ -1215,7 +1247,7 @@
                             this.showDialog[0] = false;
                             this.showDialog.push()
                         })
-                    }else if(this.fileType == 'markDown'){
+                    } else if (this.fileType == 'markDown') {
                         // this.$nextTick(() => {
                         //     exportMD(document.querySelector('#intfTemplate'))
                         //     notice(this, "导出成功！");
@@ -1288,34 +1320,6 @@
 
                 })
             },
-            //目录
-            // renderContent(h, {node, data, store}) {
-            //     if(data.id == 0) return(
-            //         < span class='custom-tree-node'>
-            //         < span class='folder_name'> {node.label} < /span>
-            //     < /span>
-            //     );
-            //     if(data.isIntf) return(
-            //         < span class='custom-tree-node'>
-            //         <strong style='width:50px;text-align: left;font-size:12px;color:#66B1FF'>{data.method.toUpperCase()}</strong>
-            //         < span class='folder_name'> {node.label} < /span>
-            //         < span class='el-icon-delete-solid' on-click={() => this.deleteIntf(data)}>< /span>
-            //         < /span>
-            //      );
-            //     return (
-            //         < span class='custom-tree-node'>
-            //         < span class='folder_name'> {node.label} < /span>
-            //         <el-dropdown trigger="click" nativeOnClick={()=>this.menuChange(this.$refs['tree'])}>
-            //           <span class="el-icon-s-fold" on-click={()=>this.isShowMore = false}></span>
-            //           <el-dropdown-menu slot="dropdown">
-            //             <el-dropdown-item>黄金糕</el-dropdown-item>
-            //             <el-dropdown-item>狮子头</el-dropdown-item>
-            //             <el-dropdown-item>螺蛳粉</el-dropdown-item>
-            //             <el-dropdown-item divided>蚵仔煎</el-dropdown-item>
-            //           </el-dropdown-menu>
-            //         </el-dropdown>
-            //     < /span> );
-            // },
             writeWeekly() {
                 //写周报
                 this.weeklyFlag = 2;
@@ -1394,14 +1398,35 @@
 
             }
         },
+        watch: {
+            async $route() {
+                this.$nextTick(function () {
+                    let id = this.$route.params.moduleId
+                    if (this.$route.path.indexOf("/history/") != -1) {
+                        app.activeIntf = 'history'
+                        this.$refs.intfTrees.setCurrentKey(id);
+                    }
+                    if (this.$route.path.indexOf("/intf/") != -1) {
+                        app.activeIntf = 'intf'
+                        this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
+                    }
+                })
+            }
+        },
         async mounted() {
             let app = this
             //模块列表
             await this.getModuleList();
             this.$nextTick(function () {
                 let id = this.$route.params.moduleId
-                console.log(id)
-                this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
+                if (this.$route.path.indexOf("/history/") != -1) {
+                    app.activeIntf = 'history'
+                    this.$refs.intfTrees.setCurrentKey(id);
+                }
+                if (this.$route.path.indexOf("/intf/") != -1) {
+                    app.activeIntf = 'intf'
+                    this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
+                }
             })
             this.drawLine();
         }
@@ -1409,6 +1434,11 @@
 </script>
 
 <style>
+
+  #intfTabs /deep/ .el-tabs__nav {
+    transform: translateX(190%) !important;
+  }
+
   .drop {
     left: 348px !important;
   }
@@ -1440,7 +1470,7 @@
 
   .environment_rh {
     min-height: 530px;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
     border: 1px solid #bbbbbb;
     background-color: white;
     border-radius: 8px;
@@ -1573,7 +1603,7 @@
 
   #a /deep/ .el-tabs, .environment {
     min-height: 530px;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
     border: 1px solid #bbbbbb;
     width: 250px;
     background-color: white;
@@ -1633,7 +1663,7 @@
     background-color: white;
     border-radius: 8px;
     border: 1px solid rgb(187, 187, 187);
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
 
 
     .intfBg_header {
@@ -1662,7 +1692,7 @@
       z-index: 1;
       background-color: rgb(247, 247, 247);
       margin: 0 20px 10px 20px;
-      box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
       border-radius: 10px;
 
       .header {
@@ -1894,7 +1924,7 @@
           .write_item {
             cursor: pointer;
             padding: 20px 50px 20px 20px;
-            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
             border-radius: 5px;
             margin: 29px;
             height: 100px;

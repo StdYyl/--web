@@ -413,7 +413,7 @@
     padding: 20px 0;
     border-radius: 4px;
     display: flex;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;
 
     .lf {
       width: 250px;

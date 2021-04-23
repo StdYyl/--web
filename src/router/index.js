@@ -26,6 +26,7 @@ import ExportIntf from '../components/intf/ExportIntf'
 import AddIntf from '../components/intf/AddIntf'
 import PreviewIntf from '../components/intf/Preview'
 import EditIntf from '../components/intf/EditIntf'
+import historyIntf from '../components/intf/historyIntf'
 
 
 import Accept from '../views/member/accept'
@@ -127,6 +128,12 @@ export default new Router({
               name: 'all',
               component: intfAll,
               meta: {model: '所有接口'},
+            },
+            {
+              path: 'history/:moduleId',
+              name: 'historyIntf',
+              component: historyIntf,
+              meta: {model: '历史记录'},
             },
             {
               path: 'intf/:moduleId/detail/:intfId',
