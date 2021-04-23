@@ -33,3 +33,7 @@ export function exportIntfList(projectId, directoryId) {
 export function getInterfaceListByExample(data) {
   return post('api/imp/interface/listByExample', data);
 }
+//根据project实体类查找接口列表
+export function getInterfaceListByExample(data) {
+  return post('api/imp/interface/listByExample', data);
+}
