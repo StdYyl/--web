@@ -311,18 +311,26 @@
                   </div>
                 </div>
                 <div class="more">
-                  <div class="more_content" @click="getMore">
+                  <div class="more_content" v-if="weeklyconList.length>0" @click="getMore">
                     <i class="el-icon-refresh"></i>
                     点击加载更多
+                  </div>
+                  <div class="more_content" v-if="weeklyconList.length==0">
+                    <i class="el-icon-loading"></i>
+                    暂无任何数据
                   </div>
                 </div>
               </div>
               <div class="right">
-                <div id="myChart" style="width: 400px;height: 400px;"></div>
+                <div v-if="weeklyTable.length!=0" id="myChart" style="width: 400px;height: 400px;"></div>
+                <div v-if="weeklyTable.length==0" style="width: 400px;height: 400px;">
+                  <i class="el-icon-loading"></i>
+                  暂时没有任何接口
+                </div>
               </div>
             </div>
             <div class="main write" v-show="weeklyFlag==2?true:false">
-              <div class="write_wrapper">
+              <div class="write_wrapper" v-if="weeklyTable.length!=0">
                 <div :class="item.week==1?'write_item blue':(item.week==weeklyTable.length?'write_item yellow':'write_item grey')"
                      v-for="(item, idx) in weeklyTable" @click="openDrawer(idx)">
                   <div class="week">
@@ -333,7 +341,9 @@
                     {{item.start}}-{{item.end}}
                   </div>
                 </div>
-
+              </div>
+              <div class="write_wrapper" v-if="weeklyTable.length==0" style="display: flex;align-items: center;justify-content: center;">
+                <span style="font-size: 30px;color: rgba(0,0,0,.2);">暂时没有任何周报</span>
               </div>
               <div class="add_weekly_wrapper">
                 <div class="add_weekly" @click="openDrawer(0)">
@@ -490,11 +500,9 @@
     import {COMMON} from "../../const/common";
     import moment from "moment";
     import {addProEnvironment, getProEnvironmentList, putEnvironmentMes, getProjectByPid} from "../../api/project";
-    import {getInterfaceList} from "../../api/interface";
     import {writeWeeklyCon, getWeeklyCon, listWeeklyCon} from "../../api/weeklycon";
     import {satisfyInterface} from "../../api/intfsituation";
     import {removeComment, addComment} from "../../api/comment";
-    import {addProEnvironment, getProEnvironmentList, putEnvironmentMes} from "../../api/project";
     import {archiveIntf, exportIntfList, getInterfaceList} from "../../api/interface";
     import {exportWord, parseChildJson} from "../../utils/utils";
     // 引入基本模板
@@ -973,6 +981,11 @@
             },
             //echarts画图操作
             async drawLine(pid) {
+                console.log(this.weeklyTable);
+                if(this.weeklyTable.length==0) {
+                  notice(this, '周报将从下周开始算起，暂时没有任何关于接口的数据', 'info');
+                  return;
+                }
                 let res = await satisfyInterface({
                   pid: pid,
                   weeks: this.weeklyTable[0].week,
@@ -987,7 +1000,7 @@
                   data.push(res.data.data.body.newintf);
                 } else if(res.data.code === 101) {
                   notice(this, '暂时没有任何关于接口的数据', 'info');
-                  return;
+                  // return;
                 }
                 // 基于准备好的dom，初始化echarts实例
                 let myChart = echarts.init(document.getElementById('myChart'))
@@ -1091,6 +1104,10 @@
               this.weeklyTable = dateTable;
             },
             async openDrawer(idx) {
+              if(this.weeklyTable.length==0) {
+                notice(this, '周报从下周开始', 'info');
+                return;
+              }
               notice(this, '请严格按照模板内容进行周报填写！！！', 'warning');
               this.weeklycon = {};
               this.weekly.weeklyText = '';

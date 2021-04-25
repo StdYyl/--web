@@ -237,7 +237,9 @@
                         if (!checkResponse(this, res.data, true)) {
                             return false;
                         }
+                        console.log(res);
                         localStorage.setItem("id",res.data.data.id);
+                        localStorage.setItem("token", res.data.data.token);
                         app.$router.push("/home")
                     })
 

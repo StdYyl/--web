@@ -331,44 +331,7 @@
             return {
                 userId: null,
                 //项目周期，时间轴内容
-                moduleProject:[
-                  {
-                    id: 1,
-                    user: {
-                      name: '张三',
-                      head: '/static/img/head.b818068.png',
-                    },
-                    createtime: '2021-3-24',
-                    modules: [
-                      {
-                        name: '用户管理',
-                        progress: 10
-                      },
-                      {
-                        name: '项目管理',
-                        progress: 20
-                      }
-                    ]
-                  },
-                  {
-                    id: 2,
-                    user: {
-                      name: '李四',
-                      head: '/static/img/head.b818068.png',
-                    },
-                    createtime: '2021-3-24',
-                    modules: [
-                      {
-                        name: '用户管理',
-                        progress: 10
-                      },
-                      {
-                        name: '项目管理',
-                        progress: 20
-                      }
-                    ]
-                  }
-                ],
+                moduleProject:[],
                 endMouth:'',
                 endDay:'',
                 systemFormRules: {
@@ -448,6 +411,7 @@
                 let date = new Date(moduleNode.createtime);
                 moduleNode.createtime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
                 +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                if(!this.moduleProject) this.moduleProject = [];
                 this.moduleProject.push(moduleNode);
                 notice(this, '节点已自动生成');
               } else {
@@ -481,6 +445,7 @@
             },
             //打开成员加入面板
             async openJoinedPanel() {
+              console.log(this.moduleUser);
               let res = await findUserListByPid({
                 pid: this.$route.params.id,
               });
@@ -503,12 +468,10 @@
             },
             //功能模块成员加入
             async joinUser() {
-              console.log(this.moduleUser);
               let res = await addUserToModule({
                 uid: this.joinedMember,
                 mid: this.searchModule,
               });
-              console.log(res);
               if(res.data.code === 200) {
                 let moduleanduser = res.data.data.body;
                 let date = new Date(moduleanduser.jointime);
@@ -666,14 +629,12 @@
               }
             },
             async changeModule() {
-              this.moduleUser = [];
-              console.log(this.searchModule);
+              this.moduleUser = []
               let res = await queryModuleUserListByMid({
                 mid: this.searchModule,
               });
-              console.log(res);
               if(res.data.code === 200) {
-                this.moduleUser = res.data.data.list;
+                this.moduleUser = res.data.data.list?res.data.data.list:[];
                 if(res.data.data.total > 0) {
                   this.moduleUser.forEach((item) => {
                     let date = new Date(item.jointime);
@@ -698,16 +659,17 @@
           res = await listCycleNode({
             pid: this.$route.params.id,
           });
-          console.log(res);
           if(res.data.code === 200) {
             this.moduleProject = res.data.data.list;
-            this.moduleProject.forEach((item) => {
-              let date = new Date(item.createtime);
-              item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
-              +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
-              let modules = JSON.parse(item.dirandprog);
-              item.modules = modules;
-            })
+            if(res.data.data.total>0) {
+              this.moduleProject.forEach((item) => {
+                let date = new Date(item.createtime);
+                item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
+                  +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                let modules = JSON.parse(item.dirandprog);
+                item.modules = modules;
+              })
+            }
           }
           res = await queryModuleListByPid({
             pid: this.$route.params.id,
