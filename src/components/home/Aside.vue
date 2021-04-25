@@ -136,6 +136,14 @@
                 }
                 this.$router.push(`/home/project/list/${node.id}`)
             },
+            //拦截器，查看用户是否被禁用
+            interceptor() {
+              if(localStorage.getItem('disabled')==true) {
+                notice(this, '用户权限已被禁用', 'warning');
+                return true;
+              }
+              return false;
+            },
             //点击节点
             async handleNodeClick(node,resolve){
                 if(node.level > 1 || node.data.id == -1) resolve([]);
@@ -156,6 +164,8 @@
 
             },
             async showAddDirList(){
+                let dis = this.interceptor();
+                if(dis) return;
                 console.log(this.folderList)
                 this.folderList.splice(0, this.folderList.length)
                 this.folderList.push({id:-1,label:"无"})
@@ -203,6 +213,8 @@
             },
             //点击删除icon
             deleteFolder(e) {
+                let dis = this.interceptor();
+                if(dis) return;
                 this.isRemove = false
                 this.showDelete = true
                 this.deleteMes = e.label

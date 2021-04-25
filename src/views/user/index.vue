@@ -190,8 +190,18 @@
                   this.listMember();
                 }
             },
+            //拦截器，查看用户是否被禁用
+            interceptor() {
+              if(localStorage.getItem('disabled')==true) {
+                notice(this, '用户权限已被禁用', 'warning');
+                return true;
+              }
+              return false;
+            },
             //删除成员
             removeMember(e){
+                let dis = this.interceptor();
+                if(dis) return;
                 this.$confirm(`是否要删除项目「 ${e.project.name} 」的用户${e.user.name}`, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',

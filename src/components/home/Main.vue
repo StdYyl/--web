@@ -14,7 +14,7 @@
               width="445">
               <template slot-scope="props">
                 <div style="font-size: 16px;color: rgba(96, 144, 255, 1);cursor: pointer"
-                     @click="$router.push(`/home/intfIndex/${props.row.id}/intf/all`)">{{ props.row.name}}
+                     @click="turnToIntf(props.row.id)">{{ props.row.name}}
                 </div>
                 <div class="props_value">{{ props.row.introduction}}</div>
               </template>
@@ -383,7 +383,7 @@
 
         <!--添加新项目-->
         <el-button class="new_project" size="small" type="primary" icon="el-icon-plus"
-                   @click="dialogFormVisible = true" v-if="this.$route.params.id != 'all'">创建新项目
+                   @click="openNewProjectDialogForm" v-if="this.$route.params.id != 'all'">创建新项目
         </el-button>
         <!--添加新项目-->
         <el-dialog title="项目创建" :visible.sync="dialogFormVisible" width="500px" class="projectCss">
@@ -721,6 +721,25 @@
             }
         },
         methods: {
+            //拦截器，查看用户是否被禁用
+            interceptor() {
+              if(localStorage.getItem('disabled')==true) {
+                notice(this, '用户权限已被禁用', 'warning');
+                return true;
+              }
+              return false;
+            },
+            //打开新增项目弹出框
+            openNewProjectDialogForm() {
+              let dis = this.interceptor();
+              if(dis) return;
+              this.dialogFormVisible = true;
+            },
+            turnToIntf(pid) {
+              let dis = this.interceptor();
+              if(dis) return;
+              this.$router.push(`/home/intfIndex/${pid}/intf/all`)
+            },
             //更换页码
             async changeIndex(index){
                 //所有
@@ -792,6 +811,8 @@
             },
             //添加项目成员
             async addProjectMember(e, index) {
+                let dis = this.interceptor();
+                if(dis) return;
                 this.projectID = e;
                 if (index == 1) {
                   await this.searchMember(e);
@@ -832,6 +853,8 @@
             },
             //进度管理
             progressManagement(id, index) {
+                let dis = this.interceptor();
+                if(dis) return;
                 if (index == 0) this.$router.push('/home/progress/'+id)
             },
             //查询项目列表
@@ -957,6 +980,8 @@
                 // }).catch(() => {
                 //
                 // });
+                let dis = this.interceptor();
+                if(dis) return;
                 this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
                     type: 'warning',
                     confirmButtonText: '放入回收站',
@@ -984,6 +1009,8 @@
             },
             //打开导出dialog对话框
             interfaceExport() {
+                let dis = this.interceptor();
+                if(dis) return;
                 this.exportDialogVisible = true;
             },
             //导出按钮事件
@@ -1044,6 +1071,8 @@
             },
             //回收站恢复项目
             async recoveryProject(pid) {
+              let dis = this.interceptor();
+              if(dis) return;
               let res = await getProjectByPid({
                 pid: pid,
               });
@@ -1067,6 +1096,8 @@
             },
             //回收站彻底删除项目
             async removeProject(pid) {
+              let dis = this.interceptor();
+              if(dis) return;
               let res = await getProjectByPid({
                 pid: pid,
               });

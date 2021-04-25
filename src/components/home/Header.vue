@@ -67,7 +67,7 @@
 
 <script>
 
-    import {exitLogin, getUserMesByID} from '../../api/user'
+    import {exitLogin, getUserMesByID, checkIsDisabled} from '../../api/user'
     import {mapState} from "vuex"
     import {listNotice, findNoticeById, updateNotice} from "../../api/notice";
     import {notice} from "../../utils/elementUtils";
@@ -135,6 +135,10 @@
                 return "read_mes_no"
             },
             async activeOne(row) {
+                if(localStorage.getItem('disabled')==true) {
+                  notice(this, '用户权限已被禁用', 'warning')
+                  return;
+                }
                 row.isCheck = true;
                 let res = await findNoticeById({
                   nid: row.id,
@@ -179,6 +183,10 @@
             let rs = await getUserMesByID(localStorage.getItem("id"))
             this.$store.commit('setName',rs.data.data.name)
             this.$store.commit('setHead',rs.data.data.head)
+            rs = await checkIsDisabled({
+              id: localStorage.getItem("id"),
+            });
+            localStorage.setItem('disabled', rs.data.data);
             if (this.$route.path.indexOf('/home/project') != -1) this.activeIndex = '1';
             if (this.$route.path.indexOf('/home/member') != -1) this.activeIndex = '2';
             if (this.$route.path.indexOf('/home/information') != -1) this.activeIndex = '3';
