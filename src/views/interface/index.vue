@@ -290,18 +290,35 @@
                     </div>
                   </div>
                   <div class="comment">
-                    <div class="comment_item" v-for="comment in item.commentList" :key="comment.id">
-                      <div class="item_left">
-                        <img :src="comment.user.head" alt="">
+                    <div v-for="(comment, idx2) in item.commentList" :key="idx2" style="padding: 10px 0;border-bottom: 1px solid rgb(215,215,215);">
+                      <div class="comment_item">
+                        <div class="item_left">
+                          <img :src="comment.user.head" alt="">
+                        </div>
+                        <div class="item_right">
+                          <div class="item_right_name">{{comment.user.name}}</div>
+                          <div class="item_right_content">{{comment.content}}</div>
+                          <div class="item_right_footer">
+                            <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())<24*60*60*1000">今天 {{dateFormat(comment.time, "HH:mm")}}</span>
+                            <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())>=24*60*60*1000">{{dateFormat(comment.time, "YYYY年MM月DD日 HH:mm")}}</span>
+                            <span v-if="comment.userid!=userid" class="reply" @click="replyComment(idx, idx2, null, comment, 'parent')">回复</span>
+                            <span v-if="comment.userid==userid" class="delete" @click="deleteComment(idx, idx2, null, comment, 'parent')">删除</span>
+                          </div>
+                        </div>
                       </div>
-                      <div class="item_right">
-                        <div class="item_right_name">{{comment.user.name}} 回复了 {{comment.reply.name}}</div>
-                        <div class="item_right_content">{{comment.content}}</div>
-                        <div class="item_right_footer">
-                          <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())<24*60*60*1000">今天 {{dateFormat(comment.time, "HH:mm")}}</span>
-                          <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())>=24*60*60*1000">{{dateFormat(comment.time, "YYYY年MM月DD日 HH:mm")}}</span>
-                          <span v-if="comment.userid!=userid" class="reply" @click="replyComment(idx, comment)">回复</span>
-                          <span v-if="comment.userid!=userid" class="delete" @click="deleteComment(idx, comment)">删除</span>
+                      <div style="margin-left: 30px;" class="comment_item" v-for="(subComment, idx3) in comment.subCommentList" :key="subComment.id">
+                        <div class="item_left">
+                          <img :src="subComment.user.head" alt="">
+                        </div>
+                        <div class="item_right">
+                          <div class="item_right_name">{{subComment.user.name}} 回复了 {{subComment.reply.name}}</div>
+                          <div class="item_right_content">{{subComment.content}}</div>
+                          <div class="item_right_footer">
+                            <span class="date" v-if="(new Date().getTime()-new Date(subComment.time).getTime())<24*60*60*1000">今天 {{dateFormat(subComment.time, "HH:mm")}}</span>
+                            <span class="date" v-if="(new Date().getTime()-new Date(subComment.time).getTime())>=24*60*60*1000">{{dateFormat(subComment.time, "YYYY年MM月DD日 HH:mm")}}</span>
+                            <span v-if="subComment.userid!=userid" class="reply" @click="replyComment(idx, idx2, idx3, subComment, 'children')">回复</span>
+                            <span v-if="subComment.userid==userid" class="delete" @click="deleteComment(idx, idx2, idx3, subComment, 'children')">删除</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -312,7 +329,8 @@
                 </div>
                 <div class="more">
                   <div class="more_content" v-if="weeklyconList.length>0" @click="getMore">
-                    <i class="el-icon-refresh"></i>
+                    <i v-if="!loadingComment" class="el-icon-refresh"></i>
+                    <i v-if="loadingComment" class="el-icon-loading"></i>
                     点击加载更多
                   </div>
                   <div class="more_content" v-if="weeklyconList.length==0">
@@ -354,8 +372,8 @@
               <div class="mantle" v-show="right_drawer" @click="right_drawer=false"></div>
               <div class="cover cover_left">
               </div>
-              <transition>
-                <div class="cover cover_right animate__animated animate__slideInRight" v-show="right_drawer">
+              <transition enter-active-class="animate__slideInRight" leave-active-class="animate__slideOutRight" :duration="{ enter:1000, leave:1000 }">
+                <div class="cover cover_right animate__animated" v-show="right_drawer">
                   <div>
                     <div class="c_r_header">
                       <div class="c_r_h_left">
@@ -616,6 +634,8 @@
                 },
                 weeklycon: {},
                 weeklyconList: [],
+                //加载评论
+                loadingComment: false,
                 current: 1,
                 size: 1,
                 rules: {
@@ -1219,6 +1239,7 @@
               size: size,
               pid: this.$route.params.id,
             });
+            console.log(res.data.data.list);
             if (res.data.code === 200) {
               if (res.data.data.total > 0) {
                 res.data.data.list.forEach((item) => {
@@ -1265,8 +1286,8 @@
               } else {
                 notice(this, '已经没有更多数据了', 'info');
               }
+              this.loadingComment = false;
             }
-            console.log(this.weeklyconList);
           },
           //生成周报模板
           generateTemplate() {
@@ -1296,18 +1317,29 @@
           },
           //点击获取更多操作
           getMore() {
-            this.getWeeklyConList(++this.current, this.size);
+            this.loadingComment = true;
+            setTimeout(() => {
+              this.getWeeklyConList(++this.current, this.size);
+            }, 1000);
           },
           //删除评论
-          deleteComment(idx, comment) {
+          deleteComment(idx, idx2, idx3, comment, level) {
+            console.log(idx);
+            console.log(idx2);
+            console.log(idx3);
             console.log(comment);
+            console.log(level);
             confirmMessage(this, '确定删除该评论吗？').then(async () => {
               let res = await removeComment({
                 cid: comment.id,
               });
-              console.log(res);
               if(res.data.code === 200) {
-                this.weeklyconList[idx].commentList.splice(comment, 1);
+                console.log(this.weeklyconList[idx].commentList[idx2]);
+                if(level=='parent') {
+                  this.weeklyconList[idx].commentList.splice(idx2, 1);
+                } else {
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3, 1);
+                }
                 notice(this, '删除成功', 'success');
               } else {
                 notice(this, '删除失败', 'error');
@@ -1317,8 +1349,12 @@
             });
           },
           //回复评论
-          replyComment(idx, comment) {
+          replyComment(idx, idx2, idx3, comment, level) {
+            console.log(idx);
+            console.log(idx2);
+            console.log(idx3);
             console.log(comment);
+            console.log(level);
             this.$prompt('请输入评论内容', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
@@ -1332,9 +1368,16 @@
               comm.content = value;
               comm.isdeleted = 1;
               comm.time = new Date();
+              comm.parentid = comment.id;
               let res = await addComment(comm);
               if(res.data.code === 200) {
-                this.weeklyconList[idx].commentList.push(res.data.data.body);
+                if(!this.weeklyconList[idx].commentList) this.weeklyconList[idx].commentList=[];
+                if(!this.weeklyconList[idx].commentList[idx2].subCommentList) this.weeklyconList[idx].commentList[idx2].subCommentList=[];
+                if(level=='parent') {
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
+                } else {
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3+1, 0, res.data.data.body);
+                }
                 this.commentVal = '';
                 notice(this, '评论成功', 'success');
               } else {
@@ -1346,8 +1389,6 @@
           },
           //评论
           async comment(weeklycon) {
-            console.log(this.commentVal);
-            console.log(weeklycon);
             let comment = {};
             comment.weeklyconid = weeklycon.id;
             comment.userid = localStorage.getItem('id');
@@ -1355,6 +1396,7 @@
             comment.content = this.commentVal;
             comment.isdeleted = 1;
             comment.time = new Date();
+            comment.parentid = -1;
             let res = await addComment(comment);
             if(res.data.code === 200) {
               if(!weeklycon.commentList) weeklycon.commentList=[];
@@ -1793,7 +1835,7 @@
 
                   .item_right_footer {
                     font-size: 13px;
-
+                    text-align: left;
                     span {
                       margin-right: 10px;
                       color: rgb(116, 116, 116);
@@ -1808,7 +1850,7 @@
             }
 
             .comment_input_container {
-              margin-top: 10px;
+              margin-top: 15px;
               width: 100%;
 
               .comment_input {

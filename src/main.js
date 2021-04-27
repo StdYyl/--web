@@ -16,7 +16,8 @@ import 'normalize.css/normalize.css'
 import './styles/icon/iconfont.css'
 
 //导入animate动画库
-import 'animate.css'
+// import 'animate.css'
+import animated from 'animate.css'
 import axios from "axios";
 
 //导入codemirror
@@ -30,6 +31,7 @@ Vue.prototype.$axios = axios
 
 Vue.use(ElementUI)
 Vue.use(AFTableColumn)
+Vue.use(animated)
 Vue.use(codemirror)
 
 /* eslint-disable no-new */
