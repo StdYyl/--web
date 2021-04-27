@@ -55,7 +55,7 @@
             </el-form-item>
             <el-form-item label-width="125px">
               <div style="margin: 10px 15px 0 0;">
-                <el-button size="small" type="primary" style="width: 110px" @click="saveProject">保存</el-button>
+                <el-button size="small" type="primary" style="width: 110px" @click="saveProject" v-if="systemForm.createuserid==userId">保存</el-button>
               </div>
             </el-form-item>
           </el-form>
@@ -70,14 +70,14 @@
             <div style="padding:0 25px 25px 0">
               <span style="padding-right: 5px">月</span>
               <el-input-number size="mini":min="1" :max="24"
-                               v-model="endMouth"></el-input-number>
+                               v-model="endMouth" :disabled="systemForm.createuser.id!=userId"></el-input-number>
             </div>
             <div>
               <span style="padding-right: 5px">日</span>
               <el-input-number size="mini" :min="1" :max="31"
-                               v-model="endDay"></el-input-number>
+                               v-model="endDay" :disabled="systemForm.createuser.id!=userId"></el-input-number>
             </div>
-            <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime">修改</el-button>
+            <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime" v-if="systemForm.createuser.id==userId">修改</el-button>
           </div>
           <div style="text-align: left;margin-bottom: 5px">
             项目时间轴
@@ -151,7 +151,7 @@
                 <el-tag
                   :key="tag.id"
                   v-for="tag in moduleUser"
-                  closable
+                  :closable="systemForm.createuser.id==userId"
                   :disable-transitions="false"
                   @close="handleRemoveUser(tag)">
                   <div v-if="tag">
@@ -164,7 +164,7 @@
                 </el-tag>
               </div>
               <el-button type="text" class="el-icon-circle-plus-outline" size="small"
-                         style="font-size: 14px" @click="openJoinedPanel" v-if="searchModule"> 人员
+                         style="font-size: 14px" @click="openJoinedPanel" v-if="searchModule && systemForm.createuser.id==userId"> 人员
               </el-button>
             </el-form-item>
           </el-form>
@@ -206,7 +206,8 @@
                 action="http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/file/upload/"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
+                :before-upload="beforeAvatarUpload"
+                :disabled="systemForm.createuserid!=userId">
                 <img v-if="imageUrl" :src="'http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/upload/'+imageUrl" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
@@ -245,7 +246,7 @@
                       <div class="grid-content bg-purple version">{{item.version}}</div>
                     </el-col>
                     <el-col :span="4">
-                      <div class="grid-content bg-purple-light remove" @click="removeTech(item)">
+                      <div class="grid-content bg-purple-light remove" @click="removeTech(item)" v-if="systemForm.createuserid==userId">
                         <i class="el-icon-close"></i>
                       </div>
                     </el-col>
@@ -257,7 +258,7 @@
             <div class="add">
                 <el-row>
                   <el-col :span="8">
-                    <div class="bind" @click="openAddPanel">
+                    <div class="bind" @click="openAddPanel" v-if="systemForm.createuserid==userId">
                       <i class="el-icon-circle-plus-outline"></i>
                       <span>新增技术</span>
                     </div>
@@ -275,7 +276,7 @@
               </div>
           </div>
           <div class="footer">
-            <el-button type="primary" @click="saveTechnology">保存</el-button>
+            <el-button type="primary" @click="saveTechnology" v-if="systemForm.createuserid==userId">保存</el-button>
           </div>
         </div>
       </el-tab-pane>
@@ -331,44 +332,7 @@
             return {
                 userId: null,
                 //项目周期，时间轴内容
-                moduleProject:[
-                  {
-                    id: 1,
-                    user: {
-                      name: '张三',
-                      head: '/static/img/head.b818068.png',
-                    },
-                    createtime: '2021-3-24',
-                    modules: [
-                      {
-                        name: '用户管理',
-                        progress: 10
-                      },
-                      {
-                        name: '项目管理',
-                        progress: 20
-                      }
-                    ]
-                  },
-                  {
-                    id: 2,
-                    user: {
-                      name: '李四',
-                      head: '/static/img/head.b818068.png',
-                    },
-                    createtime: '2021-3-24',
-                    modules: [
-                      {
-                        name: '用户管理',
-                        progress: 10
-                      },
-                      {
-                        name: '项目管理',
-                        progress: 20
-                      }
-                    ]
-                  }
-                ],
+                moduleProject:[],
                 endMouth:'',
                 endDay:'',
                 systemFormRules: {
@@ -448,6 +412,7 @@
                 let date = new Date(moduleNode.createtime);
                 moduleNode.createtime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
                 +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                if(!this.moduleProject) this.moduleProject = [];
                 this.moduleProject.push(moduleNode);
                 notice(this, '节点已自动生成');
               } else {
@@ -481,6 +446,7 @@
             },
             //打开成员加入面板
             async openJoinedPanel() {
+              console.log(this.moduleUser);
               let res = await findUserListByPid({
                 pid: this.$route.params.id,
               });
@@ -503,12 +469,10 @@
             },
             //功能模块成员加入
             async joinUser() {
-              console.log(this.moduleUser);
               let res = await addUserToModule({
                 uid: this.joinedMember,
                 mid: this.searchModule,
               });
-              console.log(res);
               if(res.data.code === 200) {
                 let moduleanduser = res.data.data.body;
                 let date = new Date(moduleanduser.jointime);
@@ -666,14 +630,12 @@
               }
             },
             async changeModule() {
-              this.moduleUser = [];
-              console.log(this.searchModule);
+              this.moduleUser = []
               let res = await queryModuleUserListByMid({
                 mid: this.searchModule,
               });
-              console.log(res);
               if(res.data.code === 200) {
-                this.moduleUser = res.data.data.list;
+                this.moduleUser = res.data.data.list?res.data.data.list:[];
                 if(res.data.data.total > 0) {
                   this.moduleUser.forEach((item) => {
                     let date = new Date(item.jointime);
@@ -698,16 +660,17 @@
           res = await listCycleNode({
             pid: this.$route.params.id,
           });
-          console.log(res);
           if(res.data.code === 200) {
             this.moduleProject = res.data.data.list;
-            this.moduleProject.forEach((item) => {
-              let date = new Date(item.createtime);
-              item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
-              +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
-              let modules = JSON.parse(item.dirandprog);
-              item.modules = modules;
-            })
+            if(res.data.data.total>0) {
+              this.moduleProject.forEach((item) => {
+                let date = new Date(item.createtime);
+                item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
+                  +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                let modules = JSON.parse(item.dirandprog);
+                item.modules = modules;
+              })
+            }
           }
           res = await queryModuleListByPid({
             pid: this.$route.params.id,

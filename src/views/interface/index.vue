@@ -287,22 +287,35 @@
                     </div>
                   </div>
                   <div class="comment">
-                    <div class="comment_item" v-for="comment in item.commentList" :key="comment.id">
-                      <div class="item_left">
-                        <img :src="comment.user.head" alt="">
+                    <div v-for="(comment, idx2) in item.commentList" :key="idx2" style="padding: 10px 0;border-bottom: 1px solid rgb(215,215,215);">
+                      <div class="comment_item">
+                        <div class="item_left">
+                          <img :src="comment.user.head" alt="">
+                        </div>
+                        <div class="item_right">
+                          <div class="item_right_name">{{comment.user.name}}</div>
+                          <div class="item_right_content">{{comment.content}}</div>
+                          <div class="item_right_footer">
+                            <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())<24*60*60*1000">今天 {{dateFormat(comment.time, "HH:mm")}}</span>
+                            <span class="date" v-if="(new Date().getTime()-new Date(comment.time).getTime())>=24*60*60*1000">{{dateFormat(comment.time, "YYYY年MM月DD日 HH:mm")}}</span>
+                            <span v-if="comment.userid!=userid" class="reply" @click="replyComment(idx, idx2, null, comment, 'parent')">回复</span>
+                            <span v-if="comment.userid==userid" class="delete" @click="deleteComment(idx, idx2, null, comment, 'parent')">删除</span>
+                          </div>
+                        </div>
                       </div>
-                      <div class="item_right">
-                        <div class="item_right_name">{{comment.user.name}} 回复了 {{comment.reply.name}}</div>
-                        <div class="item_right_content">{{comment.content}}</div>
-                        <div class="item_right_footer">
-                          <span class="date"
-                                v-if="(new Date().getTime()-new Date(comment.time).getTime())<24*60*60*1000">今天 {{dateFormat(comment.time, "HH:mm")}}</span>
-                          <span class="date"
-                                v-if="(new Date().getTime()-new Date(comment.time).getTime())>=24*60*60*1000">{{dateFormat(comment.time, "YYYY年MM月DD日 HH:mm")}}</span>
-                          <span v-if="comment.userid!=userid" class="reply"
-                                @click="replyComment(idx, comment)">回复</span>
-                          <span v-if="comment.userid!=userid" class="delete"
-                                @click="deleteComment(idx, comment)">删除</span>
+                      <div style="margin-left: 30px;" class="comment_item" v-for="(subComment, idx3) in comment.subCommentList" :key="subComment.id">
+                        <div class="item_left">
+                          <img :src="subComment.user.head" alt="">
+                        </div>
+                        <div class="item_right">
+                          <div class="item_right_name">{{subComment.user.name}} 回复了 {{subComment.reply.name}}</div>
+                          <div class="item_right_content">{{subComment.content}}</div>
+                          <div class="item_right_footer">
+                            <span class="date" v-if="(new Date().getTime()-new Date(subComment.time).getTime())<24*60*60*1000">今天 {{dateFormat(subComment.time, "HH:mm")}}</span>
+                            <span class="date" v-if="(new Date().getTime()-new Date(subComment.time).getTime())>=24*60*60*1000">{{dateFormat(subComment.time, "YYYY年MM月DD日 HH:mm")}}</span>
+                            <span v-if="subComment.userid!=userid" class="reply" @click="replyComment(idx, idx2, idx3, subComment, 'children')">回复</span>
+                            <span v-if="subComment.userid==userid" class="delete" @click="deleteComment(idx, idx2, idx3, subComment, 'children')">删除</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -313,21 +326,29 @@
                   </div>
                 </div>
                 <div class="more">
-                  <div class="more_content" @click="getMore">
-                    <i class="el-icon-refresh"></i>
+                  <div class="more_content" v-if="weeklyconList.length>0" @click="getMore">
+                    <i v-if="!loadingComment" class="el-icon-refresh"></i>
+                    <i v-if="loadingComment" class="el-icon-loading"></i>
                     点击加载更多
+                  </div>
+                  <div class="more_content" v-if="weeklyconList.length==0">
+                    <i class="el-icon-loading"></i>
+                    暂无任何数据
                   </div>
                 </div>
               </div>
               <div class="right">
-                <div id="myChart" style="width: 400px;height: 400px;"></div>
+                <div v-if="weeklyTable.length!=0" id="myChart" style="width: 400px;height: 400px;"></div>
+                <div v-if="weeklyTable.length==0" style="width: 400px;height: 400px;">
+                  <i class="el-icon-loading"></i>
+                  暂时没有任何接口
+                </div>
               </div>
             </div>
             <div class="main write" v-show="weeklyFlag==2?true:false">
-              <div class="write_wrapper">
-                <div
-                  :class="item.week==1?'write_item blue':(item.week==weeklyTable.length?'write_item yellow':'write_item grey')"
-                  v-for="(item, idx) in weeklyTable" @click="openDrawer(idx)">
+              <div class="write_wrapper" v-if="weeklyTable.length!=0">
+                <div :class="item.week==1?'write_item blue':(item.week==weeklyTable.length?'write_item yellow':'write_item grey')"
+                     v-for="(item, idx) in weeklyTable" @click="openDrawer(idx)">
                   <div class="week">
                     <span v-if="item.week==weeklyTable.length">本周（第{{item.week}}周）</span>
                     <span v-if="item.week!=weeklyTable.length">第 {{item.week}} 周</span>
@@ -336,7 +357,9 @@
                     {{item.start}}-{{item.end}}
                   </div>
                 </div>
-
+              </div>
+              <div class="write_wrapper" v-if="weeklyTable.length==0" style="display: flex;align-items: center;justify-content: center;">
+                <span style="font-size: 30px;color: rgba(0,0,0,.2);">暂时没有任何周报</span>
               </div>
               <div class="add_weekly_wrapper">
                 <div class="add_weekly" @click="openDrawer(0)">
@@ -347,8 +370,8 @@
               <div class="mantle" v-show="right_drawer" @click="right_drawer=false"></div>
               <div class="cover cover_left">
               </div>
-              <transition>
-                <div class="cover cover_right animate__animated animate__slideInRight" v-show="right_drawer">
+              <transition enter-active-class="animate__slideInRight" leave-active-class="animate__slideOutRight" :duration="{ enter:1000, leave:1000 }">
+                <div class="cover cover_right animate__animated" v-show="right_drawer">
                   <div>
                     <div class="c_r_header">
                       <div class="c_r_h_left">
@@ -838,6 +861,8 @@
                 },
                 weeklycon: {},
                 weeklyconList: [],
+                //加载评论
+                loadingComment: false,
                 current: 1,
                 size: 1,
                 rules: {
@@ -1259,21 +1284,26 @@
             },
             //echarts画图操作
             async drawLine(pid) {
+                console.log(this.weeklyTable);
+                if(this.weeklyTable.length==0) {
+                  notice(this, '周报将从下周开始算起，暂时没有任何关于接口的数据', 'info');
+                  return;
+                }
                 let res = await satisfyInterface({
                     pid: pid,
                     weeks: this.weeklyTable[0].week,
                 });
                 console.log(res);
                 let data = [];
-                if (res.data.code === 200) {
-                    data.push(res.data.data.body.successful);
-                    data.push(res.data.data.body.fail);
-                    data.push(res.data.data.body.newcase);
-                    data.push(res.data.data.body.number);
-                    data.push(res.data.data.body.newintf);
-                } else if (res.data.code === 101) {
-                    notice(this, '暂时没有任何关于接口的数据', 'info');
-                    return;
+                if(res.data.code === 200) {
+                  data.push(res.data.data.body.successful);
+                  data.push(res.data.data.body.fail);
+                  data.push(res.data.data.body.newcase);
+                  data.push(res.data.data.body.number);
+                  data.push(res.data.data.body.newintf);
+                } else if(res.data.code === 101) {
+                  notice(this, '暂时没有任何关于接口的数据', 'info');
+                  // return;
                 }
                 // 基于准备好的dom，初始化echarts实例
                 let myChart = echarts.init(document.getElementById('myChart'))
@@ -1377,52 +1407,24 @@
                 this.weeklyTable = dateTable;
             },
             async openDrawer(idx) {
-                notice(this, '请严格按照模板内容进行周报填写！！！', 'warning');
-                this.weeklycon = {};
-                this.weekly.weeklyText = '';
-                this.weekly = this.weeklyTable[idx];
-                let res = await getWeeklyCon({
-                    weeks: this.weekly.week,
-                    pid: this.project.id,
-                    uid: localStorage.getItem('id'),
-                });
-                console.log(res);
-                if (res.data.code === 200) {
-                    this.weeklycon = res.data.data.body;
-                    if (!this.weeklycon.body) {
-                        this.weekly.weeklyText = '### 当前模块\n' +
-                            '\n' +
-                            '1.  \n' +
-                            '2.  \n' +
-                            '3.  \n' +
-                            '\n' +
-                            '### 完成进度\n' +
-                            '\n' +
-                            '1.  \n' +
-                            '2.  \n' +
-                            '3.  \n' +
-                            '\n' +
-                            '### 本周任务完成情况\n' +
-                            '\n' +
-                            '1.  \n' +
-                            '2.  \n' +
-                            '3.  \n' +
-                            '\n' +
-                            '### 需要支持\n' +
-                            '\n' +
-                            '1.  \n' +
-                            '2.  \n' +
-                            '3.  \n';
-                        this.right_drawer = true;
-                        return;
-                    }
-                    this.weekly.weeklyText = this.weeklycon.body;
-                    this.right_drawer = true;
-                    return;
-                }
-                this.right_drawer = true;
-                //周报template模板
-                let templateWeekly = '### 当前模块\n' +
+              if(this.weeklyTable.length==0) {
+                notice(this, '周报从下周开始', 'info');
+                return;
+              }
+              notice(this, '请严格按照模板内容进行周报填写！！！', 'warning');
+              this.weeklycon = {};
+              this.weekly.weeklyText = '';
+              this.weekly = this.weeklyTable[idx];
+              let res = await getWeeklyCon({
+                weeks: this.weekly.week,
+                pid: this.project.id,
+                uid: localStorage.getItem('id'),
+              });
+              console.log(res);
+              if(res.data.code === 200) {
+                this.weeklycon = res.data.data.body;
+                if(!this.weeklycon.body) {
+                  this.weekly.weeklyText = '### 当前模块\n' +
                     '\n' +
                     '1.  \n' +
                     '2.  \n' +
@@ -1445,7 +1447,39 @@
                     '1.  \n' +
                     '2.  \n' +
                     '3.  \n';
-                this.weekly.weeklyText = templateWeekly;
+                  this.right_drawer=true;
+                  return;
+                }
+                this.weekly.weeklyText = this.weeklycon.body;
+                this.right_drawer=true;
+                return;
+              }
+              this.right_drawer=true;
+              //周报template模板
+              let templateWeekly = '### 当前模块\n' +
+                '\n' +
+                '1.  \n' +
+                '2.  \n' +
+                '3.  \n' +
+                '\n' +
+                '### 完成进度\n' +
+                '\n' +
+                '1.  \n' +
+                '2.  \n' +
+                '3.  \n' +
+                '\n' +
+                '### 本周任务完成情况\n' +
+                '\n' +
+                '1.  \n' +
+                '2.  \n' +
+                '3.  \n' +
+                '\n' +
+                '### 需要支持\n' +
+                '\n' +
+                '1.  \n' +
+                '2.  \n' +
+                '3.  \n';
+              this.weekly.weeklyText = templateWeekly;
             },
             async saveWeekly(type) {
                 if (this.weekly.weeklyText.indexOf('### 当前模块\n') == -1 || this.weekly.weeklyText.indexOf('### 完成进度\n') == -1
@@ -1482,158 +1516,180 @@
             dateFormat(date, pattern) {
                 return moment(date).format(pattern);
             },
-            async getWeeklyConList(current, size) {
-                let res = await listWeeklyCon({
-                    current: current,
-                    size: size,
-                    pid: this.$route.params.id,
-                });
-                if (res.data.code === 200) {
-                    if (res.data.data.total > 0) {
-                        res.data.data.list.forEach((item) => {
-                            let weeklycon = item;
-                            weeklycon.showTime = item.updatetime ? moment(item.updatetime).format('YYYY年MM月DD日 HH:mm') : moment(item.addtime).format('YYYY年MM月DD日 HH:mm');
-                            let moduleList = [];
-                            let progressList = [];
-                            let completeStr = '';
-                            if (item.body) {
-                                //处理字符串拿到当前模块
-                                let moduleStr = item.body.substring(item.body.indexOf('当前模块') + 6, item.body.indexOf('完成进度') - 5);
-                                let moduleStrList = moduleStr.split('\n');
-                                moduleStrList.forEach((item) => {
-                                    if (item != '') {
-                                        let module = item.substring(item.lastIndexOf(' ') + 1);
-                                        moduleList.push(module);
-                                    }
-                                });
-                                //处理字符串拿到完成进度
-                                let progressStr = item.body.substring(item.body.indexOf('完成进度') + 6, item.body.indexOf('本周任务完成情况') - 5);
-                                let progressStrList = progressStr.split('\n');
-                                progressStrList.forEach((item) => {
-                                    if (item != '') {
-                                        let progress = item.substring(item.lastIndexOf(' ') + 1);
-                                        progressList.push(progress);
-                                    }
-                                });
-                                //处理字符串拿到本周任务完成情况
-                                completeStr = item.body.substring(item.body.indexOf('本周任务完成情况') + 10, item.body.indexOf('需要支持') - 5);
-                                // let completeStrList = completeStr.split('\n');
-                                // let completeList = [];
-                                // completeStrList.forEach((item) => {
-                                //   if(item!='') {
-                                //     let complete = item.substring(item.lastIndexOf(' ')+1);
-                                //     completeList.push(complete);
-                                //   }
-                                // });
-                            }
-                            weeklycon.moduleList = moduleList;
-                            weeklycon.progressList = progressList;
-                            weeklycon.complete = completeStr;
-                            this.weeklyconList.push(weeklycon);
-                        })
-                    } else {
-                        notice(this, '已经没有更多数据了', 'info');
-                    }
-                }
-                console.log(this.weeklyconList);
-            },
-            //生成周报模板
-            generateTemplate() {
-                this.weekly.weeklyText = '### 当前模块\n' +
-                    '\n' +
-                    '1.  \n' +
-                    '2.  \n' +
-                    '3.  \n' +
-                    '\n' +
-                    '### 完成进度\n' +
-                    '\n' +
-                    '1.  \n' +
-                    '2.  \n' +
-                    '3.  \n' +
-                    '\n' +
-                    '### 本周任务完成情况\n' +
-                    '\n' +
-                    '1.  \n' +
-                    '2.  \n' +
-                    '3.  \n' +
-                    '\n' +
-                    '### 需要支持\n' +
-                    '\n' +
-                    '1.  \n' +
-                    '2.  \n' +
-                    '3.  \n';
-            },
-            //点击获取更多操作
-            getMore() {
-                this.getWeeklyConList(++this.current, this.size);
-            },
-            //删除评论
-            deleteComment(idx, comment) {
-                console.log(comment);
-                confirmMessage(this, '确定删除该评论吗？').then(async () => {
-                    let res = await removeComment({
-                        cid: comment.id,
+          async getWeeklyConList(current, size) {
+            let res = await listWeeklyCon({
+              current: current,
+              size: size,
+              pid: this.$route.params.id,
+            });
+            console.log(res.data.data.list);
+            if (res.data.code === 200) {
+              if (res.data.data.total > 0) {
+                res.data.data.list.forEach((item) => {
+                  let weeklycon = item;
+                  weeklycon.showTime = item.updatetime ? moment(item.updatetime).format('YYYY年MM月DD日 HH:mm') : moment(item.addtime).format('YYYY年MM月DD日 HH:mm');
+                  let moduleList = [];
+                  let progressList = [];
+                  let completeStr = '';
+                  if(item.body) {
+                    //处理字符串拿到当前模块
+                    let moduleStr = item.body.substring(item.body.indexOf('当前模块') + 6, item.body.indexOf('完成进度') - 5);
+                    let moduleStrList = moduleStr.split('\n');
+                    moduleStrList.forEach((item) => {
+                      if(item!='') {
+                        let module = item.substring(item.lastIndexOf(' ')+1);
+                        moduleList.push(module);
+                      }
                     });
-                    console.log(res);
-                    if (res.data.code === 200) {
-                        this.weeklyconList[idx].commentList.splice(comment, 1);
-                        notice(this, '删除成功', 'success');
-                    } else {
-                        notice(this, '删除失败', 'error');
-                    }
-                }).catch(() => {
-                    notice(this, '已取消删除', 'info');
-                });
-            },
-            //回复评论
-            replyComment(idx, comment) {
-                console.log(comment);
-                this.$prompt('请输入评论内容', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    inputPattern: /^[\u0391-\uFFE5A-Za-z]+$/,
-                    inputErrorMessage: '评论内容不能未空'
-                }).then(async ({value}) => {
-                    let comm = {};
-                    comm.weeklyconid = comment.weeklyconid;
-                    comm.userid = localStorage.getItem('id');
-                    comm.replyto = comment.userid;
-                    comm.content = value;
-                    comm.isdeleted = 1;
-                    comm.time = new Date();
-                    let res = await addComment(comm);
-                    if (res.data.code === 200) {
-                        this.weeklyconList[idx].commentList.push(res.data.data.body);
-                        this.commentVal = '';
-                        notice(this, '评论成功', 'success');
-                    } else {
-                        notice(this, '评论失败', 'error');
-                    }
-                }).catch(() => {
-                    notice(this, '取消评论', 'info')
-                });
-            },
-            //评论
-            async comment(weeklycon) {
-                console.log(this.commentVal);
-                console.log(weeklycon);
-                let comment = {};
-                comment.weeklyconid = weeklycon.id;
-                comment.userid = localStorage.getItem('id');
-                comment.replyto = weeklycon.user.id;
-                comment.content = this.commentVal;
-                comment.isdeleted = 1;
-                comment.time = new Date();
-                let res = await addComment(comment);
-                if (res.data.code === 200) {
-                    if (!weeklycon.commentList) weeklycon.commentList = [];
-                    weeklycon.commentList.push(res.data.data.body);
-                    this.commentVal = '';
-                    notice(this, '评论成功', 'success');
+                    //处理字符串拿到完成进度
+                    let progressStr = item.body.substring(item.body.indexOf('完成进度') + 6, item.body.indexOf('本周任务完成情况') - 5);
+                    let progressStrList = progressStr.split('\n');
+                    progressStrList.forEach((item) => {
+                      if(item!='') {
+                        let progress = item.substring(item.lastIndexOf(' ')+1);
+                        progressList.push(progress);
+                      }
+                    });
+                    //处理字符串拿到本周任务完成情况
+                    completeStr = item.body.substring(item.body.indexOf('本周任务完成情况') + 10, item.body.indexOf('需要支持') - 5);
+                    // let completeStrList = completeStr.split('\n');
+                    // let completeList = [];
+                    // completeStrList.forEach((item) => {
+                    //   if(item!='') {
+                    //     let complete = item.substring(item.lastIndexOf(' ')+1);
+                    //     completeList.push(complete);
+                    //   }
+                    // });
+                  }
+                  weeklycon.moduleList = moduleList;
+                  weeklycon.progressList = progressList;
+                  weeklycon.complete= completeStr;
+                  this.weeklyconList.push(weeklycon);
+                })
+              } else {
+                notice(this, '已经没有更多数据了', 'info');
+              }
+              this.loadingComment = false;
+            }
+          },
+          //生成周报模板
+          generateTemplate() {
+            this.weekly.weeklyText = '### 当前模块\n' +
+              '\n' +
+              '1.  \n' +
+              '2.  \n' +
+              '3.  \n' +
+              '\n' +
+              '### 完成进度\n' +
+              '\n' +
+              '1.  \n' +
+              '2.  \n' +
+              '3.  \n' +
+              '\n' +
+              '### 本周任务完成情况\n' +
+              '\n' +
+              '1.  \n' +
+              '2.  \n' +
+              '3.  \n' +
+              '\n' +
+              '### 需要支持\n' +
+              '\n' +
+              '1.  \n' +
+              '2.  \n' +
+              '3.  \n';
+          },
+          //点击获取更多操作
+          getMore() {
+            this.loadingComment = true;
+            setTimeout(() => {
+              this.getWeeklyConList(++this.current, this.size);
+            }, 1000);
+          },
+          //删除评论
+          deleteComment(idx, idx2, idx3, comment, level) {
+            console.log(idx);
+            console.log(idx2);
+            console.log(idx3);
+            console.log(comment);
+            console.log(level);
+            confirmMessage(this, '确定删除该评论吗？').then(async () => {
+              let res = await removeComment({
+                cid: comment.id,
+              });
+              if(res.data.code === 200) {
+                console.log(this.weeklyconList[idx].commentList[idx2]);
+                if(level=='parent') {
+                  this.weeklyconList[idx].commentList.splice(idx2, 1);
                 } else {
-                    notice(this, '评论失败', 'error');
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3, 1);
                 }
-            },
+                notice(this, '删除成功', 'success');
+              } else {
+                notice(this, '删除失败', 'error');
+              }
+            }).catch(() =>  {
+              notice(this, '已取消删除', 'info');
+            });
+          },
+          //回复评论
+          replyComment(idx, idx2, idx3, comment, level) {
+            console.log(idx);
+            console.log(idx2);
+            console.log(idx3);
+            console.log(comment);
+            console.log(level);
+            this.$prompt('请输入评论内容', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              inputPattern: /^[\u0391-\uFFE5A-Za-z]+$/,
+              inputErrorMessage: '评论内容不能未空'
+            }).then(async ({ value }) => {
+              let comm = {};
+              comm.weeklyconid = comment.weeklyconid;
+              comm.userid = localStorage.getItem('id');
+              comm.replyto = comment.userid;
+              comm.content = value;
+              comm.isdeleted = 1;
+              comm.time = new Date();
+              comm.parentid = comment.id;
+              let res = await addComment(comm);
+              if(res.data.code === 200) {
+                if(!this.weeklyconList[idx].commentList) this.weeklyconList[idx].commentList=[];
+                if(!this.weeklyconList[idx].commentList[idx2].subCommentList) this.weeklyconList[idx].commentList[idx2].subCommentList=[];
+                if(level=='parent') {
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
+                } else {
+                  this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3+1, 0, res.data.data.body);
+                }
+                this.commentVal = '';
+                notice(this, '评论成功', 'success');
+              } else {
+                notice(this, '评论失败', 'error');
+              }
+            }).catch(() => {
+              notice(this, '取消评论', 'info')
+            });
+          },
+          //评论
+          async comment(weeklycon) {
+            let comment = {};
+            comment.weeklyconid = weeklycon.id;
+            comment.userid = localStorage.getItem('id');
+            comment.replyto = weeklycon.user.id;
+            comment.content = this.commentVal;
+            comment.isdeleted = 1;
+            comment.time = new Date();
+            comment.parentid = -1;
+            let res = await addComment(comment);
+            if(res.data.code === 200) {
+              if(!weeklycon.commentList) weeklycon.commentList=[];
+              weeklycon.commentList.push(res.data.data.body);
+              this.commentVal = '';
+              notice(this, '评论成功', 'success');
+            } else {
+              notice(this, '评论失败', 'error');
+            }
+          },
         },
         watch: {
             async $route() {
@@ -2089,7 +2145,7 @@
 
                   .item_right_footer {
                     font-size: 13px;
-
+                    text-align: left;
                     span {
                       margin-right: 10px;
                       color: rgb(116, 116, 116);
@@ -2104,7 +2160,7 @@
             }
 
             .comment_input_container {
-              margin-top: 10px;
+              margin-top: 15px;
               width: 100%;
 
               .comment_input {

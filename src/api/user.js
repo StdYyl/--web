@@ -32,6 +32,10 @@ export function exitLogin(){
 export function getUserMesByID(data) {
   return requested(`api/imp/user/getUserMesById?id=${data}`)
 }
+//查看用户是否被禁用
+export function checkIsDisabled(data) {
+  return fetch('api/imp/user/status/disable', data);
+}
 //邮箱是否注册
 export function emailIsRegister(data) {
   return requested(`api/imp/user/emailIsRegister?email=${data}`)

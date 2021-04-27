@@ -9,36 +9,9 @@
     <!--消息头像-->
     <div class="head_info">
       <div class="head_icon">
-        <el-popover placement="bottom" width="200" trigger="click">
-          <template>
-            <div>
-              <div class="head_notice">
-                <div>通知</div>
-                <a style="color: black;cursor: pointer" @click="activeRead">全部标记为已读</a>
-              </div>
-              <el-table
-                :data="tableData"
-                :show-header="false"
-                :row-class-name="isReadMes"
-                @row-click="activeOne"
-                style="width: 100%;font-size: 13px">
-                <el-table-column
-                  prop="content"
-                  :show-overflow-tooltip="true"
-                  width="174">
-                </el-table-column>
-              </el-table>
-              <div class="all_notice" v-if="tableData.length>0" @click="allNotifications">查看全部</div>
-            </div>
-          </template>
-          <el-badge :value="noticeCount" :max="10" class="item" slot="reference">
-            <el-icon class="iconfont icon-tongzhi"></el-icon>
-          </el-badge>
-        </el-popover>
       </div>
-
       <div class="user">
-        <img :src="head" style="width: 24px;margin-right: 8px">
+        <img src="../../assets/image/common/logo.png" style="width: 24px;margin-right: 8px">
         <el-dropdown trigger="click" @command="ShowView">
           <span class="el-dropdown-link">
             {{name}}<i class="el-icon-arrow-down el-icon--right"></i>

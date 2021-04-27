@@ -39,6 +39,7 @@
               action="http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/file/upload/"
               :before-upload="beforeAvatarUpload"
               :on-success="handleAvatarSuccess"
+              :disabled="interceptor()"
             >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
@@ -51,7 +52,7 @@
               <div>账户密码</div>
               <div style="font-size: 13px;margin-top: 5px;color: #999999">当前密码强度：强</div>
             </div>
-            <el-button type="text" @click="showAccount = true">修改</el-button>
+            <el-button type="text" @click="openAccountPanel">修改</el-button>
           </div>
           <el-divider></el-divider>
           <div style="display: flex;justify-content: space-between;width: 750px">
@@ -59,7 +60,7 @@
               <div>手机账号</div>
               <div style="font-size: 13px;margin-top: 5px;color: #999999">已绑定手机号:{{safeMes.phone}}</div>
             </div>
-            <el-button type="text" @click="showPhone = true">修改</el-button>
+            <el-button type="text" @click="openPhonePanel">修改</el-button>
           </div>
           <el-divider></el-divider>
           <div style="display: flex;justify-content: space-between;width: 750px">
@@ -67,7 +68,7 @@
               <div>邮箱账号</div>
               <div style="font-size: 13px;margin-top: 5px;color: #999999">已绑定邮箱：{{safeMes.email}}</div>
             </div>
-            <el-button type="text" @click="showEmail=true">修改</el-button>
+            <el-button type="text" @click="openEmailPanel">修改</el-button>
           </div>
           <el-divider></el-divider>
         </div>
@@ -181,6 +182,32 @@
             }
         },
         methods: {
+            //拦截器，查看用户是否被禁用
+            interceptor() {
+              if(localStorage.getItem('disabled')==true) {
+                notice(this, '用户权限已被禁用', 'warning');
+                return true;
+              }
+              return false;
+            },
+            //打开密码面板
+            openAccountPanel() {
+              let dis = this.interceptor();
+              if(dis) return;
+              this.showAccount = true;
+            },
+            //打开电话面板
+            openPhonePanel() {
+              let dis = this.interceptor();
+              if(dis) return;
+              this.showPhone = true;
+            },
+            //打开email面板
+            openEmailPanel() {
+              let dis = this.interceptor();
+              if(dis) return;
+              this.showEmail = true;
+            },
             async updateEmail(){
                 if (!(/[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/.test(this.email))) {
                     notice(this, '请输入正确的邮箱格式', 'error', 'Message', '发送失败')
@@ -253,6 +280,8 @@
             },
             //更新基本信息
             updateBaseMes() {
+                let dis = this.interceptor();
+                if(dis) return;
                 let app = this
                 this.$refs['baseMes'].validate(async err => {
                     if (!err) return;

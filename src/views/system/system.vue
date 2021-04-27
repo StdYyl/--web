@@ -68,7 +68,8 @@
       box-shadow: 0px 1px 2px 2px rgb(212,212,212);
       border-radius: 2px;
       display: flex;
-      min-width: 820px;
+      min-width: 1200px;
+      min-height: 453px;
       .left {
         flex: 2;
         min-width: 150px;
@@ -117,6 +118,7 @@
       }
       .right {
         flex: 8;
+        min-height: 453px;
       }
     }
     .footer {

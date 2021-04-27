@@ -101,7 +101,8 @@
             </el-timeline>
             <div class="footer">
               <div class="more" @click="getMore">
-                <i class="el-icon-refresh"></i>
+                <i v-if="!loadingWeekly" class="el-icon-refresh"></i>
+                <i v-if="loadingWeekly" class="el-icon-loading"></i>
                 点击加载更多
               </div>
             </div>
@@ -147,6 +148,8 @@
               name: '全部',
             }
           ],
+          //加载周报
+          loadingWeekly: false,
           //周报列表
           weeklyconList: [],
         }
@@ -290,11 +293,15 @@
             } else {
               notice(this, '已经没有更多数据了', 'info');
             }
+            this.loadingWeekly = false;
           }
           console.log(this.weeklyconList);
         },
         getMore() {
-          this.getWeeklyConList(++this.current, this.size);
+          this.loadingWeekly = true;
+          setTimeout(() => {
+            this.getWeeklyConList(++this.current, this.size);
+          }, 1000);
         },
       },
       mounted() {

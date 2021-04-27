@@ -62,6 +62,7 @@
               <span style="color: #1890ff;font-size: 12px;" v-if="scope.row.operation=='添加'">添加</span>
               <span style="color: #fcd95c;font-size: 12px;" v-if="scope.row.operation=='修改'">修改</span>
               <span  style="color: #FF4D4F;font-size: 12px;" v-if="scope.row.operation=='删除'">删除</span>
+              <span style="color: rgb(237,190,210);font-size: 12px;" v-if="scope.row.operation=='其它'">其它</span>
             </template>
           </af-table-column>
         </el-table>
