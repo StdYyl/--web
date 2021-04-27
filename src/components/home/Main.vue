@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <div class="tabs">
+    <div class="tabs" id="project">
       <el-tabs v-model="activeName" @tab-click="handleClick" >
         <!--全部项目-->
         <el-tab-pane label="全部项目" name="all" v-loading="loading[0]">
@@ -1116,6 +1116,11 @@
 </script>
 
 <style lang="less" scoped>
+
+  #project/deep/.el-tabs__nav-scroll{
+    display: block;
+  }
+
   /deep/ .el-input-group__append {
     background-color: #1890FF;
     color: white;

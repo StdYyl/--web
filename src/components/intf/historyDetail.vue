@@ -1,24 +1,27 @@
 <template>
-  <div class="intf_rhs" id="addIntf">
+  <div class="intf_rhs" id="his">
     <div class="rh_head">
-      <h4 style="margin: 5px 0 0 15px;color: #1890FF">我的接口
+      <h4 style="margin: 5px 0 0 15px;color: #1890FF">历史记录
         <span class="el-icon-info" style="color:#1890FF;"></span>
       </h4>
+      <el-button type="primary" size="mini" @click="$router.go(-1)"
+                 style="margin-right: 20px;font-size: 12px;padding: 7px 15px">返回
+      </el-button>
     </div>
     <el-form :model="from" :rules="rules" ref="from" label-position="top">
       <el-form-item label="名称" prop="name" style="margin-right: 50px">
-        <el-input v-model="from.name" placeholder="接口名称" style="width: 350px" size="small"></el-input>
+        <el-input v-model="from.name" placeholder="接口名称" style="width: 350px" size="small" disabled></el-input>
       </el-form-item>
       <el-form-item label="简介" prop="introduction">
-        <el-input v-model="from.introduction" placeholder="接口简介" style="width: 350px" size="small"></el-input>
+        <el-input v-model="from.introduction" placeholder="接口简介" style="width: 350px" size="small" disabled></el-input>
       </el-form-item>
-      <el-form-item label="分组" prop="directoryID" style="margin-right: 50px">
-        <el-select v-model="from.directoryID" size="small">
+      <el-form-item label="分组" prop="directoryid" style="margin-right: 50px">
+        <el-select v-model="from.directoryid" size="small" disabled>
           <el-option :key="item.id" v-for="item in moduleList" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="from.status" size="small">
+      <el-form-item label="状态" disabled>
+        <el-select v-model="from.status" size="small" disabled>
           <el-option label="未完成" value="1"></el-option>
           <el-option label="已完成" value="2"></el-option>
         </el-select>
@@ -53,7 +56,7 @@
       </div>
     </div>
 
-    <el-tabs v-model="paramTab" type="card" closable @tab-remove="removeTab" :before-leave="beforeLeave">
+    <el-tabs v-model="paramTab" type="card">
       <el-tab-pane v-for="(item, index) in paramList" :key="item.name" :label="item.title" :name="item.name">
         <el-form :model="from" label-position="top">
           <el-collapse v-model="activeNames">
@@ -125,7 +128,8 @@
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"
+                                  :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -220,7 +224,8 @@
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"
+                                  :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -270,12 +275,8 @@
           </el-collapse>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane key="add" name="add">
-        <span slot="label" style="padding: 8px;font-size:20px;font-weight:bold;">
-		  	  +
-		    </span>
-      </el-tab-pane>
     </el-tabs>
+
     <!--运行结果-->
     <el-drawer
       :with-header="false"
@@ -300,7 +301,13 @@
 <script>
     import {COMMON} from '@/const/common'
     import {notice} from '@/utils/elementUtils'
-    import {addIntf2History, addNewInterface, getIntfDebuging} from "../../api/interface";
+    import {
+        addIntf2History,
+        addNewInterface, getHistoryIntfMes,
+        getIntfDebuging,
+        getIntfMesById,
+        modifyIntfMes, saveHistory2Intf
+    } from "../../api/interface";
     import {getModuleByProId} from "../../api/directory";
     import {getProEnvironmentList} from "../../api/project";
     import {parseChildJson, uuid} from "../../utils/utils";
@@ -317,13 +324,15 @@
     require('codemirror/addon/fold/markdown-fold.js')
     require('codemirror/addon/fold/comment-fold.js')
 
+
     export default {
-        name: "index",
+        name: "historyDetail",
         components: {
             codemirror
         },
         data() {
             return {
+                isFinished: '',
                 //请求结果
                 debugIntfResult: '',
                 debugIntfBody: '',
@@ -352,56 +361,16 @@
                 module: '',
                 //接口基本信息
                 from: {
-                    name: '', introduction: '', directoryID: '', status: '1', type: "1", path: '', environmentid: '',
-                    createId: localStorage.getItem("id"), projectId: this.$route.params.id
+                    name: '', introduction: '', directoryid: '', status: '1', type: "1", path: '', environmentid: '',
+                    projectId: this.$route.params.id
                 },
                 //接口参数列表
                 paramTab: '1',
-                paramList: [
-                    {
-                        title: '列表1', name: '1', content: {
-                            header: [
-                                {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
-                            ],
-                            reqType: '1',
-                            paramBody: '',
-                            param: [
-                                {name: '', value: '', isRequired: false, note: ''}
-                            ],
-                            resultType: '1',
-                            resultBody: '',
-                            result: [
-                                {
-                                    id: uuid(),
-                                    name: '',
-                                    value: '',
-                                    isRequired: false,
-                                    note: '',
-                                    type: 'Object',
-                                    level: 1,
-                                }
-                            ],
-                            reqQuery: [
-                                {name: '', value: '', isRequired: false, note: ''}
-                            ],
-                            reqBodyJson: [
-                                {
-                                    id: uuid(),
-                                    name: '',
-                                    value: '',
-                                    isRequired: false,
-                                    note: '',
-                                    type: 'Object',
-                                    level: 1,
-                                }
-                            ]
-                        }
-                    },
-                ],
+                paramList: [],
                 rules: {
                     name: {required: true, message: "请输入接口名称", trigger: 'blur'},
                     introduction: {required: true, message: "请输入接口简介", trigger: 'blur'},
-                    directoryID: {required: true, message: "请选择分组", trigger: 'blur'},
+                    directoryid: {required: true, message: "请选择分组", trigger: 'blur'},
                     path: {required: true, message: "请输入接口路径", trigger: 'blur'},
                     environmentid: {required: true, message: "请输请选择接口环境", trigger: 'blur'},
                 }
@@ -411,6 +380,10 @@
             //运行接口
             async runIntf() {
                 let app = this
+                if (app.isFinished != '1') {
+                    notice(this, "接口已开发完毕，无法运行调试", "info")
+                    return;
+                }
                 let history = app.from
                 let config = {}
                 //url
@@ -480,15 +453,8 @@
                 let hs = await addIntf2History(history);
             },
 
-            // openNode(data){
-            //     this.$nextTick(function () {
-            //         this.$refs.BodyJson.setCurrentKey(data.id);
-            //     })
-            //     this.$refs['BodyJson'].store.nodesMap[data.id].expanded = true;
-            // },
             //更换类型时，删除子节点
             changeType(node, data) {
-                console.log(node)
                 node.data.value = ''
                 let msg = node.data
                 if (msg.children)
@@ -499,18 +465,27 @@
             },
             //添加接口(保存)
             saveIntf() {
+                let app = this
                 this.$refs.from.validate(async err => {
-                    if (!err) return;
-                    let param = {
-                        msg: this.from,
-                        param: this.paramList
+                        if (app.isFinished != '1') {
+                            notice(this, "接口已开发完毕，无法保存", "info")
+                            return;
+                        }
+                        if (!err) return;
+                        console.log(app)
+                        let param = {
+                            type: app.from.type,
+                            path: app.from.path,
+                            environmentid: app.from.environmentid,
+                            id: app.from.intfID,
+                            param: app.paramList[0]
+                        }
+                        let rs = await saveHistory2Intf(param)
+                        if (rs.data.code == 200) {
+                            notice(this, "保存成功!")
+                        }
                     }
-                    let rs = await addNewInterface(param)
-                    if (rs.data.code == 200) {
-                        notice(this, "添加成功!")
-                        this.$router.push(`/home/intfIndex/${this.$route.params.id}/intf/all`)
-                    }
-                })
+                )
             },
             //请求头
             headerMes(q, c) {
@@ -556,7 +531,6 @@
             addParam(e) {
                 let index = this.paramList.findIndex(d => d.name == e.name)
                 this.paramList[index].content.param.push({name: '', value: '', isRequired: false, note: ''});
-                console.log(this.paramList[index].content)
             },
             //删除param
             removeParam(e, num) {
@@ -571,14 +545,19 @@
                 if (!e.command || e.command == 'b') {
                     let data = e.node.parent.data
                     let level = data.children ? data.children[0].level : data[0].level
-                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level, parentIsArray:data.type == 'Array'}
+                    let node = {
+                        id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object',
+                        level, parentIsArray: data.type == 'Array'
+                    }
                     if (data.children) {
                         data.children.push(node)
                     } else {
                         data.push(node)
                     }
+
                 } else {
                     let data = e.node
+                    console.log(data)
                     let newChild = {
                         id: uuid(),
                         name: '',
@@ -586,7 +565,7 @@
                         isRequired: false,
                         note: '',
                         type: 'Object',
-                        parentIsArray:data.type == 'Array',
+                        parentIsArray: data.type == 'Array',
                         level: data.level + 1
                     };
                     if (!data.children) {
@@ -600,108 +579,90 @@
                 let parent = node.parent
                 let children = parent.data.children || parent.data
                 let index = children.findIndex(d => d.id === data.id)
-                console.log(index)
                 children.splice(index, 1)
-            },
-            //添加result
-            // addResult(e) {
-            //     let index = this.paramList.findIndex(d => d.name == e.name)
-            //     this.paramList[index].content.result.push({name: '', value: '', isRequired: '', note: '', type: ''});
-            // },
-            //删除result
-            // removeResult(e, num) {
-            //     let index = this.paramList.findIndex(d => d.name == e.name)
-            //     if (index !== -1) {
-            //         this.paramList[index].content.result.splice(num, 1)
-            //     }
-            // },
-            //添加tab
-            addTab() {
-                let newTabIndex = this.paramList.length + 1;
-                this.paramList.push({
-                    title: `列表${newTabIndex}`, name: newTabIndex + '', content: {
-                        header: [
-                            {reqHeader: '', reqHeaderMethod: '', paramNote: ''}
-                        ],
-                        reqType: '1',
-                        paramBody: '',
-                        param: [
-                            {name: '', value: '', isRequired: false, note: ''}
-                        ],
-                        resultType: '1',
-                        resultBody: '',
-                        result: [
-                            {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
-                        ],
-                        reqQuery: [
-                            {name: '', value: '', isRequired: false, note: ''}
-                        ],
-                        reqBodyJson: [
-                            {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}
-                        ]
-
-                    }
-                });
-            },
-            /* 活动标签切换时触发 */
-            beforeLeave(currentName, oldName) {
-                let self = this;
-                //重点，如果name是add，则什么都不触发
-                if (currentName == "add") {
-                    this.addTab()
-                    return false
-                }
-            },
-            //删除tab
-            removeTab(targetName) {
-                let tabs = this.paramList;
-                let index = this.paramList.findIndex(d => d.name == targetName)
-                if (tabs.length <= 1) {
-                    this.$message.error('删除失败，至少有存在一个参数列表');
-                    return;
-                }
-                //删除
-                //更改后面tab的name
-                tabs.forEach((tab, num) => {
-                    if (num >= index) {
-                        tab.title = '列表' + num
-                        tab.name = num + ''
-                    }
-                });
-                this.paramList.splice(index, 1)
             },
         },
         async mounted() {
-            //获取环境列表
+            let app = this
+            // 获取环境列表
             let environment = await getProEnvironmentList(this.$route.params.id);
             if (environment.data.data) {
                 this.environmentList.splice(0, this.environmentList.length)
                 let param = environment.data.data;
-                param.forEach(msg => {
-                    this.environmentList.push({id: msg.id, name: msg.name})
-                })
+                this.environmentList.push(...param)
             }
-            //模块列表
-            let rs = await getModuleByProId(this.$route.params.id);
-            if (!rs.data.data) {
+            // //模块列表
+            let module = await getModuleByProId(this.$route.params.id);
+            if (!module.data.data) {
                 notice(this, "请先去添加模块！", "info")
                 return
             }
             this.moduleList.splice(0, this.moduleList.length)
-            this.moduleList.push(...rs.data.data)
+            this.moduleList.push(...module.data.data)
+
+            //查询接口信息
+            let intfId = this.$route.params.intfId
+            let rs = await getHistoryIntfMes(intfId);
+            if (rs.data.data) {
+                let data = rs.data.data
+                let froms = {}
+                froms['name'] = data.name
+                froms['introduction'] = data.introduction
+                froms['directoryid'] = data.directoryid
+                froms['status'] = data.status
+                froms['type'] = data.type
+                froms['path'] = data.path
+                froms['environmentid'] = data.environmentid
+                froms['intfID'] = data.intfID
+                app.isFinished = data.isFinished
+                this.from = froms
+                let intf = {
+                    title: `列表1`, name: '1', id:data.paramID, content: {
+                        header: JSON.parse(data.reqheader),
+                        reqType: data.reqtype,
+                        resultType: data.restype,
+                        reqQuery: JSON.parse(data.reqQuery),
+                        reqBodyJson: JSON.parse(data.reqBodyJson),
+                    }
+                }
+                if (data.reqtype == '1') {
+                    intf.content.paramBody = ''
+                    intf.content.param = JSON.parse(data.reqbody)
+                }
+                if (data.reqtype == '3') {
+                    intf.content.paramBody = data.reqbody
+                    intf.content.param = [{name: '', value: '', isRequired: false, note: ''}]
+                }
+                if (data.restype == '1') {
+                    intf.content.resultBody = ''
+                    intf.content.result = JSON.parse(data.resbody)
+                }
+                if (data.restype == '2') {
+                    intf.content.resultBody = data.resbody
+                    intf.content.result = [{
+                        id: uuid(),
+                        name: '',
+                        value: '',
+                        isRequired: false,
+                        note: '',
+                        type: 'Object',
+                        level: 1,
+                    }]
+                }
+                this.paramList.push(intf)
+            }
         }
 
     }
 </script>
 
 <style lang="less" scoped>
+  #his /deep/ .el-tabs__nav-scroll {
+    justify-content: left;
+  }
 
   /deep/ #result .el-collapse-item__header {
     padding-left: 15px;
-  }
-
-  #addIntf /deep/ .el-tabs__nav-scroll{
-    display: block;
   }
 
   .none_iocn {

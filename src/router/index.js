@@ -27,6 +27,7 @@ import AddIntf from '../components/intf/AddIntf'
 import PreviewIntf from '../components/intf/Preview'
 import EditIntf from '../components/intf/EditIntf'
 import historyIntf from '../components/intf/historyIntf'
+import historyDetail from '../components/intf/historyDetail'
 
 
 import Accept from '../views/member/accept'
@@ -146,6 +147,12 @@ export default new Router({
               name: 'EditIntf',
               component: EditIntf,
               meta: {model: '修改接口'},
+            },
+            {
+              path: 'intf/:moduleId/historyDetail/:intfId',
+              name: 'historyDetail',
+              component: historyDetail,
+              meta: {model: '接口历史记录'},
             },
             {
               path: 'AddIntf',

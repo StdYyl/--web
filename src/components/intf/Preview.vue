@@ -336,6 +336,10 @@
 
 <style lang="less" scoped>
 
+  #tab/deep/.el-tabs__nav-scroll{
+    display: block;
+  }
+
   .intf_rh {
     min-height: 530px;
     box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px 0px;

@@ -1,5 +1,5 @@
 <template>
-  <div class="intf_rhs">
+  <div class="intf_rhs" id="his">
     <div class="rh_head">
       <h4 style="margin: 5px 0 0 15px;color: #1890FF">编辑接口
         <span class="el-icon-info" style="color:#1890FF;"></span>
@@ -50,7 +50,8 @@
         <el-button type="primary" size="mini"
                    style="margin-right: 10px;font-size: 12px;padding: 7px 15px" @click="saveIntf">保存
         </el-button>
-        <el-button type="primary" size="mini" style="margin-right: 20px;font-size: 12px;padding: 7px 15px" @click="runIntf">运行
+        <el-button type="primary" size="mini" style="margin-right: 20px;font-size: 12px;padding: 7px 15px"
+                   @click="runIntf">运行
         </el-button>
       </div>
     </div>
@@ -127,7 +128,8 @@
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"
+                                  :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -222,7 +224,8 @@
                            :indent="15" default-expand-all ref="BodyJson" :expand-on-click-node="false">
                     <span class="custom-tree-node" slot-scope="{ node, data }">
                       <el-form-item :style="'margin-right: 10px;width:'+(180-(data.level-1)*15)+'px;min-width:15px'">
-                        <el-input v-model="data.name" placeholder="参数名称" size="small" :disabled="data.parentIsArray"></el-input>
+                        <el-input v-model="data.name" placeholder="参数名称" size="small"
+                                  :disabled="data.parentIsArray"></el-input>
                       </el-form-item>
                       <el-form-item style="margin-right: 10px;width: 120px">
                         <el-select v-model="data.type" size="small" @change="changeType(node,data)">
@@ -285,14 +288,14 @@
       :visible.sync="drawer"
       direction="ltr"
       size="32%"
-      >
+    >
       <div>
         <el-collapse v-model="deBugIntf" id="result">
           <el-collapse-item title="请求头Header" name="1">
-            <codemirror  ref="myCm"  v-model="debugIntfResult"  :options="cmOptions" class="code"></codemirror>
+            <codemirror ref="myCm" v-model="debugIntfResult" :options="cmOptions" class="code"></codemirror>
           </el-collapse-item>
-          <el-collapse-item title="相应Body" name="2">
-            <codemirror  ref="myCm"  v-model="debugIntfBody"  :options="cmOptions" class="code"></codemirror>
+          <el-collapse-item title="响应Body" name="2">
+            <codemirror ref="myCm" v-model="debugIntfBody" :options="cmOptions" class="code"></codemirror>
           </el-collapse-item>
         </el-collapse>
       </div>
@@ -303,13 +306,20 @@
 <script>
     import {COMMON} from '@/const/common'
     import {notice} from '@/utils/elementUtils'
-    import {addNewInterface, getIntfMesById, modifyIntfMes} from "../../api/interface";
+    import {
+        addIntf2History,
+        addNewInterface,
+        getIntfDebuging,
+        getIntfMesById,
+        modifyIntfMes
+    } from "../../api/interface";
     import {getModuleByProId} from "../../api/directory";
     import {getProEnvironmentList} from "../../api/project";
     import {parseChildJson, uuid} from "../../utils/utils";
 
-    import { codemirror } from 'vue-codemirror'
-    import  'codemirror/theme/cobalt.css'
+    import {codemirror} from 'vue-codemirror'
+    import 'codemirror/theme/cobalt.css'
+
     require("codemirror/mode/python/python.js")
     require('codemirror/addon/fold/foldcode.js')
     require('codemirror/addon/fold/foldgutter.js')
@@ -322,23 +332,23 @@
 
     export default {
         name: "EditIntf",
-        components:{
+        components: {
             codemirror
         },
         data() {
             return {
                 //请求结果
-                debugIntfResult:'',
-                debugIntfBody:'',
+                debugIntfResult: '',
+                debugIntfBody: '',
                 //调试窗口
-                drawer:false,
-                deBugIntf:["1","2"],
-                cmOptions:{
-                    mode:'application/json',
-                    lineNumbers:true,
-                    theme:'cobalt',
-                    scrollbarStyle:null,
-                    readOnly:'nocursor'
+                drawer: false,
+                deBugIntf: ["1", "2"],
+                cmOptions: {
+                    mode: 'application/json',
+                    lineNumbers: true,
+                    theme: 'cobalt',
+                    scrollbarStyle: null,
+                    readOnly: 'nocursor'
                 },
                 defaultProps: {
                     children: 'children',
@@ -396,43 +406,56 @@
         },
         methods: {
             //运行接口
-            runIntf(){
+            runIntf: async function () {
                 let app = this
+                let history = JSON.parse(JSON.stringify(app.from))
                 let config = {}
-                config.isCheck = false
                 //url
                 let url = ''
                 this.environmentList.forEach(env => {
-                    if(env.id == app.from.environmentid) url = env.baseurl + app.from.path
+                    if (env.id == app.from.environmentid) url = env.baseurl + app.from.path
                 })
                 config.url = url
                 //method
                 let index = this.methodList.findIndex(md => md.id == app.from.type)
-                config.method =  this.methodList[index].name
+                config.method = this.methodList[index].name
                 //headers
                 let headIndex = this.paramList.findIndex(md => md.name == app.paramTab)
                 let content = this.paramList[headIndex].content
+                history['paramID'] = this.paramList[headIndex].id
+                history['reqBodyJson'] = JSON.stringify(content.reqBodyJson)
+                if (content.reqType == '1') {
+                    history['reqbody'] = JSON.stringify(content.param)
+                }
+                if (content.reqType == '3') {
+                    history['reqbody'] = content.paramBody
+                }
+                history['reqtype'] = content.reqType
+                history['resbody'] = content.resultType == '1' ? JSON.stringify(content.result) : content.resultBody
+                history['restype'] = content.resultType
+                history['reqQuery'] = JSON.stringify(content.reqQuery)
+                history['reqheader'] = JSON.stringify(content.header)
                 let reqHeader = {}
-                let header = content.header.forEach(head =>{
-                    if(head.reqHeader != '') reqHeader[head.reqHeader] = head.reqHeaderMethod
+                let header = content.header.forEach(head => {
+                    if (head.reqHeader != '') reqHeader[head.reqHeader] = head.reqHeaderMethod
                 })
                 config.headers = reqHeader;
                 //data params
                 let param = {}
-                content.reqQuery.forEach(query =>{
-                    if(query.name != '') param[query.name] = query.value
+                content.reqQuery.forEach(query => {
+                    if (query.name != '') param[query.name] = query.value
                 })
                 config.params = param;
                 // data data
                 let data = {}
-                if("1" == content.reqType){
+                if ("1" == content.reqType) {
                     //From
-                    content.param.forEach(param =>{
-                        if(param.name != '') data[param.name] = param.value
+                    content.param.forEach(param => {
+                        if (param.name != '') data[param.name] = param.value
                     })
-                }else if("2" == content.reqType){
+                } else if ("2" == content.reqType) {
                     data = parseChildJson(content.reqBodyJson)
-                }else{
+                } else {
                     try {
                         data = JSON.parse(content.paramBody)
                     } catch (e) {
@@ -441,17 +464,30 @@
                     }
                 }
                 config.data = data
-                config.withCredentials = false
-                try {
-                    this.$axios.request(config).then(res=>{
-                        app.debugIntfResult = JSON.stringify(res.config.headers,null,4)
-                        app.debugIntfBody = JSON.stringify(res.data,null,4)
-                        app.drawer = true
-                    });
-                } catch (e) {
-                    notice(app, "调用失败，请检查参数", "error")
-                    return;
-                }
+
+                let rs = await getIntfDebuging(config);
+                app.debugIntfResult = JSON.stringify(rs.headers, null, 4)
+                app.debugIntfBody = JSON.stringify(rs.data, null, 4)
+                app.drawer = true
+
+                //添加接口调用记录
+                history['projectID'] = this.$route.params.id
+                history['intfID'] = app.from.id
+                history['title'] = "列表1"
+                delete history.id
+                console.log(app.from)
+                let hs = await addIntf2History(history);
+                // try {
+                //     console.log(config)
+                //     this.$axios.request(config).then(res=>{
+                //         app.debugIntfResult = JSON.stringify(res.config.headers,null,4)
+                //         app.debugIntfBody = JSON.stringify(res.data,null,4)
+                //         app.drawer = true
+                //     });
+                // } catch (e) {
+                //     notice(app, "调用失败，请检查参数", "error")
+                //     return;
+                // }
 
                 // console.log(config)
                 // let url =
@@ -539,8 +575,10 @@
                 if (!e.command || e.command == 'b') {
                     let data = e.node.parent.data
                     let level = data.children ? data.children[0].level : data[0].level
-                    let node = {id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object',
-                        level, parentIsArray:data.type == 'Array'}
+                    let node = {
+                        id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object',
+                        level, parentIsArray: data.type == 'Array'
+                    }
                     if (data.children) {
                         data.children.push(node)
                     } else {
@@ -557,7 +595,7 @@
                         isRequired: false,
                         note: '',
                         type: 'Object',
-                        parentIsArray:data.type == 'Array',
+                        parentIsArray: data.type == 'Array',
                         level: data.level + 1
                     };
                     if (!data.children) {
@@ -656,14 +694,14 @@
                 let data = rs.data.data
                 this.from = data.baseMsg
                 data.paramMsg.forEach(msg => {
-                        msg.content.reqQuery = msg.content.reqQuery ?  JSON.parse(msg.content.reqQuery)
-                            : [{name: '', value: '', isRequired: false, note: ''}]
-                        //判断Query是否为空
-                        msg.content.reqQuery.forEach(query => {
-                            if (query.paramNote != '' || query.reqHeader != '' || query.reqHeaderMethod != '') {
-                                msg.content.reqQuery.empty = true
-                            }
-                        })
+                    msg.content.reqQuery = msg.content.reqQuery ? JSON.parse(msg.content.reqQuery)
+                        : [{name: '', value: '', isRequired: false, note: ''}]
+                    //判断Query是否为空
+                    msg.content.reqQuery.forEach(query => {
+                        if (query.paramNote != '' || query.reqHeader != '' || query.reqHeaderMethod != '') {
+                            msg.content.reqQuery.empty = true
+                        }
+                    })
                     msg.content.header = JSON.parse(msg.content.header)
                     //判断header是否为空
                     msg.content.header.forEach(head => {
@@ -671,11 +709,16 @@
                             msg.content.header.empty = true
                         }
                     })
-                    msg.content.result = msg.content.result ?  JSON.parse(msg.content.result) :
-                        [{id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
+                    msg.content.result = msg.content.result ? JSON.parse(msg.content.result) :
+                        [{id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
                     msg.content.reqBodyJson = msg.content.reqBodyJson ? JSON.parse(msg.content.reqBodyJson) :
-                        [{id:uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
-                    msg.content.param = msg.content.param ? JSON.parse(msg.content.param) : [{name: '', value: '', isRequired: false, note: ''}]
+                        [{id: uuid(), name: '', value: '', isRequired: false, note: '', type: 'Object', level: 1,}]
+                    msg.content.param = msg.content.param ? JSON.parse(msg.content.param) : [{
+                        name: '',
+                        value: '',
+                        isRequired: false,
+                        note: ''
+                    }]
 
                 })
                 this.paramList.push(...data.paramMsg)
@@ -687,8 +730,12 @@
 
 <style lang="less" scoped>
 
-  /deep/ #result .el-collapse-item__header{
-      padding-left: 15px;
+  #his /deep/ .el-tabs__nav-scroll{
+    justify-content: left;
+  }
+
+  /deep/ #result .el-collapse-item__header {
+    padding-left: 15px;
   }
 
   .none_iocn {

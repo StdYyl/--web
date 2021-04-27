@@ -33,7 +33,27 @@ export function exportIntfList(projectId, directoryId) {
 export function getInterfaceListByExample(data) {
   return post('api/imp/interface/listByExample', data);
 }
-//根据project实体类查找接口列表
-export function getInterfaceListByExample(data) {
-  return post('api/imp/interface/listByExample', data);
+//接口调试
+export function getIntfDebuging(data) {
+  return requested('api/imp/interface/getIntfDebuging', "post",data);
 }
+
+/*历史记录*/
+//添加接口历史记录
+export function addIntf2History(data) {
+  return requested('api/imp/history/addIntf2History', "post",data);
+}
+//查询历史记录列表
+export function getHistoryList(projectId, type, size=9, pageNo=1) {
+  return requested(`api/imp/history/getHistoryList?projectId=${projectId}&type=${type}&pageNo=${pageNo}&size=${size}`);
+}
+//查询历史记录详情
+export function getHistoryIntfMes(id) {
+  return requested(`api/imp/history/getHistoryIntfMes?id=${id}`);
+}
+//历史记录保存
+export function saveHistory2Intf(data) {
+  return requested('api/imp/history/saveHistory2Intf', "post",data);
+}
+
+
