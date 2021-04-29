@@ -927,6 +927,16 @@
                         console.log(this.$route.path.indexOf("/intf/all"))
                         this.$router.push(`/home/intfIndex/${this.$route.params.id}/intf/all`)
                     }
+                } else if(this.activeName == 'weekly') {
+                  this.weeklyFlag = 1;
+                  this.weeklyTable = [];
+                  this.weeklyconList = [];
+                  this.current=1;
+                  this.size=1;
+                  this.loadingComment = true;
+                  await this.dealWithWeeklyDate(this.$route.params.id);
+                  await this.getWeeklyConList(this.current, this.size);
+                  await this.drawLine(this.$route.params.id);
                 }
             },
             //添加addEnvironment
@@ -1279,8 +1289,17 @@
                     .catch(_ => {
                     });
             },
-            changeBar() {
-                this.weeklyFlag = 1;
+            async changeBar() {
+                //点击周报管理按钮，切换回周报首页
+              this.weeklyFlag = 1;
+              this.weeklyTable = [];
+              this.weeklyconList = [];
+              this.current=1;
+              this.size=1;
+              this.loadingComment = true;
+              await this.dealWithWeeklyDate(this.$route.params.id);
+              await this.getWeeklyConList(this.current, this.size);
+              await this.drawLine(this.$route.params.id);
             },
             //echarts画图操作
             async drawLine(pid) {
@@ -1293,7 +1312,6 @@
                     pid: pid,
                     weeks: this.weeklyTable[0].week,
                 });
-                console.log(res);
                 let data = [];
                 if(res.data.code === 200) {
                   data.push(res.data.data.body.successful);
@@ -1522,7 +1540,7 @@
               size: size,
               pid: this.$route.params.id,
             });
-            console.log(res.data.data.list);
+            console.log(res.data.data);
             if (res.data.code === 200) {
               if (res.data.data.total > 0) {
                 res.data.data.list.forEach((item) => {
@@ -1721,16 +1739,16 @@
                     this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
                 }
             })
-            await this.dealWithWeeklyDate(this.$route.params.id);
-            await this.getWeeklyConList(this.current, this.size);
-            await this.drawLine(this.$route.params.id);
+            // await this.dealWithWeeklyDate(this.$route.params.id);
+            // await this.getWeeklyConList(this.current, this.size);
+            // await this.drawLine(this.$route.params.id);
         }
     }
 </script>
 
 <style>
 
-  #intfTabs/deep/ .el-tabs__nav-scroll {
+  #intfTabs .el-tabs__nav-scroll {
     display: flex;
     justify-content: center;
   }

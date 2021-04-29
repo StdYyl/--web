@@ -1,8 +1,8 @@
 <template>
   <div class="set" id="bd">
     <el-page-header @back="goBack" content="进度管理"></el-page-header>
-    <el-tabs tab-position="left" style="" class="tabsH">
-      <el-tab-pane>
+    <el-tabs tab-position="left" style="" class="tabsH" @tab-click="chooseTabs" v-model="activeName">
+      <el-tab-pane name="interface">
         <span slot="label"><i class="el-icon-warning-outline"></i> 接口归档</span>
         <div class="itfFL">
           <div class="title">
@@ -13,13 +13,16 @@
               <div class="classification">接口分类</div>
               <div class="level">分类级别</div>
               <div class="number">分类下接口数量</div>
-              <div class="date">归档时间</div>
+              <div class="date">目录创建时间</div>
             </div>
-            <div class="data_item" v-for="item in moduleList" :key="item.id">
+            <div v-if="!loadingModule" class="data_item" v-for="item in moduleList" :key="item.id">
               <div class="classification">{{item.classification}}</div>
               <div class="level">{{item.level}}</div>
               <div class="number">{{item.number}}</div>
               <div class="date">{{item.date}}</div>
+            </div>
+            <div v-if="loadingModule">
+              <i class="el-icon-loading" style="font-size: 30px;padding: 10px 0;"></i>
             </div>
             <div style="padding-top: 20px;text-align: right;">
               <el-pagination
@@ -53,7 +56,7 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="周报汇报">
+      <el-tab-pane label="周报汇报" name="weekly">
         <span slot="label"><i class="iconfont icon-zhoubao"></i> 周报汇报</span>
         <div class="weeklyReport">
           <div class="title">
@@ -133,6 +136,7 @@
             archived_number: null,
             completed_percentage: 0,
           },
+          loadingModule: true,
           moduleList: [],
           //接口归档的分页参数
           currentPage: 1,
@@ -149,12 +153,26 @@
             }
           ],
           //加载周报
-          loadingWeekly: false,
+          loadingWeekly: true,
           //周报列表
           weeklyconList: [],
+          activeName: 'interface',
         }
       },
       methods: {
+        //切换tab时触发
+        chooseTabs() {
+          if(this.activeName == 'interface') {
+
+          } else if (this.activeName == 'weekly') {
+            this.loadingWeekly = true;
+            this.weeklyconList = [];
+            this.current = 1;
+            this.size = 3;
+            this.listUsersByPid();
+            this.getWeeklyConList(this.current, this.size);
+          }
+        },
         goBack() {
           this.$router.go(-1)
         },
@@ -194,6 +212,7 @@
             size: this.pageSize,
             pid: this.projectId,
           });
+          console.log(res);
           if(res.data.code === 200) {
             if(res.data.data.total>0) {
               let module = {};
@@ -206,13 +225,12 @@
                   module.level = '二级目录';
                 }
                 module.number = item.interfaceList?item.interfaceList.length:0;
-                let date = new Date(item.updatetime);
-                module.date = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
-                  +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                module.date = moment(item.createtime).format('YYYY-MM-DD HH:mm');
                 this.moduleList.push(module);
               })
               this.total = res.data.data.total;
             }
+            this.loadingModule = false;
           }
         },
         async listUsersByPid() {
@@ -233,6 +251,7 @@
           }
         },
         changeUser() {
+          this.loadingWeekly = true;
           this.current=1;
           console.log(this.submitter);
           this.weeklyconList = [];
@@ -247,10 +266,11 @@
           });
           if (res.data.code === 200) {
             if (res.data.data.total > 0) {
+              console.log(res.data.data.list);
               res.data.data.list.forEach((item) => {
                 let weeklycon = item;
                 let showTime = item.updatetime ?
-                  moment(item.updatetime).format('YYYY年MM月DD日 HH:MM') : moment(item.addtiome).format('YYYY年MM月DD日 HH:MM');
+                  moment(item.updatetime).format('YYYY年MM月DD日 HH:mm') : moment(item.addtime).format('YYYY年MM月DD日 HH:mm');
                 weeklycon.showTime = showTime+'（第'+item.weekly.weeks+'周）';
                 let moduleList = [];
                 let progressList = [];
@@ -304,19 +324,17 @@
           }, 1000);
         },
       },
-      mounted() {
+      async mounted() {
         let pid = this.$route.params.id;
         if(pid) {
           this.projectId = pid;
         }
-        this.listTotalInterface();
-        this.listArchivedInterface();
-        this.listDirectoryByPage();
+        await this.listTotalInterface();
+        await this.listArchivedInterface();
+        await this.listDirectoryByPage();
         if(this.interface.total_number) {
           this.interface.completed_percentage = parseFloat((100*this.interface.archived_number/this.interface.total_number).toFixed(2));
         }
-        this.listUsersByPid();
-        this.getWeeklyConList(this.current, this.size);
       }
     }
 </script>

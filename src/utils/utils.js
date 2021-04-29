@@ -3,7 +3,7 @@ import {notice} from './elementUtils'
 import docxtemplater from 'docxtemplater'
 import JSZipUtils from 'jszip-utils'
 import { saveAs } from 'file-saver'
-import JSZip from 'jszip'
+import PizZip from 'pizzip'
 // import TurndownService from 'turndown'
 //判断接口返回状态
 export function checkResponse(app, res, show_msg = false) {
@@ -63,8 +63,9 @@ export function exportWord(data) {
   // 读取并获得模板文件的二进制内容
   JSZipUtils.getBinaryContent('/static/intf.docx', function(error, content) {
     if (error) throw error // 抛出异常
-    let zip = new JSZip(content) // 创建一个JSZip实例，内容为模板的内容
+    let zip = new PizZip(content) // 创建一个JSZip实例，内容为模板的内容
     let doc = new docxtemplater().loadZip(zip) // 创建并加载docxtemplater实例对象
+
     console.log(data)
     let param = {}
     param['intf'] = data

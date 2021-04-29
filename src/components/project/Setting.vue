@@ -1,35 +1,6 @@
 <template>
   <div class="set" id="bd">
     <el-page-header @back="goBack" content="项目设置"></el-page-header>
-
-    <!--    <el-menu-->
-    <!--      default-active="1"-->
-    <!--      class="el-menu-vertical-demo"-->
-    <!--      style="width: 200px;height: 100%"-->
-    <!--      @close="handleClose">-->
-    <!--      <el-menu-item index="1">-->
-    <!--          <i class="el-icon-warning-outline"></i>-->
-    <!--          <span>基本信息</span>-->
-    <!--      </el-menu-item>-->
-    <!--      <el-menu-item index="2">-->
-    <!--        <i class="iconfont icon-shijian"></i>-->
-    <!--        <span slot="title">项目周期</span>-->
-    <!--      </el-menu-item>-->
-    <!--      <el-menu-item index="3">-->
-    <!--        <i class="iconfont icon-gongneng"></i>-->
-    <!--        <span slot="title">功能模块</span>-->
-    <!--      </el-menu-item>-->
-    <!--      <el-menu-item index="4">-->
-    <!--        <i class="iconfont icon-tubiaozhizuomoban"></i>-->
-    <!--        <span slot="title">所用技术</span>-->
-    <!--      </el-menu-item>-->
-    <!--      <el-menu-item index="5">-->
-    <!--        <i class="iconfont icon-gengduo"></i>-->
-    <!--        <span slot="title">所用技术</span>-->
-    <!--      </el-menu-item>-->
-    <!--    </el-menu>-->
-
-
     <el-tabs tab-position="left" style="" class="tabsH">
       <el-tab-pane>
         <span slot="label"><i class="el-icon-warning-outline"></i> 基本信息</span>
@@ -139,12 +110,12 @@
               <el-select v-model="searchModule" filterable placeholder="请选择" size="small" @change="changeModule">
                 <el-option
                   v-for="item in moduleList"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
                 </el-option>
               </el-select>
-              <el-button type="primary" size="small" class="modifyBtn" @click="addModuleUser">保存</el-button>
+              <el-button type="primary" size="small" class="modifyBtn" @click="manageModule">模块变动</el-button>
             </el-form-item>
             <el-form-item label="开发人员">
               <div style="display: flex;flex-flow: wrap">
@@ -192,6 +163,79 @@
           </el-select>
           <el-button class="tag-read" @click="joinUser" style="margin-left: 20px;" :disabled="joinedMember==null">确认加入</el-button>
         </div>
+      </el-dialog>
+
+      <!--模块变动-->
+      <el-dialog
+        width="30%"
+        title="邀请成员"
+        :visible.sync="isVisibleModule"
+        class="invateMember"
+        append-to-body>
+        <div slot="title" class="header-title">
+          <span><i class="el-icon-warning-outline"></i></span>
+          <span class="title-age">模块管理</span>
+        </div>
+        <div style="display: flex;flex-direction: column;">
+          <el-table
+            :data="moduleList"
+            border
+            style="width: 100%">
+            <el-table-column
+              fixed
+              prop="id"
+              label="编号"
+              width="60"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              fixed
+              prop="name"
+              label="模块名称"
+              width="120"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              prop="createtime"
+              label="创建时间"
+              width="200"
+              align="center">
+              <template slot-scope="scope">
+                {{dateFormat(scope.row.createtime, 'YYYY-MM-DD HH:mm')}}
+              </template>
+            </el-table-column>
+            <el-table-column
+              fixed="right"
+              label="操作"
+              width="100">
+              <template slot-scope="scope">
+                <el-button @click="handleRemoveModuleFromProject(scope.row)" type="text" size="small">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-button class="tag-read" @click="openModuleAddPanel" style="margin-top: 20px;">新增模块</el-button>
+        </div>
+      </el-dialog>
+
+      <!-- 新增模块 -->
+      <el-dialog
+        :visible.sync="moduleDialogVisible"
+        width="30%">
+        <div slot="title" align="left" style="display: flex;align-items: center;">
+          <i class="el-icon-document-add" style="color: rgb(250,194,0);margin-right: 5px"></i>
+          <span style="font-weight: bold;font-size: 14px">新增模块</span>
+        </div>
+        <span slot="">
+          <el-form ref="form" :model="module" label-width="80px">
+            <el-form-item label="模块名称">
+              <el-input v-model="module.name"></el-input>
+            </el-form-item>
+          </el-form>
+        </span>
+        <span slot="footer">
+          <el-button @click="moduleDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addModule">确 定</el-button>
+        </span>
       </el-dialog>
 
       <el-tab-pane label="所用技术">
@@ -322,9 +366,16 @@
     import {getProjectByPid, updateProject, exit} from "../../api/project";
     import {confirmMessage, notice} from "../../utils/elementUtils";
     import {listCycleNode, addCycleNode} from "../../api/cycle";
-    import {queryModuleListByPid, queryModuleUserListByMid, inviteUser} from "../../api/directory";
+    import {
+      queryModuleListByPid,
+      queryModuleUserListByMid,
+      inviteUser,
+      addDirectory,
+      removeDirectory
+    } from "../../api/directory";
     import {removeUserFromModule, addUserToModule} from "../../api/moduleanduser";
     import {findUserListByPid} from "../../api/projectanduser";
+    import moment from 'moment';
 
     export default {
         name: "setting",
@@ -352,6 +403,11 @@
                     technicalpicture: '',
                 },
                 //功能模块
+                isVisibleModule: false,
+                moduleDialogVisible: false,
+                module: {
+                  name: '',
+                },
                 moduleList: [],
                 searchModule: null,
                 //功能模块 添加成员窗口
@@ -420,8 +476,11 @@
               }
             },
             //添加模块开发人员
-            addModuleUser(){
+            manageModule(){
               console.log(this.moduleUser);
+              this.searchModule = null;
+              this.moduleUser = [];
+              this.isVisibleModule = true;
             },
             //删除成员
             handleRemoveUser(e) {
@@ -644,6 +703,51 @@
                 }
               }
             },
+            //日期转换方法
+            dateFormat(date, pattern) {
+              return moment(date).format(pattern);
+            },
+            handleRemoveModuleFromProject(module) {
+              confirmMessage(this, '该模块下的开发人员将同时被释放，是否确定从该项目中移除该模块？').then(async () => {
+                let res = await removeDirectory({
+                  did: module.id,
+                });
+                if(res.data.code === 200) {
+                  this.moduleList.splice(this.moduleList.findIndex((item) => {
+                    return item.id == module.id;
+                  }), 1);
+                  notice(this, '删除成功', 'success')
+                } else {
+                  notice(this, '删除失败', 'error')
+                }
+              }).catch(() => {
+                notice(this, '取消删除', 'info')
+              });
+            },
+            openModuleAddPanel() {
+              this.module.name = '';
+              this.moduleDialogVisible = true;
+            },
+            async addModule() {
+              let directory = {};
+              directory.name = this.module.name;
+              directory.category = 1;
+              directory.archive = 1;
+              directory.parentid = -1;
+              directory.createtime = new Date();
+              directory.createby = localStorage.getItem('id');
+              directory.isdeleted = 1;
+              directory.projectid = this.$route.params.id;
+              let res = await addDirectory(directory);
+              if(res.data.code === 200) {
+                let module = res.data.data.body;
+                this.moduleList.push(module);
+                this.moduleDialogVisible = false;
+                notice(this, '添加成功', 'success');
+              } else {
+                notice(this, '添加失败', 'error');
+              }
+            },
         },
         async mounted() {
           this.userId = localStorage.getItem('id');
@@ -677,12 +781,7 @@
           });
           if(res.data.code === 200) {
             if(res.data.data.total>0) {
-              res.data.data.list.forEach((item) => {
-                this.moduleList.push({
-                  value: item.id,
-                  label: item.name,
-                });
-              })
+              this.moduleList = res.data.data.list;
             }
           }
         }
@@ -716,10 +815,8 @@
   }
 
   .modifyBtn{
-    height: 28px;
     margin-left: 15px;
-    width: 70px;
-    line-height: 10px;
+    padding: 7px 13px;
   }
 
   /deep/.el-timeline-item__content{
