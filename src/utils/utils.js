@@ -4,6 +4,18 @@ import docxtemplater from 'docxtemplater'
 import JSZipUtils from 'jszip-utils'
 import { saveAs } from 'file-saver'
 import PizZip from 'pizzip'
+import json2md from 'json2md';
+
+// 自定义转换：超链接
+json2md.converters.link = function(input, json2md) {
+  return `[${input.title}](${input.source})` ;
+}
+
+// 自定义转换：分割线
+json2md.converters.seperate = function(input, json2md) {
+  return `---` ;
+}
+
 // import TurndownService from 'turndown'
 //判断接口返回状态
 export function checkResponse(app, res, show_msg = false) {
@@ -91,9 +103,229 @@ export function exportWord(data) {
     saveAs(out, '接口文档.docx')
   })
 }
-//
-// //导出markdown
-// export function exportMD(data){
-//   let turndownService = new TurndownService(data)
-//   console.log(turndownService)
-// }
+
+//导出markdown
+export function exportMD(data){
+  let res = interface2MDJSON(data);
+  return json2md(res);
+}
+//接口列表转换为json2md可识别的json串
+export function interface2MDJSON(objs) {
+  let temp = [];
+  objs.forEach((item) => {
+    temp.push({
+      "seperate": ''
+    });
+
+    if(item.id) {
+      temp.push({
+        "p": "id: "+item.id
+      })
+    }
+    if(item.createtime) {
+      temp.push({
+        "p": "createtime: "+item.createtime
+      });
+    }
+    if(item.createuserid) {
+      temp.push({
+        "p": "createuserid: "+item.createuserid
+      })
+    }
+    if(item.directoryid) {
+      temp.push({
+        "p": "directoryid: "+item.directoryid
+      })
+    }
+    if(item.environmentPath) {
+      temp.push({
+        "p": "environmentPath: "+item.environmentPath
+      })
+    }
+    if(item.environmentid) {
+      temp.push({
+        "p": "environmentid: "+item.environmentid
+      })
+    }
+    if(item.index) {
+      temp.push({
+        "p": "index: "+item.index
+      })
+    }
+    if(item.introduction) {
+      temp.push({
+        "p": "introduction: "+item.introduction
+      })
+    }
+    if(item.isdeleted) {
+      temp.push({
+        "p": "isdeleted: "+item.isdeleted
+      })
+    }
+    if(item.path) {
+      temp.push({
+        "p": "path: "+item.path
+      })
+    }
+    if(item.projectId) {
+      temp.push({
+        "p": "projectId: "+item.projectId
+      })
+    }
+    if(item.status) {
+      temp.push({
+        "p": "status: "+item.status
+      })
+    }
+    if(item.type) {
+      temp.push({
+        "p": "type: "+item.type
+      })
+    }
+    if(item.typeName) {
+      temp.push({
+        "p": "typeName: "+item.typeName
+      })
+    }
+    if(item.updatetime) {
+      temp.push({
+        "p": "updatetime: "+item.updatetime
+      })
+    }
+
+    //用json2md处理二级数组
+    if(item.paramMsg) {
+      if(item.paramMsg.length>0) {
+        temp.push({
+          "h2": "paramMsg: "
+        })
+        let msgArr = [];
+        item.paramMsg.forEach((param) => {
+          let tempItem = {};
+          if(param.id) {
+            msgArr.push({
+              "p": "id: "+param.id
+            })
+          }
+          if(param.interfaceid) {
+            msgArr.push({
+              "p": "interfaceid: "+param.interfaceid
+            })
+          }
+          if(param.name) {
+            msgArr.push({
+              "p": "name: "+param.name
+            })
+          }
+          if(param.paramStr) {
+            msgArr.push({
+              "p": "paramStr: "+param.paramStr
+            })
+          }
+          if(param.queryStr) {
+            msgArr.push({
+              "p": "queryStr: "+param.queryStr
+            })
+          }
+          if(param.reqBodyJson) {
+            msgArr.push(({
+              "p": "reqBodyJson: "+param.reqBodyJson
+            }))
+          }
+          if(param.reqtype) {
+            msgArr.push(({
+              "p": "reqtype: "+param.reqtype
+            }))
+          }
+          if(param.resbody) {
+            msgArr.push(({
+              "p": "resbody: "+param.resbody
+            }))
+          }
+          if(param.restype) {
+            msgArr.push(({
+              "p": "restype: "+param.restype
+            }))
+          }
+          if(param.resultStr) {
+            msgArr.push(({
+              "p": "resultStr: "+param.resultStr
+            }))
+          }
+          if(param.title) {
+            msgArr.push(({
+              "p": "title: "+param.title
+            }))
+          }
+          //用json2md处理三级数组
+          if(param.reqQuery) {
+            if(param.reqQuery.length>0) {
+              msgArr.push({
+                "h3": "reqQuery: "
+              });
+              let queryArr = [];
+              param.reqQuery.forEach((query) => {
+                if(query.isRequired) {
+                  queryArr.push({
+                    "p": "isRequired: "+query.isRequired
+                  })
+                }
+                if(query.name) {
+                  queryArr.push({
+                    "p": "name: "+query.name
+                  })
+                }
+                if(query.note) {
+                  queryArr.push({
+                    "p": "note: "+query.note
+                  })
+                }
+                if(query.value) {
+                  queryArr.push({
+                    "p": "value: "+query.value
+                  })
+                }
+              })
+              msgArr.push({
+                "blockquote": json2md(queryArr)
+              })
+            }
+          }
+          //用json2md处理三级数组
+          if(param.reqheader) {
+            if(param.reqheader.length>0) {
+              msgArr.push({
+                "h3": "reqheader: "
+              })
+              let headerArr = [];
+              param.reqheader.forEach((header) => {
+                if(header.paramNote) {
+                  headerArr.push({
+                    "p": "paramNote: "+header.paramNote
+                  })
+                }
+                if(header.reqHeader) {
+                  headerArr.push({
+                    "p": "reqHeader: "+header.reqHeader
+                  })
+                }
+                if(header.reqHeaderMethod) {
+                  headerArr.push({
+                    "p": "reqHeaderMethod: "+header.reqHeaderMethod
+                  })
+                }
+              })
+              msgArr.push({
+                "blockquote": json2md(headerArr)
+              })
+            }
+          }
+        })
+        temp.push({
+          "blockquote": json2md(msgArr)
+        })
+      }
+    }
+  });
+  return temp;
+}

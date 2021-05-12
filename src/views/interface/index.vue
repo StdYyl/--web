@@ -149,7 +149,7 @@
                 <el-option label="html" value="html"></el-option>
                 <el-option label="word" value="word"></el-option>
                 <el-option label="pdf" value="pdf"></el-option>
-                <!--                <el-option label="markDown" value="markDown"></el-option>-->
+                <el-option label="markdown" value="markdown"></el-option>
               </el-select>
               <div style="margin: 15px 0 0 60px">
                 <span class="el-icon-download"></span>
@@ -727,7 +727,7 @@
     import {satisfyInterface} from "../../api/intfsituation";
     import {removeComment, addComment} from "../../api/comment";
     import {archiveIntf, exportIntfList, getInterfaceList} from "../../api/interface";
-    import {exportMD, exportWord, parseChildJson} from "../../utils/utils";
+    import {exportMD, exportWord, interface2MDJSON, parseChildJson} from "../../utils/utils";
 
     import writer from 'file-writer';
     import htmlToPdf from "../../utils/htmlToPdf";
@@ -1204,7 +1204,14 @@
                             this.showDialog[0] = false;
                             this.showDialog.push()
                         })
-                    } else if (this.fileType == 'markDown') {
+                    } else if (this.fileType == 'markdown') {
+                      interface2MDJSON(data);
+                      let rs = exportMD(data);
+                      const element = document.createElement('a')
+                      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
+                      element.setAttribute('download', '接口文档.md')
+                      element.style.display = 'none'
+                      element.click()
                         // this.$nextTick(() => {
                         //     exportMD(document.querySelector('#intfTemplate'))
                         //     notice(this, "导出成功！");

@@ -840,7 +840,7 @@
     import {listUser, listAllUserExcludeCreate} from "../../api/user";
     import {findUserListByPid} from "../../api/projectanduser";
     import {exportIntfList, getInterfaceListByExample} from "../../api/interface";
-    import {exportWord, parseChildJson} from "../../utils/utils";
+    import {exportWord, parseChildJson, exportMD, interface2MDJSON} from "../../utils/utils";
     import writer from 'file-writer';
     import htmlToPdf from "../../utils/htmlToPdf";
 
@@ -944,7 +944,7 @@
         methods: {
             //拦截器，查看用户是否被禁用
             interceptor(project) {
-              if(localStorage.getItem('disabled')==true) {
+              if(localStorage.getItem('disabled')=='true') {
                 notice(this, '用户权限已被禁用', 'warning');
                 return true;
               }
@@ -1332,6 +1332,7 @@
                 return;
               } else {
                 let data = rs.data.data
+                // console.log(JSON.stringify(data));
                 data.forEach((dataItem, index) => {
                   dataItem['index'] = index + 1
                   dataItem.paramMsg.forEach(msg => {
@@ -1392,7 +1393,14 @@
                     notice(this, "导出成功！");
                     this.exportDialogVisible = false;
                   })
-                } else if (this.fileType == 'markDown') {
+                } else if (this.interface.format == 'markdown') {
+                  interface2MDJSON(data);
+                  let rs = exportMD(data);
+                  const element = document.createElement('a')
+                  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
+                  element.setAttribute('download', '接口文档.md')
+                  element.style.display = 'none'
+                  element.click()
                   // this.$nextTick(() => {
                   //     exportMD(document.querySelector('#intfTemplate'))
                   //     notice(this, "导出成功！");

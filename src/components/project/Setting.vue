@@ -48,7 +48,9 @@
               <el-input-number size="mini" :min="1" :max="31"
                                v-model="endDay" :disabled="systemForm.createuser.id!=userId"></el-input-number>
             </div>
-            <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime" v-if="systemForm.createuser.id==userId">修改</el-button>
+            <div>
+              <el-button type="primary" size="small" class="modifyBtn" @click="modifyOrderTime" v-if="systemForm.createuser.id==userId">修改</el-button>
+            </div>
           </div>
           <div style="text-align: left;margin-bottom: 5px">
             项目时间轴

@@ -19,6 +19,7 @@
           tooltip-effect="dark"
           :header-cell-style="{'color':'#333', 'background':'#f2f2f2'}"
           stripe
+          height="210"
           style="width: 100%">
           <af-table-column
             fixed
