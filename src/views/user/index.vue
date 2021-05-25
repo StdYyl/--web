@@ -226,6 +226,7 @@
                 });
             },
             async listUser() {
+              this.loading = true;
               let res = await listUser({
                 current: this.current,
                 size: this.pageSize,
@@ -240,6 +241,7 @@
               }
             },
             async listMember() {
+              this.loading = true;
               let res = await listMember({
                 current: this.current,
                 size: this.pageSize,

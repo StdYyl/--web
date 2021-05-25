@@ -70,7 +70,7 @@ export function parseChildJson(item, isArray = false) {
   return data;
 }
 //导出word文档
-export function exportWord(data) {
+export function exportWord(data, projectName) {
   let _this = this
   // 读取并获得模板文件的二进制内容
   JSZipUtils.getBinaryContent('/static/intf.docx', function(error, content) {
@@ -100,7 +100,7 @@ export function exportWord(data) {
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     })
     // 将目标文件对象保存为目标类型的文件，并命名
-    saveAs(out, '接口文档.docx')
+    saveAs(out, projectName+'-接口文档.docx')
   })
 }
 

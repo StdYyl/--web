@@ -464,6 +464,7 @@
                     }
                 }
                 config.data = data
+                config.projectid = this.$route.params.id
 
                 let rs = await getIntfDebuging(config);
                 app.debugIntfResult = JSON.stringify(rs.headers, null, 4)

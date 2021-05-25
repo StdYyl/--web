@@ -56,17 +56,13 @@
             项目时间轴
             <el-button type="primary" size="small" class="modifyBtn" @click="modifyCycleNode">修改</el-button>
           </div>
-          <el-timeline >
+          <el-timeline class="infinite-list" infinite-scroll-distance="0.5" v-infinite-scroll="load" style="overflow:auto;height: 300px;margin-bottom: 20px;">
             <el-timeline-item v-for="item in moduleProject" :key="item.id"
-              :timestamp="item.createtime" placement="top">
+                              :timestamp="item.createtime" class="infinite-list-item" placement="top">
               <el-card>
                 <h4 style="display: flex;align-items: center;justify-content: center">
                   <img :src="item.user.head" style="width: 20px;margin-right: 5px">{{item.user.name}}
                 </h4>
-<!--                <p>-->
-<!--                  <span style="margin-right: 20px;">完成模块：{{item.moduleName}}</span>-->
-<!--                  <span>进度：{{item.progress}}%</span>-->
-<!--                </p>-->
                 <div style="display: flex;align-items: center;justify-content: center">
                   <el-table
                     :data="item.modules"
@@ -117,7 +113,7 @@
                   :value="item.id">
                 </el-option>
               </el-select>
-              <el-button type="primary" size="small" class="modifyBtn" @click="manageModule">模块变动</el-button>
+              <el-button type="primary" size="small" class="modifyBtn" @click="manageModule" v-if="systemForm.createuser.id==userId">模块变动</el-button>
             </el-form-item>
             <el-form-item label="开发人员">
               <div style="display: flex;flex-flow: wrap">
@@ -365,7 +361,7 @@
 </template>
 
 <script>
-    import {getProjectByPid, updateProject, exit} from "../../api/project";
+  import {getProjectByPid, updateProject, exit, archiveProject} from "../../api/project";
     import {confirmMessage, notice} from "../../utils/elementUtils";
     import {listCycleNode, addCycleNode} from "../../api/cycle";
     import {
@@ -404,6 +400,9 @@
                     createtime: '2021-3-20',
                     technicalpicture: '',
                 },
+                //项目周期
+                page: 1,
+                size: 2,
                 //功能模块
                 isVisibleModule: false,
                 moduleDialogVisible: false,
@@ -431,7 +430,7 @@
                   version: '2.3.0',
                 },
                 //技术架构图
-                imageUrl: ''
+                imageUrl: '',
             }
         },
         methods: {
@@ -463,7 +462,6 @@
                 pid: this.systemForm.id,
                 uid: this.userId,
               });
-              console.log(res);
               if(res.data.code === 200) {
                 moduleNode = res.data.data.body;
                 moduleNode.modules = JSON.parse(moduleNode.dirandprog);
@@ -471,10 +469,35 @@
                 moduleNode.createtime = date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
                 +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
                 if(!this.moduleProject) this.moduleProject = [];
-                this.moduleProject.push(moduleNode);
+                this.moduleProject.splice(0,0,moduleNode);
                 notice(this, '节点已自动生成');
               } else {
                 notice(this, res.data.data, 'error');
+              }
+            },
+            //懒加载方式查看周期节点
+            async load() {
+              this.page++;
+              let res = await listCycleNode({
+                pid: this.$route.params.id,
+                page: this.page,
+                size: this.size,
+              });
+              if(res.data.code === 200) {
+                if(res.data.data.list && res.data.data.list.length>0) {
+                  res.data.data.list.forEach((item) => {
+                    let date = new Date(item.createtime);
+                    item.createtime = date.getUTCFullYear()+'-'+(date.getUTCMonth()+1)+'-'+date.getUTCDate()
+                      +' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                    let modules = JSON.parse(item.dirandprog);
+                    item.modules = modules;
+                    this.moduleProject.push(item);
+                  })
+                }
+                if((this.page*this.size-res.data.data.total)>0) {
+                  notice(this, '已经没有更多数据了', 'info');
+                  return;
+                }
               }
             },
             //添加模块开发人员
@@ -622,7 +645,7 @@
                 let tempProject = this.systemForm;
                 confirmMessage(this, '此操作将归档全部已完成接口，是否继续?').then(async () => {
                   this.systemForm.status=2;
-                  let res = await updateProject(this.systemForm);
+                  let res = await archiveProject(this.systemForm);
                   console.log(res);
                   if(res.data.code === 200) {
                     notice(this, '归档成功');
@@ -765,6 +788,8 @@
           }
           res = await listCycleNode({
             pid: this.$route.params.id,
+            page: this.page,
+            size: this.size,
           });
           if(res.data.code === 200) {
             this.moduleProject = res.data.data.list;

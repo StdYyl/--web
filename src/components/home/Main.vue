@@ -96,26 +96,35 @@
 
         <el-dialog
           :visible.sync="exportDialogVisible"
-          width="30%">
+          width="40%">
           <div slot="title" align="left" style="display: flex;align-items: center;">
             <i class="el-icon-warning-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
             <span style="font-weight: bold;font-size: 14px">接口导出</span>
           </div>
           <span slot="">
-            <el-form ref="form" :model="interface" label-width="80px">
-              <el-form-item style="margin-bottom: 5px;">
-                <el-select v-model="interface.format" placeholder="请选择导出格式">
-                  <el-option label="html文档" value="html"></el-option>
-                  <el-option label="word文档" value="word"></el-option>
-                  <el-option label="pdf文档" value="pdf"></el-option>
-                  <el-option label="markdown语法文档" value="markdown"></el-option>
-                </el-select>
+            <el-form ref="form" :model="interface" label-width="0">
+              <el-form-item>
+                <div style="padding: 0 18px;display: flex;flex-direction: column;">
+                  <span v-if="interface.format=='html'">html文档是将接口数据处理后生成html页面，此文档下将只能预览，无法编辑</span>
+                  <span v-if="interface.format=='word'">word文档是将接口数据处理后替换掉word模板数据后生成的文档，此文档下仍可编辑</span>
+                  <span v-if="interface.format=='pdf'">pdf文档是将接口数据处理后替换掉pdf模板数据后生成的文档，此文档下将只能预览，无法编辑</span>
+                  <span v-if="interface.format=='markdown'">markdown语法文档是将接口json数据通过处理转换为特殊格式的文本文件</span>
+                </div>
               </el-form-item>
-              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center">
+              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center;justify-content: center;">
+                <el-radio-group v-model="interface.format" size="small">
+                  <el-radio label="html" border>html文档</el-radio>
+                  <el-radio label="word" border>word文档</el-radio>
+                  <el-radio label="pdf" border>pdf文档</el-radio>
+                  <el-radio label="markdown" border>markdown文档</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center;justify-content: center;">
                 <i class="iconfont icon-download" style="font-size: 24px;margin-right: 5px;cursor: auto"></i>
                 <span>导出项目文档为{{interface.format}}文档</span>
+<!--                <span>将把项目「 {{bindProjectName}} 」下的所有已经归档的接口导出为{{interface.format}}格式的文档</span>-->
               </el-form-item>
-              <el-form-item style="margin-left: 30px;display: flex;align-items: center">
+              <el-form-item style="margin-left: 30px;display: flex;align-items: center;justify-content: center;">
                 <el-button type="primary" @click="exportIntf"
                            style="padding: 10px 40px;">导 出</el-button>
               </el-form-item>
@@ -935,6 +944,7 @@
                     format: 'html'
                 },
                 bindProjectID: null,
+                bindProjectName: '',
                 //接口详情列表
                 intfMesList: [],
                 from: {},
@@ -965,7 +975,12 @@
             turnToIntf(pid) {
               let dis = this.interceptor();
               if(dis) return;
-              this.$router.push(`/home/intfIndex/${pid}/intf/all`)
+              this.$router.push({
+                path: `/home/intfIndex/${pid}/intf/all`,
+                query: {
+                  pid: pid,
+                },
+              })
             },
             //更换页码
             async changeIndex(index){
@@ -1261,9 +1276,11 @@
             },
             //打开导出dialog对话框
             interfaceExport(project) {
+                this.bindProjectName = '';
                 this.bindProjectID = null;
                 let dis = this.interceptor(project);
                 if(dis) return;
+                this.bindProjectName = project.name;
                 this.exportDialogVisible = true;
                 this.bindProjectID = project.id;
             },
@@ -1283,7 +1300,7 @@
             getWord(data) {
               let intf = []
               intf.push(...data)
-              exportWord(intf)
+              exportWord(intf, this.bindProjectName)
             },
             //导出html
             getHtml(data) {
@@ -1317,7 +1334,7 @@
                   </body>
                   </html>`;
                 try {
-                  let s = writer(`接口文档.html`, html, 'utf-8');
+                  let s = writer(`${this.bindProjectName}-接口文档.html`, html, 'utf-8');
                   notice(this, "导出成功！");
                   this.exportDialogVisible = false;
                 } catch (e) {
@@ -1389,7 +1406,7 @@
                   this.intfMesList = []
                   this.intfMesList.push(...data)
                   this.$nextTick(() => {
-                    htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), '接口文档')
+                    htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), this.bindProjectName+'-接口文档')
                     notice(this, "导出成功！");
                     this.exportDialogVisible = false;
                   })
@@ -1398,7 +1415,7 @@
                   let rs = exportMD(data);
                   const element = document.createElement('a')
                   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
-                  element.setAttribute('download', '接口文档.md')
+                  element.setAttribute('download', this.bindProjectName+'-接口文档.md')
                   element.style.display = 'none'
                   element.click()
                   // this.$nextTick(() => {

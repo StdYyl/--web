@@ -1092,7 +1092,7 @@
             getWord(data) {
                 let intf = []
                 intf.push(...data)
-                exportWord(intf)
+                exportWord(intf, this.projectName)
             },
             //导出html
             getHtml(data) {
@@ -1126,7 +1126,7 @@
                 </body>
                 </html>`;
                     try {
-                        let s = writer(`接口文档.html`, html, 'utf-8');
+                        let s = writer(`${this.projectName}-接口文档.html`, html, 'utf-8');
                         notice(this, "导出成功！");
                         this.showDialog[0] = false;
                         this.showDialog.push()
@@ -1136,6 +1136,7 @@
             },
             //导出接口
             async exportIntf() {
+                console.log(this.project);
                 let {id, moduleId} = this.$route.params;
                 let rs = await exportIntfList(id, moduleId)
                 if (rs.data.code == -9999) {
@@ -1199,7 +1200,7 @@
                         this.intfMesList = []
                         this.intfMesList.push(...data)
                         this.$nextTick(() => {
-                            htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), '接口文档')
+                            htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), this.projectName+'-接口文档')
                             notice(this, "导出成功！");
                             this.showDialog[0] = false;
                             this.showDialog.push()
@@ -1209,7 +1210,7 @@
                       let rs = exportMD(data);
                       const element = document.createElement('a')
                       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
-                      element.setAttribute('download', '接口文档.md')
+                      element.setAttribute('download', this.projectName+'-接口文档.md')
                       element.style.display = 'none'
                       element.click()
                         // this.$nextTick(() => {
@@ -1658,11 +1659,11 @@
           },
           //回复评论
           replyComment(idx, idx2, idx3, comment, level) {
-            console.log(idx);
-            console.log(idx2);
-            console.log(idx3);
-            console.log(comment);
-            console.log(level);
+            // console.log(idx);
+            // console.log(idx2);
+            // console.log(idx3);
+            // console.log(comment);
+            // console.log(level);
             this.$prompt('请输入评论内容', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
@@ -1682,7 +1683,9 @@
                 if(!this.weeklyconList[idx].commentList) this.weeklyconList[idx].commentList=[];
                 if(!this.weeklyconList[idx].commentList[idx2].subCommentList) this.weeklyconList[idx].commentList[idx2].subCommentList=[];
                 if(level=='parent') {
-                  this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
+                  temp.push(res.data.data.body);
+                  this.weeklyconList[idx].commentList[idx2].subCommentList = temp;
+                  // this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
                 } else {
                   this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3+1, 0, res.data.data.body);
                 }
@@ -1732,6 +1735,13 @@
             }
         },
         async mounted() {
+            let pid = this.$route.query.pid;
+            let res = await getProjectByPid({
+              pid: pid,
+            })
+            if(res.data.code === 200) {
+              this.projectName = res.data.data.body.name;
+            }
             let app = this
             //模块列表
             await this.getModuleList();
@@ -1746,9 +1756,6 @@
                     this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
                 }
             })
-            // await this.dealWithWeeklyDate(this.$route.params.id);
-            // await this.getWeeklyConList(this.current, this.size);
-            // await this.drawLine(this.$route.params.id);
         }
     }
 </script>
