@@ -454,7 +454,8 @@
                                          placeholder="请填写Header"></el-autocomplete>
                       </el-form-item>
                       <el-button type="text" class="el-icon-plus addBtn" @click="addHeader('add')"></el-button>
-                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader('add',num)"></el-button>
+                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader('add',num)"
+                                 v-if="environmentMrs.header.length > 1"></el-button>
                     </div>
                   </el-form-item>
                   <div style="text-align: center;width: 450px">
@@ -495,7 +496,8 @@
                                          placeholder="请填写Header"></el-autocomplete>
                       </el-form-item>
                       <el-button type="text" class="el-icon-plus addBtn" @click="addHeader()"></el-button>
-                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader(num)"></el-button>
+                      <el-button type="text" class="el-icon-close rmBtn" @click="removeHeader(num)"
+                                 v-if="environmentMsg.header.length > 1"></el-button>
                     </div>
                   </el-form-item>
                   <div style="text-align: center;width: 450px">
@@ -933,6 +935,14 @@
             async addEnvironment(e) {
                 //新增环境  environmentMrs
                 if (e == 'add') {
+                    if(this.environmentMrs.name == ''){
+                        notice(this,"环境名称不能为空！","error")
+                        return
+                    }
+                    if(this.environmentMrs.baseurl == ''){
+                        notice(this,"环境域名地址不能为空！","error")
+                        return
+                    }
                     let param = JSON.parse(JSON.stringify(this.environmentMrs))
                     param.header = JSON.stringify(this.environmentMrs.header)
                     param.createuser = localStorage.getItem("id")
@@ -949,6 +959,14 @@
                     this.environmentMrs = params;
                     // 修改环境  environmentMsg
                 } else {
+                    if(this.environmentMsg.name == ''){
+                        notice(this,"环境名称不能为空！","error")
+                        return
+                    }
+                    if(this.environmentMsg.baseurl == ''){
+                        notice(this,"环境域名地址不能为空！","error")
+                        return
+                    }
                     let param = JSON.parse(JSON.stringify(this.environmentMsg))
                     param.header = JSON.stringify(this.environmentMsg.header)
                     param.updateuser = localStorage.getItem("id")
@@ -1730,10 +1748,6 @@
 
 <style>
 
-  #intfTabs/deep/ .el-tabs__nav-scroll {
-    display: flex;
-    justify-content: center;
-  }
 
   .drop {
     left: 348px !important;
@@ -1746,6 +1760,11 @@
 </style>
 
 <style lang="less" scoped>
+
+  #intfTabs /deep/ .el-tabs__nav-scroll{
+    display: flex;
+    justify-content: center;
+  }
 
   /deep/ .addEnvir span {
     text-decoration: underline;

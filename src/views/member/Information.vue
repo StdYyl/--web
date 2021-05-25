@@ -75,7 +75,7 @@
       </el-form>
 
       <!--修改密码-->
-      <el-dialog title="" :visible.sync="showAccount" width="350px" class="memberCss">
+      <el-dialog title="" :visible.sync="showAccount" width="350px" class="memberCss" :close-on-click-modal="false">
         <div slot="title" class="header-title">
           <span><i class="el-icon-warning-outline"></i></span>
           <span class="title-age">修改密码</span>
@@ -90,7 +90,7 @@
       </el-dialog>
 
       <!--手机号-->
-      <el-dialog title="" :visible.sync="showPhone" width="350px" class="memberCss">
+      <el-dialog title="" :visible.sync="showPhone" width="350px" class="memberCss" :close-on-click-modal="false">
         <div slot="title" class="header-title">
           <span><i class="el-icon-warning-outline"></i></span>
           <span class="title-age">修改手机号</span>
@@ -108,7 +108,7 @@
       </el-dialog>
 
       <!--邮箱-->
-      <el-dialog title="" :visible.sync="showEmail" width="350px" class="memberCss">
+      <el-dialog title="" :visible.sync="showEmail" width="350px" class="memberCss" :close-on-click-modal="false">
         <div slot="title" class="header-title">
           <span><i class="el-icon-warning-outline"></i></span>
           <span class="title-age">修改邮箱</span>
@@ -229,6 +229,9 @@
                 }
                 notice(this, "修改成功！");
                 this.safeMes.email = this.email
+                this.email = ''
+                this.emailCode = ''
+                this.states = {time: 60, smsSendBtn: false}
                 this.showEmail = false
             },
             async updatePhone() {
@@ -252,12 +255,41 @@
                 }
                 notice(this, "修改成功！");
                 this.safeMes.phone = this.phone
+                this.phone = ''
+                this.phoneCode = ''
+                this.state = {time: 60, smsSendBtn: false}
                 this.showPhone = false
 
+            },
+            //校验密码 是否符合规则
+            handlePasswordLevel(value) {
+                let level = 0;
+                // 判断这个字符串中有没有数字
+                if (/[0-9]/.test(value)) {
+                    level++
+                }
+                // 判断字符串中有没有字母
+                if (/[a-zA-Z]/.test(value)) {
+                    level++
+                }
+                // 判断字符串中有没有特殊符号
+                if (/[^0-9a-zA-Z_]/.test(value)) {
+                    level++
+                }
+                return level
             },
             async updatePass() {
                 if (this.password.newPassword == '' || this.password.oldPassword == '') {
                     notice(this, "请补全信息！", "error")
+                    return;
+                }
+                if (this.password.newPassword.length < 6) {
+                    notice(this, "密码长度至少为6位！", "error")
+                    return;
+                }
+                let safe = this.handlePasswordLevel(this.password.newPassword);
+                if(safe < 2){
+                    notice(this, "密码至少包括数字、字母和符号中的两种！", "error")
                     return;
                 }
                 if (this.password.newPassword != this.password.rePassword) {
@@ -275,6 +307,7 @@
                     return;
                 }
                 notice(this, "修改成功！");
+                this.password =  {oldPassword: '', newPassword: '', rePassword: '',},
                 localStorage.setItem("token", rs.data.data.token)
                 this.showAccount = false
             },

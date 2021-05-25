@@ -6,7 +6,7 @@
       </h4>
     </div>
     <el-form style="margin: 20px 110px;">
-      <el-form-item label="数据导入">
+      <el-form-item label="数据类型">
         <el-select v-model="dataType" size="small">
           <el-option label="json" value="json"></el-option>
           <el-option label="swagger" value="swagger"></el-option>
@@ -72,7 +72,7 @@
                     let rs = await getIntfDataByFile(param);
                     if (rs.data.code == 200) {
                         notice(this, rs.data.msg)
-                        this.$router.push(`/home/intfIndex/${id}/intf/all`)
+                        return;
                     } else {
                         notice(this, rs.data.msg,"error")
                     }

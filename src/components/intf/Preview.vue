@@ -175,7 +175,7 @@
           </div>
 
           <!--result-->
-          <div v-if="item.content.result">
+          <div v-if="item.content.result && item.content.result.empty">
             <div style="text-align: left">
               <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Result
             </div>
@@ -305,7 +305,7 @@
                         msg.content.reqQuery = JSON.parse(msg.content.reqQuery)
                         //判断Query是否为空
                         msg.content.reqQuery.forEach(query => {
-                            if (query.paramNote != '' || query.reqHeader != '' || query.reqHeaderMethod != '') {
+                            if (query.name != '' || query.note != '' || query.value != '') {
                                 msg.content.reqQuery.empty = true
                             }
                         })
@@ -319,6 +319,12 @@
                     })
                     if (msg.content.result) {
                         msg.content.result = JSON.parse(msg.content.result)
+                        //判断result是否为空
+                        msg.content.result.forEach(query => {
+                            if (query.name != '' || query.note != '' || query.value != '') {
+                                msg.content.result.empty = true
+                            }
+                        })
                     }
                     if (msg.content.reqBodyJson) {
                         msg.content.reqBodyJson = JSON.parse(msg.content.reqBodyJson)
@@ -328,7 +334,7 @@
                     }
                 })
                 this.paramList.push(...data.paramMsg)
-                console.log(this.from)
+                console.log(this.paramList)
             }
         }
     }

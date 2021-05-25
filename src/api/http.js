@@ -1,5 +1,5 @@
 import axios from 'axios/index';
-import { Message } from 'element-ui'
+import {Message} from 'element-ui'
 
 //默认最大请求时长
 axios.defaults.timeout = 20000;
@@ -10,7 +10,9 @@ axios.defaults.baseURL = '';
 axios.interceptors.request.use(
   config => {
     // if(!config.isCheck) return config;
-    config.data = JSON.stringify(config.data);
+    //文件上传 跳过
+    if (config.url.indexOf("getIntfDataByFile") == "-1")
+      config.data = JSON.stringify(config.data);
     config.headers = {
       'Content-Type': 'application/json;charset=utf-8',
       'token': localStorage.getItem("token"),
@@ -20,7 +22,7 @@ axios.interceptors.request.use(
       config.headers['responseType'] = 'blob'
     }
     // 根据请求路径处理content-type
-    if (config.url.includes('/upload')) {
+    if (config.url.includes('/upload') || config.url.includes('/getIntfDataByFile')) {
       config.headers['Content-Type'] = 'multipart/form-data'
     }
     return config;
@@ -33,7 +35,7 @@ axios.interceptors.request.use(
 //http response拦截器
 axios.interceptors.response.use(
   response => {
-    if(response.status!=200) {
+    if (response.status != 200) {
       Message.error('请求失败!');
     }
     return response;
@@ -50,9 +52,9 @@ axios.interceptors.response.use(
  * @returns {Promise}
  */
 
-export function fetch(url, params={}) {
-  return new Promise((resolve,reject) => {
-      axios.get(url, {
+export function fetch(url, params = {}) {
+  return new Promise((resolve, reject) => {
+    axios.get(url, {
       params: params,
     }).then(response => {
       resolve(response);
@@ -69,13 +71,12 @@ export function fetch(url, params={}) {
  * @returns {Promise}
  */
 
-export function post(url, data={}) {
+export function post(url, data = {}) {
   return new Promise((resolve, reject) => {
-    axios.post(url,data).
-      then(response => {
-        resolve(response);
-      }).catch(err => {
-        reject(err);
-      })
+    axios.post(url, data).then(response => {
+      resolve(response);
+    }).catch(err => {
+      reject(err);
+    })
   })
 }

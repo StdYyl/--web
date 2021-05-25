@@ -166,11 +166,10 @@
             async showAddDirList(){
                 let dis = this.interceptor();
                 if(dis) return;
-                console.log(this.folderList)
                 this.folderList.splice(0, this.folderList.length)
                 this.folderList.push({id:-1,label:"无"})
                 let rs = await getDirOneList(localStorage.getItem("id"))
-                if (rs.data.data == 200) {
+                if (rs.data.data) {
                     let arr = rs.data.data;
                     for (let i = 0; i < arr.length; i++) {
                         this.folderList.push({id: arr[i].id, label: arr[i].name, children:[]})
