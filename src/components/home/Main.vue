@@ -57,7 +57,7 @@
               <template slot-scope="scope">
                 <div style="height: 70px;display: flex;align-items: center">
                   <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
-                    <div @click="addProjectMember(scope.row.id,1)">
+                    <div @click="addProjectMember(scope.row.id,1,scope.row)">
                       <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
                     </div>
                   </el-tooltip>
@@ -69,13 +69,13 @@
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
-                    <div @click="interfaceExport">
+                    <div @click="interfaceExport(scope.row)">
                       <el-icon class="iconfont icon-wenjian"></el-icon>
                     </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                    <div @click="removeToCycle(scope.row.id)">
+                    <div @click="removeToCycle(scope.row.id, scope.row)">
                       <el-icon class="iconfont icon-huishouzhan"></el-icon>
                     </div>
                   </el-tooltip>
@@ -96,27 +96,36 @@
 
         <el-dialog
           :visible.sync="exportDialogVisible"
-          width="30%">
+          width="40%">
           <div slot="title" align="left" style="display: flex;align-items: center;">
             <i class="el-icon-warning-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
             <span style="font-weight: bold;font-size: 14px">接口导出</span>
           </div>
           <span slot="">
-            <el-form ref="form" :model="interface" label-width="80px">
-              <el-form-item style="margin-bottom: 5px;">
-                <el-select v-model="interface.format" placeholder="请选择导出格式">
-                  <el-option label="html文档" value="html"></el-option>
-                  <el-option label="word文档" value="word"></el-option>
-                  <el-option label="pdf文档" value="pdf"></el-option>
-                  <el-option label="markdown语法文档" value="markdown"></el-option>
-                </el-select>
+            <el-form ref="form" :model="interface" label-width="0">
+              <el-form-item>
+                <div style="padding: 0 18px;display: flex;flex-direction: column;">
+                  <span v-if="interface.format=='html'">html文档是将接口数据处理后生成html页面，此文档下将只能预览，无法编辑</span>
+                  <span v-if="interface.format=='word'">word文档是将接口数据处理后替换掉word模板数据后生成的文档，此文档下仍可编辑</span>
+                  <span v-if="interface.format=='pdf'">pdf文档是将接口数据处理后替换掉pdf模板数据后生成的文档，此文档下将只能预览，无法编辑</span>
+                  <span v-if="interface.format=='markdown'">markdown语法文档是将接口json数据通过处理转换为特殊格式的文本文件</span>
+                </div>
               </el-form-item>
-              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center">
+              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center;justify-content: center;">
+                <el-radio-group v-model="interface.format" size="small">
+                  <el-radio label="html" border>html文档</el-radio>
+                  <el-radio label="word" border>word文档</el-radio>
+                  <el-radio label="pdf" border>pdf文档</el-radio>
+                  <el-radio label="markdown" border>markdown文档</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item style="margin-bottom: 5px;display: flex;align-items: center;justify-content: center;">
                 <i class="iconfont icon-download" style="font-size: 24px;margin-right: 5px;cursor: auto"></i>
                 <span>导出项目文档为{{interface.format}}文档</span>
+<!--                <span>将把项目「 {{bindProjectName}} 」下的所有已经归档的接口导出为{{interface.format}}格式的文档</span>-->
               </el-form-item>
-              <el-form-item style="margin-left: 30px;display: flex;align-items: center">
-                <el-button type="primary" @click="assureExport"
+              <el-form-item style="margin-left: 30px;display: flex;align-items: center;justify-content: center;">
+                <el-button type="primary" @click="exportIntf"
                            style="padding: 10px 40px;">导 出</el-button>
               </el-form-item>
             </el-form>
@@ -180,21 +189,25 @@
               <template slot-scope="scope">
                 <div style="height: 70px;display: flex;align-items: center">
                   <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
-                    <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                    <div @click="addProjectMember(scope.row.id,1,scope.row)">
+                      <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                    </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
-                    <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                    <div @click="addProjectMember(scope.row.id,2)">
+                      <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                    </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
-                    <div @click="interfaceExport">
+                    <div @click="interfaceExport(scope.row)">
                       <el-icon class="iconfont icon-wenjian"></el-icon>
                     </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="移入回收站" placement="top">
-                    <div @click="removeToCycle(scope.row.id)">
+                    <div @click="removeToCycle(scope.row.id, scope.row)">
                       <el-icon class="iconfont icon-huishouzhan"></el-icon>
                     </div>
                   </el-tooltip>
@@ -268,15 +281,19 @@
               <template slot-scope="scope">
                 <div style="height: 70px;display: flex;align-items: center">
                   <el-tooltip class="item" effect="dark" content="邀请用户" placement="top">
-                    <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                    <div @click="addProjectMember(scope.row.id,1)">
+                      <el-icon class="iconfont icon-tianjiayonghu"></el-icon>
+                    </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="项目设置" placement="top">
-                    <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                    <div @click="addProjectMember(scope.row.id,2)">
+                      <el-icon class="iconfont icon-xitongshezhi"></el-icon>
+                    </div>
                   </el-tooltip>
                   <el-icon class="el-icon-minus icon_y"></el-icon>
                   <el-tooltip class="item" effect="dark" content="接口导出" placement="top">
-                    <div @click="interfaceExport">
+                    <div @click="interfaceExport()">
                       <el-icon class="iconfont icon-wenjian"></el-icon>
                     </div>
                   </el-tooltip>
@@ -618,6 +635,210 @@
         </el-dialog>
       </el-tabs>
     </div>
+
+    <!--导出接口模板-->
+    <div style="position: absolute;left:9999px;top:100px">
+      <div id="intfTemplate" ref="intfTemplate" style="width: 800px;margin: 0 auto;font-size: 14px">
+        <div v-for="(item,index) in intfMesList" :key="index" style="text-align: left">
+          <h2>{{index+1}}、{{item.name}}</h2>
+          <h3 style="border-left: 3px solid rgb(24, 144, 255);padding-left: 15px;line-height: 35px">基本信息：</h3>
+          <div style="margin-left: 15px;line-height: 28px">
+            <div><strong>Path：</strong>{{item.environmentPath}}{{item.path}}</div>
+            <div><strong>Method：</strong><span style="color: rgb(24, 144, 255)">{{item.typeName}}</span></div>
+          </div>
+
+          <h3 style="border-left: 3px solid rgb(24, 144, 255);padding-left: 15px;line-height: 35px">请求参数：</h3>
+          <!--请求参数-->
+          <el-tabs v-model="paramTab" type="border-card" id="tab">
+            <el-tab-pane v-for="(items, indexs) in item.paramMsg" :key="items.name" :label="items.title"
+                         :name="items.name">
+              <el-form :model="from" ref="from" label-position="top">
+
+                <!--header-->
+                <div v-if="items.headEmpty">
+                  <div style="text-align: left">
+                    <i class="header-icon el-icon-info" style="color:#1890FF;margin:0 5px 10px 0"></i>Header
+                  </div>
+                  <el-table :data="items.reqheader" border>
+                    <el-table-column
+                      prop="reqHeader"
+                      label="参数名称"
+                      width="230">
+                    </el-table-column>
+                    <el-table-column
+                      prop="reqHeaderMethod"
+                      label="参数值"
+                      width="220">
+                    </el-table-column>
+                    <el-table-column
+                      prop="paramNote"
+                      label="备注">
+                    </el-table-column>
+                  </el-table>
+                </div>
+
+                <!--body-->
+                <div v-if="item.typeName != 'GET'">
+                  <div style="text-align: left">
+                    <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Body{{items.reqType}}
+                  </div>
+
+                  <!--from格式-->
+                  <div v-if="items.reqtype == '1'">
+                    <el-table :data="items.reqBody" border>
+                      <el-table-column
+                        prop="name"
+                        label="参数名称"
+                        width="230">
+                      </el-table-column>
+                      <el-table-column
+                        prop="value"
+                        label="参数值"
+                        width="200">
+                      </el-table-column>
+                      <el-table-column
+                        prop="isRequired"
+                        label="是否必填"
+                        width="80">
+                        <template slot-scope="scope">
+                          <span>{{ scope.row.isRequired?'是':'否' }}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column
+                        prop="note"
+                        label="备注">
+                      </el-table-column>
+                    </el-table>
+                  </div>
+
+                  <!--Json格式-->
+                  <div v-else-if="items.reqtype == '2'">
+                    <el-table :data="JSON.parse(items.reqBodyJson)" border
+                              row-key="name" default-expand-all
+                              :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                      <el-table-column
+                        prop="name"
+                        label="参数名称"
+                        width="230">
+                      </el-table-column>
+                      <el-table-column
+                        prop="type"
+                        label="格式"
+                        width="110">
+                      </el-table-column>
+                      <el-table-column
+                        prop="isRequired"
+                        label="是否必填"
+                        width="110">
+                        <template slot-scope="scope">
+                          <span>{{ scope.row.isRequired?'是':'否' }}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column
+                        prop="value"
+                        label="返回值"
+                        width="160">
+                      </el-table-column>
+                      <el-table-column
+                        prop="note"
+                        label="备注">
+                      </el-table-column>
+                    </el-table>
+                  </div>
+
+                  <div v-else>
+                    <el-card class="box-card">
+                      {{items.reqBody}}
+                    </el-card>
+                  </div>
+                </div>
+
+                <!--Query-->
+                <div v-if="items.queryStr">
+                  <div style="text-align: left;line-height: 41px">
+                    <i class="header-icon el-icon-info" style="color:#1890FF;margin:0 5px 10px 0"></i>Query
+                  </div>
+                  <el-table :data="items.reqQuery" border>
+                    <el-table-column
+                      prop="name"
+                      label="参数名称"
+                      width="230">
+                    </el-table-column>
+                    <el-table-column
+                      prop="value"
+                      label="参数值"
+                      width="230">
+                    </el-table-column>
+                    <el-table-column
+                      prop="isRequired"
+                      label="是否必填"
+                      width="80">
+                      <template slot-scope="scope">
+                        <span>{{ scope.row.isRequired?'是':'否' }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      prop="note"
+                      label="备注">
+                    </el-table-column>
+                  </el-table>
+                </div>
+
+                <!--result-->
+                <div v-if="items.resultStr">
+                  <div style="text-align: left">
+                    <i class="header-icon el-icon-info" style="color:#1890FF;margin:15px 5px 10px 0"></i>Result
+                  </div>
+                  <div>
+                    <!--json格式-->
+                    <div v-if="items.restype == '1'">
+                      <el-table :data="JSON.parse(items.resbody)" border
+                                row-key="name" default-expand-all
+                                :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                        <el-table-column
+                          prop="name"
+                          label="参数名称"
+                          width="200">
+                        </el-table-column>
+                        <el-table-column
+                          prop="type"
+                          label="格式"
+                          width="100">
+                        </el-table-column>
+                        <el-table-column
+                          prop="isRequired"
+                          label="是否必填"
+                          width="80">
+                          <template slot-scope="scope">
+                            <span>{{ scope.row.isRequired?'是':'否' }}</span>
+                          </template>
+                        </el-table-column>
+                        <el-table-column
+                          prop="value"
+                          label="返回值"
+                          width="200">
+                        </el-table-column>
+                        <el-table-column
+                          prop="note"
+                          label="备注">
+                        </el-table-column>
+                      </el-table>
+                    </div>
+
+                    <div v-else>
+                      <el-card class="box-card">
+                        {{items.resultStr}}
+                      </el-card>
+                    </div>
+                  </div>
+                </div>
+              </el-form>
+            </el-tab-pane>
+          </el-tabs>
+
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -627,6 +848,10 @@
     import {addProject, getProjectListById, getProjectByPid, updateProject, inviteUserByClick, inviteUserByLink} from "../../api/project";
     import {listUser, listAllUserExcludeCreate} from "../../api/user";
     import {findUserListByPid} from "../../api/projectanduser";
+    import {exportIntfList, getInterfaceListByExample} from "../../api/interface";
+    import {exportWord, parseChildJson, exportMD, interface2MDJSON} from "../../utils/utils";
+    import writer from 'file-writer';
+    import htmlToPdf from "../../utils/htmlToPdf";
 
     export default {
         name: "aside",
@@ -717,15 +942,27 @@
                 exportDialogVisible: false,
                 interface: {
                     format: 'html'
-                }
+                },
+                bindProjectID: null,
+                bindProjectName: '',
+                //接口详情列表
+                intfMesList: [],
+                from: {},
+                paramTab: '1',
             }
         },
         methods: {
             //拦截器，查看用户是否被禁用
-            interceptor() {
-              if(localStorage.getItem('disabled')==true) {
+            interceptor(project) {
+              if(localStorage.getItem('disabled')=='true') {
                 notice(this, '用户权限已被禁用', 'warning');
                 return true;
+              }
+              if(project!=null) {
+                if(project.createUserID!=localStorage.getItem('id')) {
+                  notice(this, '非本项目的创建用户没有该权限', 'warning');
+                  return true;
+                }
               }
               return false;
             },
@@ -738,7 +975,12 @@
             turnToIntf(pid) {
               let dis = this.interceptor();
               if(dis) return;
-              this.$router.push(`/home/intfIndex/${pid}/intf/all`)
+              this.$router.push({
+                path: `/home/intfIndex/${pid}/intf/all`,
+                query: {
+                  pid: pid,
+                },
+              })
             },
             //更换页码
             async changeIndex(index){
@@ -810,8 +1052,8 @@
               }
             },
             //添加项目成员
-            async addProjectMember(e, index) {
-                let dis = this.interceptor();
+            async addProjectMember(e, index,project) {
+                let dis = this.interceptor(project);
                 if(dis) return;
                 this.projectID = e;
                 if (index == 1) {
@@ -866,8 +1108,16 @@
                     if (rs.data.code == 200) {
                         app.allProject.splice(0, this.allProject.length)
                         app.totalCount = rs.data.data.count
-                        if (app.totalCount > 0)
-                            app.allProject.push(...rs.data.data.list)
+                        if (app.totalCount > 0) {
+                          app.allProject.push(...rs.data.data.list)
+                          this.allProject.forEach(async (item) => {
+                            let total_number = await this.listTotalInterface(item.id);
+                            let archived_number = await this.listArchivedInterface(item.id);
+                            if(total_number) {
+                              item.progress = parseFloat((100*archived_number/total_number).toFixed(2));
+                            }
+                          })
+                        }
                     }
                 } else if (type == 1) {
                     //已加入 inProject
@@ -876,8 +1126,16 @@
                         app.inProject.splice(0, this.inProject.length)
                         console.log(rs.data)
                         app.totalCount = rs.data.data.count
-                        if (app.totalCount > 0)
-                            app.inProject.push(...rs.data.data.list)
+                        if (app.totalCount > 0) {
+                          app.inProject.push(...rs.data.data.list)
+                          this.inProject.forEach(async (item) => {
+                            let total_number = await this.listTotalInterface(item.id);
+                            let archived_number = await this.listArchivedInterface(item.id);
+                            if(total_number) {
+                              item.progress = parseFloat((100*archived_number/total_number).toFixed(2));
+                            }
+                          })
+                        }
                     }
                 } else if (type == 2) {
                     //已创建  createProject
@@ -885,8 +1143,16 @@
                     if (rs.data.code == 200) {
                         app.createProject.splice(0, this.createProject.length)
                         app.totalCount = rs.data.data.count
-                        if (app.totalCount > 0)
-                            app.createProject.push(...rs.data.data.list)
+                        if (app.totalCount > 0) {
+                          app.createProject.push(...rs.data.data.list)
+                          this.createProject.forEach(async (item) => {
+                            let total_number = await this.listTotalInterface(item.id);
+                            let archived_number = await this.listArchivedInterface(item.id);
+                            if(total_number) {
+                              item.progress = parseFloat((100*archived_number/total_number).toFixed(2));
+                            }
+                          })
+                        }
                     }
                 } else if (type == 3) {
                     //已删除  recycleProject
@@ -974,13 +1240,13 @@
                 })
             },
             //移入回收站
-            removeToCycle(pid) {
+            removeToCycle(pid, project) {
                 // confirmMessage(this, '将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', '放入回收站', '考虑一下', 'warning').then(() => {
                 //
                 // }).catch(() => {
                 //
                 // });
-                let dis = this.interceptor();
+                let dis = this.interceptor(project);
                 if(dis) return;
                 this.$confirm('将项目 软件测试项目一 放入回收站， 信息将不可用', '确定放入回收站?', {
                     type: 'warning',
@@ -999,6 +1265,7 @@
                     if(rs.data.code === 200) {
                       console.log(rs);
                       this.allProject.splice(project, 1);
+                      this.createProject.splice(project, 1);
                       this.recycleProject.push(project);
                       notice(this, '移入回收站成功', 'success');
                     }
@@ -1008,16 +1275,19 @@
                 });
             },
             //打开导出dialog对话框
-            interfaceExport() {
-                let dis = this.interceptor();
+            interfaceExport(project) {
+                this.bindProjectName = '';
+                this.bindProjectID = null;
+                let dis = this.interceptor(project);
                 if(dis) return;
+                this.bindProjectName = project.name;
                 this.exportDialogVisible = true;
+                this.bindProjectID = project.id;
             },
             //导出按钮事件
-            assureExport() {
+            async assureExport() {
               if(this.interface.format==='html') {
                 console.log('导出为html格式');
-
               } else if (this.interface.format === 'word') {
 
               } else if (this.interface.format === 'pdf') {
@@ -1026,32 +1296,135 @@
 
               }
             },
-            //导出文件操作
-            export(data, format, filename) {
-              if(data) {
-                let blob = new Blob([data],{
-                  type: `application/${format}`
-                });
-                let suffix = '';
-                if(format === 'html') {
-                  suffix = '.html';
-                } else if (format === 'word' ) {
-                  suffix = '.word';
-                } else if(format === 'pdf') {
-                  suffix = '.pdf';
-                } else {
-                  suffix = '.markdown';
+            //导出word
+            getWord(data) {
+              let intf = []
+              intf.push(...data)
+              exportWord(intf, this.bindProjectName)
+            },
+            //导出html
+            getHtml(data) {
+              this.intfMesList = []
+              this.intfMesList.push(...data)
+              this.$nextTick(() => {
+                let tem = this.$refs.intfTemplate.outerHTML
+                console.log(data)
+                let html = `<!DOCTYPE html>
+                  <html>
+                  <head>
+                      <meta charset="utf-8">
+                      <meta name="viewport" content="width=device-width,initial-scale=1.0">
+                      <title></title>
+                      <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+                      <script src="https://cdn.jsdelivr.net/npm/vue"><\/script>
+                      <script src="https://unpkg.com/element-ui/lib/index.js"><\/script>
+                  </head>
+                  <body>
+                      <div class="app" style="margin:0 auto;width:1200px">
+                         ${tem}
+                      </div>
+                      <script type="text/javascript">
+                          const vm = new Vue({
+                              el: '#app',
+                              data: {
+                                  msg: ''
+                              }
+                          })
+                      <\/script>
+                  </body>
+                  </html>`;
+                try {
+                  let s = writer(`${this.bindProjectName}-接口文档.html`, html, 'utf-8');
+                  notice(this, "导出成功！");
+                  this.exportDialogVisible = false;
+                } catch (e) {
                 }
-                let Url = URL.createObjectURL(blob);
-                let link = document.createElement('a');
-                // let downloadName = `个人简历.doc`;
-                let downloadName = filename.concat(suffix);
-                link.href = Url;
-                link.setAttribute('download',downloadName);
-                document.body.appendChild(link);
-                link.click();
+              })
+            },
+            //导出接口
+            async exportIntf() {
+              let rs = await exportIntfList(this.bindProjectID, 'all')
+              if (rs.data.code == -9999) {
+                notice(this, rs.data.msg, "error")
+                return;
               } else {
-                notice(this, '文件导出失败', 'error');
+                let data = rs.data.data
+                // console.log(JSON.stringify(data));
+                data.forEach((dataItem, index) => {
+                  dataItem['index'] = index + 1
+                  dataItem.paramMsg.forEach(msg => {
+                    //header
+                    if (msg.reqheader) {
+                      msg.reqheader = JSON.parse(msg.reqheader)
+                      //判断header是否为空
+                      msg.reqheader.forEach(head => {
+                        if (head.reqHeader != '' && head.reqHeaderMethod != '' && head.paramNote != '') {
+                          msg['headEmpty'] = 1
+                        }
+                      })
+                    }
+                    //Prarm
+                    let param = {}
+                    if (msg.reqtype == '1') {
+                      msg.reqBody = JSON.parse(msg.reqbody)
+                      msg.reqBody.forEach(msg => {
+                        param[msg.name] = msg.value
+                      })
+                    }
+                    if (msg.reqtype == '2') {
+                      param = parseChildJson(JSON.parse(msg.reqBodyJson))
+                    }
+                    if (msg.reqtype == '3') {
+                      param = JSON.parse(msg.reqBody)
+                    }
+                    if (JSON.stringify(param) != "{}") msg['paramStr'] = JSON.stringify(param)
+                    //Query
+                    if (msg.reqQuery) {
+                      msg.reqQuery = JSON.parse(msg.reqQuery)
+                      let query = {}
+                      msg.reqQuery.forEach(msg => {
+                        if (msg.name != '') query[msg.name] = msg.value
+                      })
+                      if (JSON.stringify(query) != "{}") msg['queryStr'] = JSON.stringify(query)
+                    }
+                    //Result
+                    let result = {}
+                    if (msg.restype == "1") {
+                      result = parseChildJson(JSON.parse(msg.resbody))
+                    }
+                    if (msg.restype == "2") {
+                      result = JSON.parse(msg.resbody)
+                    }
+                    if (JSON.stringify(result) != "{}") msg['resultStr'] = JSON.stringify(result)
+                  })
+                })
+                if (this.interface.format == 'word') {
+                  this.getWord(data);
+                } else if (this.interface.format == 'html') {
+                  this.getHtml(data)
+                } else if (this.interface.format == 'pdf') {
+                  this.intfMesList = []
+                  this.intfMesList.push(...data)
+                  this.$nextTick(() => {
+                    htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), this.bindProjectName+'-接口文档')
+                    notice(this, "导出成功！");
+                    this.exportDialogVisible = false;
+                  })
+                } else if (this.interface.format == 'markdown') {
+                  interface2MDJSON(data);
+                  let rs = exportMD(data);
+                  const element = document.createElement('a')
+                  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
+                  element.setAttribute('download', this.bindProjectName+'-接口文档.md')
+                  element.style.display = 'none'
+                  element.click()
+                  // this.$nextTick(() => {
+                  //     exportMD(document.querySelector('#intfTemplate'))
+                  //     notice(this, "导出成功！");
+                  //     this.showDialog[0] = false;
+                  //     this.showDialog.push()
+                  // })
+                }
               }
             },
             //获取项目列表
@@ -1118,7 +1491,28 @@
               } else {
                 notice(this, '删除失败', 'error');
               }
-            }
+            },
+            //获取全部接口列表
+            async listTotalInterface(pid) {
+              let project = {};
+              project.id = pid;
+              let res = await getInterfaceListByExample(project);
+              if(res.data.code === 200) {
+                return res.data.data.total;
+              }
+              return 0;
+            },
+            //获取已归档的接口列表
+            async listArchivedInterface(pid) {
+              let project = {};
+              project.id = pid;
+              project.status = 3;
+              let res = await getInterfaceListByExample(project);
+              if(res.data.code === 200) {
+                return res.data.data.total;
+              }
+              return 0;
+            },
         },
         async mounted() {
             let app = this
@@ -1126,8 +1520,16 @@
             if (rs.data.code == 200) {
                 app.allProject.splice(0, this.allProject.length)
                 app.totalCount = rs.data.data.count
-                if (app.totalCount > 0)
-                    app.allProject.push(...rs.data.data.list)
+                if (app.totalCount > 0) {
+                  app.allProject.push(...rs.data.data.list)
+                  this.allProject.forEach(async (item) => {
+                    let total_number = await this.listTotalInterface(item.id);
+                    let archived_number = await this.listArchivedInterface(item.id);
+                    if(total_number) {
+                      item.progress = parseFloat((100*archived_number/total_number).toFixed(2));
+                    }
+                  })
+                }
             }
         },
         watch: {
@@ -1138,8 +1540,16 @@
                 if (rs.data.code == 200) {
                     app.allProject.splice(0, this.allProject.length)
                     app.totalCount = rs.data.data.count
-                    if (app.totalCount > 0)
-                        app.allProject.push(...rs.data.data.list)
+                    if (app.totalCount > 0) {
+                      app.allProject.push(...rs.data.data.list)
+                      this.allProject.forEach(async (item) => {
+                        let total_number = await this.listTotalInterface(item.id);
+                        let archived_number = await this.listArchivedInterface(item.id);
+                        if(total_number) {
+                          item.progress = parseFloat((100*archived_number/total_number).toFixed(2));
+                        }
+                      })
+                    }
                 }
             }
         }

@@ -29,6 +29,10 @@ export function getProjectByPid(data) {
 export function updateProject(data) {
   return post('api/imp/project/update', data);
 }
+//归档项目
+export function archiveProject(data) {
+  return fetch('api/imp/project/archive', data);
+}
 //退出项目
 export function exit(data) {
   return fetch('api/imp/project/exit', data);

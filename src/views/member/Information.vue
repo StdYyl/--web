@@ -184,7 +184,7 @@
         methods: {
             //拦截器，查看用户是否被禁用
             interceptor() {
-              if(localStorage.getItem('disabled')==true) {
+              if(localStorage.getItem('disabled')=='true') {
                 notice(this, '用户权限已被禁用', 'warning');
                 return true;
               }

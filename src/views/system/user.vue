@@ -195,11 +195,12 @@
       align-items: center;
       flex-direction: column;
       justify-items: center;
+      overflow: hidden;
       .table {
         flex: 1;
         width: 100%;
         padding: 0 10px;
-        /*overflow: hidden;*/
+        overflow-y: scroll;
         .table_item {
           display: flex;
           justify-content: space-between;
@@ -260,6 +261,9 @@
             }
           }
         }
+      }
+      .table::-webkit-scrollbar {
+        display: none;
       }
       .pagination {
         width: 100%;

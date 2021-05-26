@@ -5,6 +5,14 @@ import {fetch, post} from "./http";
 export function addDir(data) {
   return requested("api/imp/directory/addDirectory","POST",data)
 }
+//添加目模块（自定义，需要返回值）
+export function addDirectory(data) {
+  return post('api/imp/directory/add', data);
+}
+//根据id删除directory
+export function removeDirectory(data) {
+  return fetch('api/imp/directory/remove', data);
+}
 //查询一级目录列表 category(2:项目、1.接口)
 export function getDirOneList(id, category=2,projectId='') {
   return requested(`api/imp/directory/queryDirListLevOne?id=${id}&category=${category}&projectId=${projectId}`)

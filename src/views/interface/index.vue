@@ -149,7 +149,7 @@
                 <el-option label="html" value="html"></el-option>
                 <el-option label="word" value="word"></el-option>
                 <el-option label="pdf" value="pdf"></el-option>
-                <!--                <el-option label="markDown" value="markDown"></el-option>-->
+                <el-option label="markdown" value="markdown"></el-option>
               </el-select>
               <div style="margin: 15px 0 0 60px">
                 <span class="el-icon-download"></span>
@@ -729,7 +729,7 @@
     import {satisfyInterface} from "../../api/intfsituation";
     import {removeComment, addComment} from "../../api/comment";
     import {archiveIntf, exportIntfList, getInterfaceList} from "../../api/interface";
-    import {exportMD, exportWord, parseChildJson} from "../../utils/utils";
+    import {exportMD, exportWord, interface2MDJSON, parseChildJson} from "../../utils/utils";
 
     import writer from 'file-writer';
     import htmlToPdf from "../../utils/htmlToPdf";
@@ -929,6 +929,16 @@
                         console.log(this.$route.path.indexOf("/intf/all"))
                         this.$router.push(`/home/intfIndex/${this.$route.params.id}/intf/all`)
                     }
+                } else if(this.activeName == 'weekly') {
+                  this.weeklyFlag = 1;
+                  this.weeklyTable = [];
+                  this.weeklyconList = [];
+                  this.current=1;
+                  this.size=1;
+                  this.loadingComment = true;
+                  await this.dealWithWeeklyDate(this.$route.params.id);
+                  await this.getWeeklyConList(this.current, this.size);
+                  await this.drawLine(this.$route.params.id);
                 }
             },
             //添加addEnvironment
@@ -1100,7 +1110,7 @@
             getWord(data) {
                 let intf = []
                 intf.push(...data)
-                exportWord(intf)
+                exportWord(intf, this.projectName)
             },
             //导出html
             getHtml(data) {
@@ -1134,7 +1144,7 @@
                 </body>
                 </html>`;
                     try {
-                        let s = writer(`接口文档.html`, html, 'utf-8');
+                        let s = writer(`${this.projectName}-接口文档.html`, html, 'utf-8');
                         notice(this, "导出成功！");
                         this.showDialog[0] = false;
                         this.showDialog.push()
@@ -1144,6 +1154,7 @@
             },
             //导出接口
             async exportIntf() {
+                console.log(this.project);
                 let {id, moduleId} = this.$route.params;
                 let rs = await exportIntfList(id, moduleId)
                 if (rs.data.code == -9999) {
@@ -1207,12 +1218,19 @@
                         this.intfMesList = []
                         this.intfMesList.push(...data)
                         this.$nextTick(() => {
-                            htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), '接口文档')
+                            htmlToPdf.downloadPDF(document.querySelector('#intfTemplate'), this.projectName+'-接口文档')
                             notice(this, "导出成功！");
                             this.showDialog[0] = false;
                             this.showDialog.push()
                         })
-                    } else if (this.fileType == 'markDown') {
+                    } else if (this.fileType == 'markdown') {
+                      interface2MDJSON(data);
+                      let rs = exportMD(data);
+                      const element = document.createElement('a')
+                      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(rs))
+                      element.setAttribute('download', this.projectName+'-接口文档.md')
+                      element.style.display = 'none'
+                      element.click()
                         // this.$nextTick(() => {
                         //     exportMD(document.querySelector('#intfTemplate'))
                         //     notice(this, "导出成功！");
@@ -1297,8 +1315,17 @@
                     .catch(_ => {
                     });
             },
-            changeBar() {
-                this.weeklyFlag = 1;
+            async changeBar() {
+                //点击周报管理按钮，切换回周报首页
+              this.weeklyFlag = 1;
+              this.weeklyTable = [];
+              this.weeklyconList = [];
+              this.current=1;
+              this.size=1;
+              this.loadingComment = true;
+              await this.dealWithWeeklyDate(this.$route.params.id);
+              await this.getWeeklyConList(this.current, this.size);
+              await this.drawLine(this.$route.params.id);
             },
             //echarts画图操作
             async drawLine(pid) {
@@ -1311,7 +1338,6 @@
                     pid: pid,
                     weeks: this.weeklyTable[0].week,
                 });
-                console.log(res);
                 let data = [];
                 if(res.data.code === 200) {
                   data.push(res.data.data.body.successful);
@@ -1540,7 +1566,7 @@
               size: size,
               pid: this.$route.params.id,
             });
-            console.log(res.data.data.list);
+            console.log(res.data.data);
             if (res.data.code === 200) {
               if (res.data.data.total > 0) {
                 res.data.data.list.forEach((item) => {
@@ -1651,11 +1677,11 @@
           },
           //回复评论
           replyComment(idx, idx2, idx3, comment, level) {
-            console.log(idx);
-            console.log(idx2);
-            console.log(idx3);
-            console.log(comment);
-            console.log(level);
+            // console.log(idx);
+            // console.log(idx2);
+            // console.log(idx3);
+            // console.log(comment);
+            // console.log(level);
             this.$prompt('请输入评论内容', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
@@ -1675,7 +1701,9 @@
                 if(!this.weeklyconList[idx].commentList) this.weeklyconList[idx].commentList=[];
                 if(!this.weeklyconList[idx].commentList[idx2].subCommentList) this.weeklyconList[idx].commentList[idx2].subCommentList=[];
                 if(level=='parent') {
-                  this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
+                  temp.push(res.data.data.body);
+                  this.weeklyconList[idx].commentList[idx2].subCommentList = temp;
+                  // this.weeklyconList[idx].commentList[idx2].subCommentList.push(res.data.data.body);
                 } else {
                   this.weeklyconList[idx].commentList[idx2].subCommentList.splice(idx3+1, 0, res.data.data.body);
                 }
@@ -1725,6 +1753,13 @@
             }
         },
         async mounted() {
+            let pid = this.$route.query.pid;
+            let res = await getProjectByPid({
+              pid: pid,
+            })
+            if(res.data.code === 200) {
+              this.projectName = res.data.data.body.name;
+            }
             let app = this
             //模块列表
             await this.getModuleList();
@@ -1739,15 +1774,16 @@
                     this.$refs.intfTree.setCurrentKey(id == 'all' || !id ? 0 : id);
                 }
             })
-            await this.dealWithWeeklyDate(this.$route.params.id);
-            await this.getWeeklyConList(this.current, this.size);
-            await this.drawLine(this.$route.params.id);
         }
     }
 </script>
 
 <style>
 
+  #intfTabs .el-tabs__nav-scroll {
+    display: flex;
+    justify-content: center;
+  }
 
   .drop {
     left: 348px !important;
