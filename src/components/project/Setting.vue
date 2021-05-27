@@ -22,7 +22,7 @@
               {{systemForm.createuser.name}}
             </el-form-item>
             <el-form-item label="创建时间" label-width="125px" class="crtUser">
-              {{new Date(systemForm.createtime).getFullYear()}}-{{new Date(systemForm.createtime).getMonth()+1}}--{{new Date(systemForm.createtime).getDate()}}
+              {{new Date(systemForm.createtime).getFullYear()}}-{{new Date(systemForm.createtime).getMonth()+1}}-{{new Date(systemForm.createtime).getDate()}}
             </el-form-item>
             <el-form-item label-width="125px">
               <div style="margin: 10px 15px 0 0;">
@@ -253,6 +253,7 @@
                 <img v-if="imageUrl" :src="'http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/upload/'+imageUrl" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
+              <i class="el-icon-zoom-in pic-zoom-in" @click="techPicDialogVisible = true" style="margin-left: 50px;font-size: 25px;cursor: pointer;"></i>
             </div>
           </div>
           <div class="main">
@@ -272,7 +273,7 @@
                 </el-col>
               </el-row>
             </div>
-            <div v-for="item in technologyList" :key="item.name">
+            <div v-for="(item, idx) in technologyList" :key="item.name">
               <div class="tech_item">
                 <div class="data">
                   <el-row>
@@ -288,7 +289,7 @@
                       <div class="grid-content bg-purple version">{{item.version}}</div>
                     </el-col>
                     <el-col :span="4">
-                      <div class="grid-content bg-purple-light remove" @click="removeTech(item)" v-if="systemForm.createuserid==userId">
+                      <div class="grid-content bg-purple-light remove" @click="removeTech(idx)" v-if="systemForm.createuserid==userId">
                         <i class="el-icon-close"></i>
                       </div>
                     </el-col>
@@ -323,6 +324,25 @@
         </div>
       </el-tab-pane>
       <el-dialog
+        :visible.sync="techPicDialogVisible"
+        width="50%">
+        <div slot="title" align="left" style="display: flex;align-items: center;">
+          <i class="el-icon-picture-outline" style="color: rgb(250,194,0);margin-right: 5px"></i>
+          <span style="font-weight: bold;font-size: 14px">技术架构图</span>
+        </div>
+        <span slot="">
+          <div>
+            <el-image
+              style="height: 400px"
+              :src="'http://39.102.48.244:8080/interface_img_server2-1.0-SNAPSHOT/upload/'+imageUrl"
+              fit="scale-down"></el-image>
+          </div>
+        </span>
+        <span slot="footer">
+          <el-button type="primary" @click="techPicDialogVisible = false">确 定</el-button>
+        </span>
+      </el-dialog>
+      <el-dialog
         :visible.sync="techDialogVisible"
         width="30%">
         <div slot="title" align="left" style="display: flex;align-items: center;">
@@ -332,10 +352,10 @@
         <span slot="">
           <el-form ref="form" :model="technology" label-width="80px">
             <el-form-item label="技术名称">
-              <el-input v-model="technology.name"></el-input>
+              <el-input v-model="technology.name" placeholder="请输入技术名称"></el-input>
             </el-form-item>
             <el-form-item label="技术版本">
-              <el-input v-model="technology.version"></el-input>
+              <el-input v-model="technology.version" placeholder="请输入版本号"></el-input>
             </el-form-item>
           </el-form>
         </span>
@@ -424,10 +444,11 @@
                 moduleUser: [],
                 technologyList: [],
                 techDialogVisible: false,
+                techPicDialogVisible: false,
                 //新增技术窗口
                 technology: {
-                  name: 'Dubbo',
-                  version: '2.3.0',
+                  name: '',
+                  version: '',
                 },
                 //技术架构图
                 imageUrl: '',
@@ -494,10 +515,10 @@
                     this.moduleProject.push(item);
                   })
                 }
-                if((this.page*this.size-res.data.data.total)>0) {
-                  notice(this, '已经没有更多数据了', 'info');
-                  return;
-                }
+                // if(this.page>(res.data.data.total%this.size==0?res.data.data.total/this.size:(res.data.data.total/this.size)+1)) {
+                //   notice(this, '已经没有更多数据了', 'info');
+                //   return;
+                // }
               }
             },
             //添加模块开发人员
@@ -578,13 +599,23 @@
                 return `height:${h}`
                 console.log(h)
             },
-            removeTech(item) {
-              this.technologyList.splice(item, 1);
+            removeTech(idx) {
+              this.technologyList.splice(idx, 1);
             },
             openAddPanel() {
+              this.technology.name = '';
+              this.technology.version = '';
               this.techDialogVisible = true
             },
             addTech() {
+              if(!this.technology.name || !this.technology.version) {
+                notice(this, '请将技术名称和技术版本补全', 'warning');
+                return;
+              }
+              if(!this.validateTech()) {
+                notice(this, '该技术已经存在，无法继续添加', 'warning');
+                return;
+              }
               this.technologyList.push({
                 name: this.technology.name,
                 version: this.technology.version,
@@ -592,6 +623,12 @@
               this.techDialogVisible = false;
               this.technology.name='';
               this.technology.version='';
+            },
+            validateTech() {
+              if(this.technologyList.find((item) => {
+                if(item.name == this.technology.name) return true;
+              })) return false;
+              return true;
             },
             saveTechnology() {
               confirmMessage(this, '此操作将保存对技术的更改, 是否继续?').then(async () => {
@@ -601,6 +638,8 @@
                 let res = await updateProject(project);
                 if(res.data.code === 200) {
                   notice(this, '保存成功', 'success');
+                } else {
+                  notice(this, res.data.msg, 'error');
                 }
               }).catch(() => {
                 notice(this, '已取消保存', 'info');
@@ -859,7 +898,11 @@
   }
 
   .tabsH{
-    /*height: 60vh;*/
+    overflow-y: scroll;
+    height: 60vh;
+  }
+  .tabsH::-webkit-scrollbar {
+    display: none;
   }
 
   /deep/ .crtUser {
@@ -867,7 +910,12 @@
   }
 
   .set {
-    width: 1150px;
+    position: absolute;
+    bottom: 40px;
+    left: 200px;
+    right: 200px;
+    top: 80px;
+    overflow: hidden;
     min-height: 500px;
     margin: 20px auto;
     background-color: #FFFFFF;
@@ -954,6 +1002,14 @@
 
   /deep/ .el-dialog__body {
     padding: 25px 20px 30px;
+  }
+
+  .el-icon-zoom-in.pic-zoom-in {
+
+  }
+
+  .el-icon-zoom-in.pic-zoom-in:hover {
+    color: rgb(24,144,255);
   }
 
   .technology {

@@ -10,7 +10,7 @@
             </div>
             <div :class="!selector[1]?'bar_item':'bar_item selected'" @click="changeBar(1)">
               <i class="iconfont icon-date date"></i>
-              日志查看
+              日志列表
             </div>
             <div :class="!selector[2]?'bar_item':'bar_item selected'" @click="changeBar(2)">
               <i class="iconfont icon-user user"></i>
@@ -58,7 +58,7 @@
       left: 200px;
       right: 200px;
       top: 100px;
-      bottom: 80px;
+      bottom: 60px;
       background-color: #fff;
       box-shadow: 0px 1px 2px 2px rgb(212,212,212);
       border-radius: 2px;

@@ -56,7 +56,7 @@
           </af-table-column>
           <af-table-column
             fixed="right"
-            label="操作"
+            label="操作类型"
             width="100"
             align="center">
             <template slot-scope="scope">

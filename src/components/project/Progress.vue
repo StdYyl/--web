@@ -76,7 +76,7 @@
           </div>
           <div class="main">
             <el-timeline>
-              <el-timeline-item :timestamp="item.showTime" placement="top" v-for="item in weeklyconList" :key="item.id">
+              <el-timeline-item :timestamp="item.showTime" placement="top" v-for="(item, idx) in weeklyconList" :key="item.id">
                 <el-card>
                   <div class="card">
                     <div class="info">
@@ -98,6 +98,13 @@
                         <div class="context">{{item.complete}}</div>
                       </div>
                     </div>
+                  </div>
+                  <div class="detail">
+                    <el-collapse v-model="activeNames[idx]" @change="handleChange">
+                      <el-collapse-item :title="'第'+item.weekly.weeks+'周 '+item.user.name+' 的周报详情'" name="1">
+                        <div>{{item.body}}</div>
+                      </el-collapse-item>
+                    </el-collapse>
                   </div>
                 </el-card>
               </el-timeline-item>
@@ -157,6 +164,7 @@
           //周报列表
           weeklyconList: [],
           activeName: 'interface',
+          activeNames: []
         }
       },
       methods: {
@@ -167,6 +175,7 @@
           } else if (this.activeName == 'weekly') {
             this.loadingWeekly = true;
             this.weeklyconList = [];
+            this.activeNames = [];
             this.current = 1;
             this.size = 3;
             this.listUsersByPid();
@@ -181,6 +190,9 @@
             let h = document.getElementById("bg").style.height
             return `height:${h}`
             console.log(h)
+        },
+        handleChange(val) {
+
         },
         //当前页码改变时出发事件
         handleCurrentChange() {
@@ -255,6 +267,7 @@
           this.current=1;
           console.log(this.submitter);
           this.weeklyconList = [];
+          this.activeNames = [];
           this.getWeeklyConList(this.current, this.size);
         },
         async getWeeklyConList(current, size) {
@@ -267,7 +280,8 @@
           if (res.data.code === 200) {
             if (res.data.data.total > 0) {
               console.log(res.data.data.list);
-              res.data.data.list.forEach((item) => {
+              res.data.data.list.forEach((item, idx) => {
+                this.activeNames[idx] = [];
                 let weeklycon = item;
                 let showTime = item.updatetime ?
                   moment(item.updatetime).format('YYYY年MM月DD日 HH:mm') : moment(item.addtime).format('YYYY年MM月DD日 HH:mm');
@@ -319,6 +333,7 @@
         },
         getMore() {
           this.loadingWeekly = true;
+          this.activeNames = [];
           setTimeout(() => {
             this.getWeeklyConList(++this.current, this.size);
           }, 1000);
@@ -500,7 +515,7 @@
   }
 
   /deep/.el-timeline-item__content{
-    width: 40%;
+    width: 100%;
 
     .el-card__body{
       padding: 10px;
@@ -512,7 +527,11 @@
   }
 
   .tabsH{
-    /*height: 60vh;*/
+    overflow-y: scroll;
+    height: 60vh;
+  }
+  .tabsH::-webkit-scrollbar {
+    display: none;
   }
 
   /deep/ .crtUser {
@@ -520,7 +539,12 @@
   }
 
   .set {
-    width: 1150px;
+    position: absolute;
+    bottom: 40px;
+    left: 200px;
+    right: 200px;
+    top: 80px;
+    overflow: hidden;
     min-height: 500px;
     margin: 20px auto;
     background-color: #FFFFFF;
