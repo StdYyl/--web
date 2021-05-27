@@ -1177,7 +1177,7 @@
                             }
                             //Prarm
                             let param = {}
-                            if (msg.reqtype == '1') {
+                            if (msg.reqtype == '1' && msg.reqbody) {
                                 msg.reqBody = JSON.parse(msg.reqbody)
                                 msg.reqBody.forEach(msg => {
                                     param[msg.name] = msg.value

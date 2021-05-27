@@ -11,7 +11,7 @@ axios.interceptors.request.use(
   config => {
     // if(!config.isCheck) return config;
     //文件上传 跳过
-    if (config.url.indexOf("getIntfDataByFile") == "-1")
+    if (config.url.indexOf("getIntfDataByFile") == -1)
       config.data = JSON.stringify(config.data);
     config.headers = {
       'Content-Type': 'application/json;charset=utf-8',
